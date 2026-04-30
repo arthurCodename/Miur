@@ -37,3 +37,35 @@
     @apply bg-white text-[#09090b] antialiased;
   }
 }
+/* Accessibility Classes */
+/* --- Accessibility Classes --- */
+.a11y-large-text {
+  zoom: 1.15 !important;
+}
+
+.a11y-high-contrast {
+  filter: contrast(150%) saturate(0) !important;
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+.a11y-highlight-links a, 
+.a11y-highlight-links button {
+  outline: 2px solid #ffcc00 !important;
+  outline-offset: 2px !important;
+}
+
+.a11y-readable-font * {
+  font-family: system-ui, -apple-system, sans-serif !important;
+  letter-spacing: 0.05em !important;
+  word-spacing: 0.1em !important;
+}
+
+.a11y-grayscale {
+  filter: grayscale(100%) !important;
+}
+
+.a11y-big-cursor,
+.a11y-big-cursor * {
+  cursor: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 5L10 27L15 22L20 29L23 27L18 20L25 20L10 5Z' fill='white' stroke='black' stroke-width='2'/%3E%3C/svg%3E"), auto !important;
+}

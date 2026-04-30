@@ -1,17 +1,17 @@
-import { Hero } from "@/components/layout/Hero";
+import { Hero } from "../components/layout/Hero";
+import { TrustBar } from "../components/ui/TrustBar";
+import { CategoryGrid } from "../components/layout/CategoryGrid";
+import { BestSellers } from "../components/layout/BestSellers";
+import { Philosophy } from "../components/layout/Philosophy";
 
 export default function Home() {
   return (
-    <main className="flex flex-col w-full bg-white">
-      {/* Головний екран у стилі Siohworld / Avec */}
+    <div className="flex flex-col w-full">
       <Hero />
-      
-      {/* Тут будуть наступні секції магазину (Grid товарів і т.д.) */}
-      <section className="h-screen w-full flex items-center justify-center bg-zinc-50 border-t border-zinc-100">
-        <p className="text-[10px] font-bold uppercase tracking-[1em] text-zinc-300">
-          Miejsce на Twoje produkty
-        </p>
-      </section>
-    </main>
+      <TrustBar />
+      <CategoryGrid />
+      <BestSellers />
+      <Philosophy />
+    </div>
   );
 }

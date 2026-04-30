@@ -1,7 +1,8 @@
+// Miur/miur/next.config.ts
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Turbopack налаштування очищені для запобігання надмірному споживанню пам'яті
 };
 
 export default nextConfig;
