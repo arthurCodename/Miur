@@ -44,16 +44,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar />
-          <AccessibilityWidget />
-          <CookieBanner /> {/* <-- Додали компонент на сторінку */}
-          
-          <main className="flex-1">
-            {children}
-          </main>
-          
-          <Footer />
-          <Toaster richColors position="top-center" />
+          <div className="flex min-h-screen flex-col">
+            <Navbar />
+            <AccessibilityWidget />
+            <CookieBanner />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <Toaster richColors position="top-center" />
+          </div>
         </ThemeProvider>
       </body>
     </html>

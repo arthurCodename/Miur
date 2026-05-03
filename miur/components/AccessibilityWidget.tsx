@@ -30,36 +30,6 @@ export function AccessibilityWidget() {
     settings.bigCursor ? body.classList.add('a11y-big-cursor') : body.classList.remove('a11y-big-cursor');
   }, [settings]);
 
-  // 2. Логіка для "Text-to-Speech" (Читання екрана)
-  useEffect(() => {
-    const handleMouseOver = (e: MouseEvent) => {
-      if (!settings.screenReader) return;
-      
-      const target = e.target as HTMLElement;
-      // Отримуємо текст елемента, на який навели (або його aria-label/alt)
-      const text = target.innerText || target.getAttribute('aria-label') || target.getAttribute('alt');
-
-      // Читаємо тільки якщо є текст і ми навели на конкретний елемент (а не на весь блок)
-      if (text && target.children.length === 0) {
-        window.speechSynthesis.cancel(); // Зупиняємо попереднє читання
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'pl-PL'; // Читаємо польською
-        window.speechSynthesis.speak(utterance);
-      }
-    };
-
-    if (settings.screenReader) {
-      document.addEventListener('mouseover', handleMouseOver);
-    } else {
-      window.speechSynthesis.cancel(); // Вимикаємо диктора, якщо опцію знято
-    }
-
-    return () => {
-      document.removeEventListener('mouseover', handleMouseOver);
-      window.speechSynthesis.cancel();
-    };
-  }, [settings.screenReader]);
-
   // 3. Логіка для "ADHD Profile" (Відслідковування миші для маски)
   useEffect(() => {
     if (!settings.adhdProfile) return;
@@ -145,13 +115,7 @@ export function AccessibilityWidget() {
                   title="Czytelna czcionka" 
                   isActive={settings.readableFont} 
                   onClick={() => toggleSetting('readableFont')} 
-                />
-                <SettingButton 
-                  icon={<Contrast className="w-4 h-4" />} 
-                  title="Wysoki kontrast" 
-                  isActive={settings.highContrast} 
-                  onClick={() => toggleSetting('highContrast')} 
-                />
+                />              
                 <SettingButton 
                   icon={<Palette className="w-4 h-4" />} 
                   title="Skala szarości" 

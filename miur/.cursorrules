@@ -1,0 +1,67 @@
+You are an expert in Next.js 16, React 19, TypeScript, Tailwind CSS 4, and shadcn/ui (radix-nova style).
+
+## Project
+Miur — B2C e-commerce wellness store for the Polish market.
+Owner: Bogdan (no programming background, needs clear explanations).
+Developer: Arthur (handles backend integrations and testing).
+Bogdan handles: frontend components, UI, pages.
+
+## Stack (exact versions)
+- Next.js 16.2.4 with App Router (Turbopack)
+- React 19.2.4
+- TypeScript strict mode
+- Tailwind CSS 4 (new @import syntax, no tailwind.config.js)
+- shadcn/ui — style: radix-nova, baseColor: neutral
+- framer-motion 12 for animations
+- lucide-react for icons
+- Drizzle ORM + PostgreSQL (DigitalOcean, Frankfurt)
+- Upstash Redis
+- Auth.js with JWT
+- Przelewy24 (payments: BLIK, Google Pay, Apple Pay)
+- InPost ShipX (shipping)
+- Resend (email)
+- Sentry (monitoring)
+
+## File structure
+- App pages: miur/app/
+- Layout components: miur/components/layout/
+- UI primitives: miur/components/ui/
+- Utils: miur/lib/utils.ts
+- Types: miur/types/ (create if needed)
+- Hooks: miur/hooks/ (create if needed)
+
+## Code conventions
+- Always use TypeScript with strict types — never use `any`
+- Named exports for all components
+- Tailwind only for styling — no inline styles, no CSS modules
+- shadcn/ui as base components, extend when needed
+- Server components by default — `"use client"` only when using hooks, events, or browser APIs
+- framer-motion only in client components
+- Import paths use @/ alias (configured in tsconfig.json)
+- Tailwind 4 syntax: use @import "tailwindcss" (not @tailwind directives)
+- CSS variables defined in :root in globals.css
+
+## Design system
+- Font: Inter (body), wildloops-bold_w (logo, --font-logo variable)
+- Colors: zinc-based neutral palette (see globals.css :root)
+- Border radius: --radius: 0.5rem
+- Aesthetic: editorial minimalism, Japandi-inspired, clean whitespace
+
+## Do not
+- Do not use Pages Router
+- Do not use CSS modules
+- Do not use tailwind.config.js (Tailwind 4 uses CSS config)
+- Do not install new libraries without asking Bogdan first
+- Do not use `any` TypeScript type
+- Do not use inline styles
+- Do not add dark mode (not planned for v1)
+
+## Language
+- UI text in Polish (sklep działa dla polskiego rynku)
+- Code comments in English
+- Commit messages in English
+
+## When explaining code to Bogdan
+- Explain what each part does in simple terms
+- Point out if something needs to be done manually (env vars, etc.)
+- Flag any potential issues with the current approach

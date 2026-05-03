@@ -1,4 +1,3 @@
-// Miur/miur/components/layout/Navbar.tsx
 "use client";
 import { useState } from 'react';
 import Link from 'next/link';
@@ -44,7 +43,8 @@ export default function Navbar() {
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(menuData[0].title);
 
-  const gradientOpacity = useTransform(scrollY, [0, 100], [0, 1]);
+  // Градієнт з'являється після 50px скролу і стає повним на 200px
+  const gradientOpacity = useTransform(scrollY, [0, 150], [0, 1]);
   const logoOpacity = useTransform(scrollY, [550, 750], [0, 1]);
 
   return (
@@ -52,96 +52,62 @@ export default function Navbar() {
       className="fixed top-0 left-0 w-full z-[100]"
       onMouseLeave={() => setIsMegaMenuOpen(false)}
     >
-      {/* ТУТ ДОДАНО safe-area-inset-top ДЛЯ IPHONE */}
-      <nav className="relative grid grid-cols-3 items-center px-6 md:px-12 pt-[calc(env(safe-area-inset-top)+20px)] md:pt-8 pb-6 transition-all duration-500 z-50">
+      <nav className="relative isolate z-50 grid grid-cols-3 items-center px-6 pb-8 pt-[calc(env(safe-area-inset-top)+20px)] transition-all duration-500 md:px-12 md:pt-8">
         
-        {/* ПЛАВНИЙ ГРАДІЄНТ */}
-        <motion.div 
-          style={{ 
-            opacity: gradientOpacity,
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.1) 75%, rgba(0,0,0,0) 100%)'
-          }}
-          className="absolute inset-0 -z-10 h-[350px] pointer-events-none"
-        />
+        {/* ULTRA-SMOOTH SCRIM GRADIENT */}
+        <motion.div
+          style={{ opacity: gradientOpacity }}
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[140px] md:h-[180px]"
+          aria-hidden
+        >
+          <div 
+            className="w-full h-full"
+            style={{
+              background: `linear-gradient(to bottom, 
+                rgba(0, 0, 0, 0.95) 0%, 
+                rgba(0, 0, 0, 0.83) 15%, 
+                rgba(0, 0, 0, 0.64) 30%, 
+                rgba(0, 0, 0, 0.45) 43%, 
+                rgba(0, 0, 0, 0.28) 55%, 
+                rgba(0, 0, 0, 0.15) 67%, 
+                rgba(0, 0, 0, 0.06) 78%, 
+                rgba(0, 0, 0, 0.02) 89%, 
+                rgba(0, 0, 0, 0) 100%)`
+            }}
+          />
+        </motion.div>
 
         {/* ЛІВА ЧАСТИНА */}
         <div className="flex items-center gap-6 justify-self-start text-white">
-          
-          {/* МОБІЛЬНЕ МЕНЮ (SHEET) */}
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <button className="p-2 -ml-2 outline-none focus:outline-none focus-visible:ring-0 active:scale-95 transition-transform">
+                <button className="p-2 -ml-2 outline-none active:scale-95">
                   <Menu className="w-6 h-6" strokeWidth={1.5} />
                 </button>
               </SheetTrigger>
               <SheetContent side="left" className="w-[85%] bg-zinc-950 border-none text-white p-0 flex flex-col" showCloseButton={false}>
                 <SheetTitle className="sr-only">Menu nawigacyjne</SheetTitle>
-                
-                {/* Header всередині меню */}
                 <div className="flex items-center justify-end px-6 pt-[calc(env(safe-area-inset-top)+20px)] pb-2">
-                   <SheetClose className="p-2 -mr-2 hover:bg-white/10 rounded-full transition-colors outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0">
-                     <X className="w-6 h-6 text-zinc-400 hover:text-white transition-colors" strokeWidth={1.5} />
+                   <SheetClose className="p-2 -mr-2 hover:bg-white/10 rounded-full transition-colors">
+                     <X className="w-6 h-6 text-zinc-400" strokeWidth={1.5} />
                    </SheetClose>
                 </div>
-
-                {/* Основна навігація */}
                 <div className="flex-1 px-6 pt-2 flex flex-col overflow-y-auto no-scrollbar">
                   {menuData.map((cat, idx) => (
-                    <motion.div
-                      key={cat.title}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.05 + idx * 0.03 }}
-                    >
-                      <Link 
-                        href={cat.href}
-                        className="group flex items-center justify-between py-3.5 border-b border-white/5"
-                      >
-                        <span className="text-[13px] font-bold uppercase tracking-[0.15em] text-zinc-200 group-active:text-zinc-500 transition-colors">
-                          {cat.title}
-                        </span>
-                        <ChevronRight className="w-4 h-4 text-zinc-600 group-active:translate-x-1 transition-transform" />
+                    <motion.div key={cat.title} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.03 }}>
+                      <Link href={cat.href} className="group flex items-center justify-between py-3.5 border-b border-white/5">
+                        <span className="text-[13px] font-bold uppercase tracking-[0.15em]">{cat.title}</span>
+                        <ChevronRight className="w-4 h-4 text-zinc-600" />
                       </Link>
                     </motion.div>
                   ))}
                 </div>
-
-                {/* Footer меню */}
-                <div className="px-6 pb-[calc(env(safe-area-inset-bottom)+30px)] pt-6 bg-zinc-900/30">
-                  <div className="grid grid-cols-2 gap-6 mb-8">
-                    <div className="flex flex-col gap-3">
-                      <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Informacje</span>
-                      <Link href="/kontakt" className="text-xs font-medium text-zinc-300 hover:text-white">Kontakt</Link>
-                      <Link href="/o-nas" className="text-xs font-medium text-zinc-300 hover:text-white">O nas</Link>
-                    </div>
-                    <div className="flex flex-col gap-3">
-                      <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Konto</span>
-                      <Link href="/login" className="text-xs font-medium text-zinc-300 hover:text-white">Logowanie</Link>
-                      <Link href="/cart" className="text-xs font-medium text-zinc-300 hover:text-white">Koszyk (0)</Link>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-5 text-zinc-500">
-                    <Link href="https://instagram.com" className="text-[10px] font-bold tracking-widest hover:text-white transition-colors">
-                      IG
-                    </Link>
-                    <Link href="https://facebook.com" className="text-[10px] font-bold tracking-widest hover:text-white transition-colors">
-                      FB
-                    </Link>
-                    <span className="ml-auto text-[8px] font-bold tracking-widest opacity-30">© MIUR {new Date().getFullYear()}</span>
-                  </div>
-                </div>
-
               </SheetContent>
             </Sheet>
           </div>
 
-          {/* ДЕСКТОП МЕНЮ */}
-          <div 
-            className="hidden md:flex items-center gap-6 cursor-pointer group"
-            onMouseEnter={() => setIsMegaMenuOpen(true)}
-          >
+          <div className="hidden md:flex items-center gap-6 cursor-pointer group" onMouseEnter={() => setIsMegaMenuOpen(true)}>
             <div className="flex items-center gap-3">
               <Menu className="w-5 h-5 group-hover:opacity-50 transition-opacity" strokeWidth={1.2} />
               <span className="text-[9px] font-bold uppercase tracking-[0.3em]">Menu</span>
@@ -153,7 +119,7 @@ export default function Navbar() {
             <input 
               type="text" 
               placeholder="SZUKAJ..." 
-              className="bg-transparent text-[10px] font-bold uppercase tracking-widest text-white outline-none border-b border-transparent group-hover:border-white/30 focus:border-white/80 w-0 opacity-0 group-hover:w-40 group-hover:opacity-100 group-hover:ml-3 focus:w-40 focus:opacity-100 focus:ml-3 transition-all duration-500 pb-1"
+              className="bg-transparent text-[10px] font-bold uppercase tracking-widest text-white outline-none border-b border-transparent group-hover:border-white/30 focus:border-white/80 w-0 opacity-0 group-hover:w-40 group-hover:opacity-100 group-hover:ml-3 transition-all duration-500 pb-1"
             />
           </div>
         </div>
@@ -161,7 +127,7 @@ export default function Navbar() {
         {/* ЦЕНТРАЛЬНА ЧАСТИНА */}
         <div className="justify-self-center text-white">
           <motion.div style={{ opacity: logoOpacity }} className="px-4 py-2">
-            <Link href="/" className="text-2xl font-bold tracking-tighter font-[family-name:var(--font-logo)] block whitespace-nowrap">
+            <Link href="/" className="text-2xl font-bold tracking-tighter font-[family-name:var(--font-logo)]">
               Miur
             </Link>
           </motion.div>
@@ -170,27 +136,22 @@ export default function Navbar() {
         {/* ПРАВА ЧАСТИНА */}
         <div className="flex items-center gap-6 justify-self-end text-white">
           <nav className="hidden lg:flex gap-8 text-[9px] font-bold uppercase tracking-[0.3em]">
-            <Link href="/kontakt" className="hover:opacity-50 transition-opacity">Kontakt</Link>
+            <Link href="/kontakt" className="hover:opacity-50">Kontakt</Link>
           </nav>
-          
-          <Link href="/cart" className="group flex items-center transition-all">
+          <Link href="/cart" className="group flex items-center">
             <div className="relative p-2 border border-white/10 group-hover:border-white/40 rounded-full transition-colors">
               <ShoppingBag className="w-5 h-5" strokeWidth={1.2} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-white text-black text-[8px] font-bold flex items-center justify-center rounded-full">
-                0
-              </span>
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-white text-black text-[8px] font-bold flex items-center justify-center rounded-full">0</span>
             </div>
           </Link>
         </div>
       </nav>
 
-      {/* MEGA MENU (Десктоп) */}
+      {/* MEGA MENU */}
       <AnimatePresence>
         {isMegaMenuOpen && (
           <motion.div 
-            initial={{ opacity: 0, y: -10 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            exit={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
             className="hidden md:flex absolute top-0 left-0 w-full bg-zinc-950 text-white pt-32 pb-16 px-12 border-b border-zinc-800/50 h-[80vh] z-40"
           >
             <div className="w-1/4 border-r border-zinc-800 flex flex-col gap-6 overflow-y-auto no-scrollbar">
@@ -206,14 +167,13 @@ export default function Navbar() {
                 </button>
               ))}
             </div>
-
             <div className="w-3/4 pl-16 grid grid-cols-3 gap-12 overflow-y-auto no-scrollbar">
                {menuData.find(c => c.title === activeTab)?.sections?.map((s, i) => (
                  <div key={i} className="flex flex-col gap-4">
                    <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-100">{s.heading}</h4>
                    <ul className="flex flex-col gap-2">
                      {s.items.map((item, j) => (
-                       <li key={j} className="text-xs text-zinc-400 hover:text-white cursor-pointer transition-colors">{item}</li>
+                       <li key={j} className="text-xs text-zinc-400 hover:text-white transition-colors">{item}</li>
                      ))}
                    </ul>
                  </div>
