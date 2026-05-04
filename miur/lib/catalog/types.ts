@@ -16,6 +16,11 @@ export type BestsellerProduct = {
   oldPrice: string | null;
   /** Omnibus line or null if not applicable */
   omnibus: string | null;
+  /**
+   * true = produkt może podlegać wyjątkowi od prawa odstąpienia po otwarciu opakowania (art. 38 pkt 5 UoPK).
+   * Domyślnie true dla asortymentu wellness/intymnego Miur.
+   */
+  hygieneReturnExcluded?: boolean;
   image: string;
   /** Second image for hover; omit or duplicate primary if supplier sends one photo */
   hoverImage: string;

@@ -8,7 +8,7 @@ import type { BestsellerProduct } from "@/lib/catalog/types";
 import type { SaleCategoryTile } from "@/lib/catalog/wyprzedaz";
 
 const seeAllLinkClass =
-  "inline-block text-[10px] font-bold uppercase tracking-[0.3em] text-white outline-none rounded-sm transition-colors duration-500 hover:text-zinc-400 focus-visible:text-white focus-visible:underline focus-visible:underline-offset-4";
+  "inline-flex flex-col items-stretch gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white outline-none rounded-sm transition-colors duration-500 hover:text-zinc-400 focus-visible:text-white focus-visible:underline focus-visible:underline-offset-4";
 
 const carouselArrowBtnDarkClass =
   "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/25 text-white transition-all duration-500 hover:border-white hover:bg-white hover:text-zinc-950";
@@ -18,48 +18,24 @@ type Props = {
   products: BestsellerProduct[];
 };
 
-function useCarouselScrub(deps: unknown[]) {
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const [canScroll, setCanScroll] = useState(false);
-  const [scrollPct, setScrollPct] = useState(0);
+export function WyprzedazSection({ tiles, products }: Props) {
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const tilesScrollRef = useRef<HTMLDivElement>(null);
+  const productsScrollRef = useRef<HTMLDivElement>(null);
 
-  const updateScrollMetrics = useCallback(() => {
-    const el = scrollerRef.current;
+  const scrollTilesBy = useCallback((direction: "left" | "right") => {
+    const el = tilesScrollRef.current;
     if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    if (max <= 1) {
-      setCanScroll(false);
-      setScrollPct(0);
-      return;
-    }
-    setCanScroll(true);
-    setScrollPct((el.scrollLeft / max) * 100);
+    const cardWidth = el.querySelector("[data-carousel-card]")?.clientWidth ?? 300;
+    const gap = 20;
+    el.scrollBy({
+      left: direction === "right" ? cardWidth + gap : -(cardWidth + gap),
+      behavior: "smooth",
+    });
   }, []);
 
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    updateScrollMetrics();
-    el.addEventListener("scroll", updateScrollMetrics, { passive: true });
-    const ro = new ResizeObserver(updateScrollMetrics);
-    ro.observe(el);
-    return () => {
-      el.removeEventListener("scroll", updateScrollMetrics);
-      ro.disconnect();
-    };
-  }, [updateScrollMetrics, ...deps]);
-
-  const handleScrubChange = (value: number) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    if (max <= 0) return;
-    el.scrollLeft = (value / 100) * max;
-    setScrollPct(value);
-  };
-
-  const scrollBy = (direction: "left" | "right") => {
-    const el = scrollerRef.current;
+  const scrollProductsBy = useCallback((direction: "left" | "right") => {
+    const el = productsScrollRef.current;
     if (!el) return;
     const cardWidth = el.querySelector("[data-carousel-card]")?.clientWidth ?? 300;
     const gap = 24;
@@ -67,27 +43,7 @@ function useCarouselScrub(deps: unknown[]) {
       left: direction === "right" ? cardWidth + gap : -(cardWidth + gap),
       behavior: "smooth",
     });
-  };
-
-  return { scrollerRef, canScroll, scrollPct, handleScrubChange, scrollBy };
-}
-
-export function WyprzedazSection({ tiles, products }: Props) {
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const {
-    scrollerRef: tilesScrollRef,
-    canScroll: canScrollTiles,
-    scrollPct: scrollPctTiles,
-    handleScrubChange: onTilesScrubChange,
-    scrollBy: scrollTilesBy,
-  } = useCarouselScrub([tiles.length]);
-  const {
-    scrollerRef: productsScrollRef,
-    canScroll: canScrollProducts,
-    scrollPct: scrollPctProducts,
-    handleScrubChange: onProductsScrubChange,
-    scrollBy: scrollProductsBy,
-  } = useCarouselScrub([products.length]);
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -146,6 +102,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
             </div>
             <Link href="/wyprzedaz" className={seeAllLinkClass}>
               Zobacz wszystko
+              <span className="h-px w-full shrink-0 bg-current" aria-hidden />
             </Link>
           </div>
         </div>
@@ -194,27 +151,6 @@ export function WyprzedazSection({ tiles, products }: Props) {
               ))}
             </div>
 
-            {canScrollTiles && (
-              <div className="mt-8">
-                <label htmlFor="wyprzedaz-tiles-scrub" className="sr-only">
-                  Suwak listy kafelków wyprzedaży
-                </label>
-                <input
-                  id="wyprzedaz-tiles-scrub"
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={0.25}
-                  value={scrollPctTiles}
-                  onChange={(e) => onTilesScrubChange(Number(e.target.value))}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Math.round(scrollPctTiles)}
-                  aria-label="Przewijanie kafelków wyprzedaży"
-                  className="sale-carousel-scrub block min-h-11 w-full cursor-pointer py-2"
-                />
-              </div>
-            )}
           </div>
         )}
 
@@ -245,6 +181,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
                 </div>
                 <Link href="/wyprzedaz" className={`${seeAllLinkClass} sm:text-right`}>
                   Zobacz wszystko
+                  <span className="h-px w-full shrink-0 bg-current" aria-hidden />
                 </Link>
               </div>
             </div>
@@ -336,41 +273,28 @@ export function WyprzedazSection({ tiles, products }: Props) {
                       )}
                     </div>
 
-                    {product.omnibus && (
-                      <span className="mt-1 text-[8px] uppercase tracking-tighter text-zinc-500">
-                        Najniższa cena z 30 dni: {product.omnibus}
+                    {product.oldPrice ? (
+                      <span className="mt-1 text-[8px] uppercase tracking-tighter text-zinc-300">
+                        {product.omnibus
+                          ? `Najniższa cena z 30 dni przed obniżką: ${product.omnibus}`
+                          : "Najniższa cena z 30 dni przed obniżką: uzupełnij w systemie (wymóg Omnibus)."}
                       </span>
-                    )}
+                    ) : null}
+                    {product.hygieneReturnExcluded !== false ? (
+                      <p className="mt-2 rounded-sm border border-amber-500/30 bg-amber-500/10 p-2 text-[8px] font-medium leading-snug text-amber-100/95">
+                        Po otwarciu opakowania zwrot może być wykluczony (higiena, art. 38 pkt 5 UoPK).{" "}
+                        <a className="underline underline-offset-1" href="/zwroty-reklamacje">
+                          Więcej
+                        </a>
+                      </p>
+                    ) : null}
                   </div>
                 </article>
               ))}
             </div>
 
-            {canScrollProducts && (
-              <div className="mt-8">
-                <label htmlFor="wyprzedaz-products-scrub" className="sr-only">
-                  Suwak listy produktów wyprzedaży
-                </label>
-                <input
-                  id="wyprzedaz-products-scrub"
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={0.25}
-                  value={scrollPctProducts}
-                  onChange={(e) => onProductsScrubChange(Number(e.target.value))}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Math.round(scrollPctProducts)}
-                  aria-valuetext={`Przewinięto około ${Math.round(scrollPctProducts)} procent`}
-                  aria-label="Pozycja przewijania produktów wyprzedażowych"
-                  className="sale-carousel-scrub block min-h-11 w-full cursor-pointer py-2"
-                />
-              </div>
-            )}
-
             <p className="mt-6 text-center text-[10px] uppercase tracking-[0.25em] text-zinc-500 sm:hidden">
-              Przesuń palcem lub użyj suwaka
+              Przesuń palcem, aby zobaczyć więcej
             </p>
           </div>
         )}

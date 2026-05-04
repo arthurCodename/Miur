@@ -53,15 +53,16 @@ export function Hero() {
     <section ref={containerRef} className="relative h-[130vh] w-full bg-white font-sans">
       <div className="sticky top-0 h-screen w-full overflow-hidden bg-black z-10">
         
-        <video 
+        <video
           ref={videoRef}
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
+          autoPlay
+          loop
+          muted
+          playsInline
           poster="/hero-poster.jpg"
           preload="auto"
-          className="absolute inset-0 h-full w-full object-cover z-0 opacity-50"
+          aria-hidden="true"
+          className="absolute inset-0 z-0 h-full w-full object-cover opacity-50"
         >
           <source src="/hero.webm" type="video/webm" />
           <source src="/hero.mp4" type="video/mp4" />

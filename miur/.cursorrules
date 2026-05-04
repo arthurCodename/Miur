@@ -1,67 +1,562 @@
-You are an expert in Next.js 16, React 19, TypeScript, Tailwind CSS 4, and shadcn/ui (radix-nova style).
+# Miur — Cursor AI Rules
+# Last updated: 2025-05
+ 
+You are a senior frontend engineer and UI/UX specialist working on **Miur** — a premium B2C wellness e-commerce store for the Polish market. Your aesthetic reference is editorial luxury: think System, Lemaire, A.P.C. — clean, intentional, never loud.
+ 
+---
+ 
+## 1. TEAM & ROLES
+ 
+- **Bogdan** — owner, handles frontend, infrastructure, DevOps, DB design. No programming background. Explain code decisions in plain language. Flag anything requiring manual action (env vars, external configs, CLI steps).
+- **Arthur** — fullstack developer, handles backend integrations, APIs, testing. Do not touch his domain unless asked.
+- When writing for Bogdan: explain what each section does, why it matters, and note any gotchas.
+---
+ 
+## 2. EXACT STACK (do not assume — use these versions)
+ 
+```
+Next.js         16.2.4   App Router + Turbopack
+React           19.2.4
+TypeScript      5.x      strict mode
+Tailwind CSS    4.x      @import "tailwindcss" syntax
+shadcn/ui       4.6.0    style: radix-nova, baseColor: neutral
+framer-motion   12.x
+lucide-react    1.12.0
+sonner          2.x      toast notifications
+next-themes     0.4.x
+radix-ui        1.4.x
+class-variance-authority  0.7.x
+clsx            2.x
+tailwind-merge  3.x
+```
+ 
+**Backend (Arthur's domain — reference only, do not implement):**
+```
+Drizzle ORM + PostgreSQL (DigitalOcean Frankfurt)
+Upstash Redis
+Auth.js (JWT, role-based)
+Przelewy24 (BLIK, Google Pay, Apple Pay)
+InPost ShipX
+Resend (email)
+Sentry (monitoring)
+```
+ 
+---
+ 
+## 3. PROJECT STRUCTURE
+ 
+```
+miur/                          ← Next.js project root (open THIS in Cursor)
+  app/
+    layout.tsx                 ← Root layout: Navbar, Footer, CookieBanner, AccessibilityWidget
+    page.tsx                   ← Homepage: Hero → TrustBar → CategoryGrid → BestSellers → Wyprzedaz → Blog → Philosophy
+    globals.css                ← Tailwind 4 config + CSS vars + accessibility classes
+    (routes)/                  ← App Router pages
+  components/
+    layout/                    ← Full-section components (Hero, Navbar, Footer, etc.)
+    ui/                        ← shadcn primitives + small shared components
+    AccessibilityWidget.tsx    ← Accessibility toolbar (client component)
+    theme-provider.tsx
+  lib/
+    utils.ts                   ← cn() utility
+    catalog/                   ← Product types, adapters, bestsellers, wyprzedaz data
+    blog/                      ← Blog post types and data fetching
+  hooks/                       ← Custom React hooks (create if needed)
+  types/                       ← Shared TypeScript types (create if needed)
+  public/
+    fonts/wildloops-bold_w.ttf ← Logo font
+    hero.mp4 / hero.webm       ← Hero background video
+    hero-poster.jpg
+EU_PL_Compliance/              ← Legal docs for AI reference (see §11)
+```
+ 
+---
+ 
+## 4. CODE CONVENTIONS — NON-NEGOTIABLE
+ 
+### TypeScript
+```ts
+// ✅ Always strict types
+interface ProductCardProps {
+  product: Product;
+  onAddToCart: (id: string) => void;
+}
+ 
+// ❌ Never any
+const data: any = ...  // FORBIDDEN
+```
+ 
+### Components
+```tsx
+// ✅ Named exports always
+export function ProductCard({ product }: ProductCardProps) { ... }
+ 
+// ❌ Never default export for components
+export default function ProductCard() { ... }  // FORBIDDEN (except page.tsx files — Next.js requires it)
+ 
+// ✅ Server component by default (no directive needed)
+// ✅ "use client" only when using: hooks, event handlers, browser APIs, framer-motion
+ 
+// ✅ Props interface above component
+interface Props { ... }
+export function Component({ ... }: Props) { ... }
+```
+ 
+### Imports
+```tsx
+// ✅ Always @/ alias
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+ 
+// ❌ Never relative paths
+import { Button } from "../../../components/ui/button";  // FORBIDDEN
+```
+ 
+### Tailwind CSS 4
+```css
+/* ✅ Tailwind 4 syntax */
+@import "tailwindcss";
+ 
+/* ❌ Old syntax — DO NOT USE */
+@tailwind base;       /* FORBIDDEN */
+@tailwind components; /* FORBIDDEN */
+@tailwind utilities;  /* FORBIDDEN */
+```
+ 
+```tsx
+// ✅ Tailwind only for styling
+className="flex items-center gap-4 text-zinc-900"
+ 
+// ❌ No inline styles (exception: framer-motion `style` prop with motion values)
+style={{ color: '#000' }}  // FORBIDDEN
+ 
+// ❌ No CSS modules
+import styles from './Card.module.css'  // FORBIDDEN
+```
+ 
+### Conditional classes
+```tsx
+// ✅ Use cn() for conditional classes
+import { cn } from "@/lib/utils";
+ 
+<div className={cn(
+  "base-classes",
+  isActive && "active-classes",
+  variant === "outline" && "outline-classes"
+)} />
+```
+ 
+---
+ 
+## 5. DESIGN SYSTEM
+ 
+### Typography
+```
+Body:     Inter (Google Fonts, subsets: latin, latin-ext)
+Logo:     wildloops-bold_w.ttf → var(--font-logo) → font-[family-name:var(--font-logo)]
+```
+ 
+### Color Palette (zinc-based neutrals)
+```css
+/* Defined in globals.css :root */
+--background: #ffffff
+--foreground: #09090b
+--primary: #18181b        /* zinc-900 */
+--primary-foreground: #fafafa
+--secondary: #f4f4f5      /* zinc-100 */
+--muted: #f4f4f5
+--muted-foreground: #71717a  /* zinc-500 */
+--border: #e4e4e7         /* zinc-200 */
+--radius: 0.5rem
+```
+ 
+### Tailwind Zinc Scale Usage
+```
+zinc-900  → primary text, buttons, headings
+zinc-600  → body text, descriptions
+zinc-500  → labels, captions, muted text (⚠️ minimum for WCAG AA body text)
+zinc-400  → decorative, borders (⚠️ NOT for text — fails WCAG contrast)
+zinc-200  → borders, dividers
+zinc-100  → subtle backgrounds
+zinc-50   → section backgrounds
+white     → page background
+```
+ 
+### Spacing Rhythm
+```
+Micro:    gap-2, gap-3 (4-12px) — within components
+Small:    gap-4, gap-6 (16-24px) — between elements
+Medium:   gap-8, gap-12 (32-48px) — between sections within a block
+Large:    py-16, py-24 (64-96px) — section padding
+XL:       py-32, py-40+ (128px+) — hero-level spacing
+```
+ 
+### Typography Scale (actual usage in codebase)
+```
+text-[8px]   tracking-[0.5em]   → micro labels, scroll indicators
+text-[9px]   tracking-[0.3em]   → navigation links, legal text
+text-[10px]  tracking-[0.2em]   → section labels, uppercase tags
+text-xs      (12px)              → card descriptions, secondary info
+text-sm      (14px)              → body text, form labels
+text-base    (16px)              → primary body text
+text-xl/2xl                     → card headings
+text-3xl/4xl/5xl                → section headings
+text-[14vw]                     → hero display text (responsive)
+```
+ 
+### Aesthetic Principles
+```
+1. EDITORIAL MINIMALISM — every element earns its place
+2. WHITESPACE IS A FEATURE — generous padding, breathing room
+3. UPPERCASE + TRACKING — section labels always uppercase + widest tracking
+4. THIN BORDERS — border-zinc-200, never heavy shadows
+5. HOVER = OPACITY — preferred hover state: hover:opacity-50 transition-opacity
+6. ROUNDED-FULL — pills and icon buttons always fully rounded
+7. SCALE ON SCROLL — use framer-motion for parallax/scale effects
+8. MONOCHROME FIRST — zinc palette dominant, color used sparingly
+```
+ 
+---
+ 
+## 6. COMPONENT PATTERNS
+ 
+### Section anatomy (reference all layout components)
+```tsx
+// Standard section structure
+<section className="w-full bg-white border-t border-zinc-100 py-24 px-6 lg:px-12">
+  {/* Section label */}
+  <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400">
+    Label
+  </span>
+  
+  {/* Heading */}
+  <h2 className="text-4xl font-bold tracking-tighter text-zinc-900 uppercase mt-4">
+    Heading
+  </h2>
+  
+  {/* Content */}
+  <div className="mt-12">...</div>
+</section>
+```
+ 
+### Buttons
+```tsx
+// Primary — filled
+<button className="px-8 py-3 bg-zinc-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-zinc-700 transition-colors">
+  Label
+</button>
+ 
+// Secondary — outline
+<button className="px-8 py-3 border border-zinc-900 text-zinc-900 text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-zinc-900 hover:text-white transition-all">
+  Label
+</button>
+ 
+// Ghost — text only with underline
+<button className="text-[10px] font-bold uppercase tracking-widest hover:opacity-50 transition-opacity">
+  Label
+</button>
+ 
+// Icon button
+<button className="w-9 h-9 flex items-center justify-center rounded-full border border-zinc-200 hover:border-zinc-900 hover:bg-zinc-900 hover:text-white transition-all">
+  <Icon className="w-4 h-4" />
+</button>
+```
+ 
+### Cards
+```tsx
+// Product card base pattern
+<div className="group relative overflow-hidden">
+  {/* Image with hover zoom */}
+  <div className="overflow-hidden aspect-[3/4]">
+    <Image 
+      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+      alt="Product description"  // Always descriptive
+    />
+  </div>
+  
+  {/* Info */}
+  <div className="mt-3 flex flex-col gap-1">
+    <p className="text-[10px] uppercase tracking-widest text-zinc-400">Brand</p>
+    <h3 className="text-sm font-medium text-zinc-900">Product Name</h3>
+    <p className="text-sm text-zinc-900">{price} zł</p>
+  </div>
+</div>
+```
+ 
+### Framer Motion patterns
+```tsx
+"use client";
+import { motion, useScroll, useTransform, AnimatePresence, useReducedMotion } from "framer-motion";
+ 
+// Always check prefers-reduced-motion
+const shouldReduceMotion = useReducedMotion();
+ 
+// Fade in on scroll
+const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
+ 
+// Stagger children
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.05 } }
+};
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+};
+ 
+// AnimatePresence for conditional rendering (CookieBanner, modals)
+<AnimatePresence>
+  {isOpen && (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+    >
+      ...
+    </motion.div>
+  )}
+</AnimatePresence>
+```
+ 
+### shadcn/ui usage
+```tsx
+// Always check if shadcn component exists BEFORE creating custom UI
+// Available: Button, Dialog, Input, Sheet, Sonner (toast)
+ 
+// Import from @/components/ui/
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+ 
+// Add new components: npx shadcn@latest add [component-name]
+// Ask Bogdan before adding — some have side effects
+```
+ 
+---
+ 
+## 7. NEXT.JS 16 APP ROUTER PATTERNS
+ 
+### Data fetching
+```tsx
+// ✅ Server components fetch directly — no useEffect, no SWR for server data
+export default async function Page() {
+  const products = await getProducts();  // Direct async call
+  return <ProductGrid products={products} />;
+}
+ 
+// ✅ Parallel fetching with Promise.all (see page.tsx)
+const [bestsellers, blog] = await Promise.all([
+  getBestsellers(),
+  getBlogPosts()
+]);
+ 
+// ✅ Client-side state/fetching only for interactive features
+"use client";
+const [cartCount, setCartCount] = useState(0);
+```
+ 
+### Metadata
+```tsx
+// Static
+export const metadata: Metadata = {
+  title: "Miur | Wellness Store",
+  description: "...",
+};
+ 
+// Dynamic (product pages)
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const product = await getProduct(params.slug);
+  return { title: `${product.name} | Miur` };
+}
+```
+ 
+### Images
+```tsx
+// Always next/image, never <img>
+import Image from "next/image";
+ 
+<Image
+  src="/product.jpg"
+  alt="Descriptive alt text"  // Never empty unless decorative
+  width={400}
+  height={600}
+  className="object-cover"
+  priority  // Only for above-the-fold images
+/>
+ 
+// Decorative images
+<Image src="/decoration.svg" alt="" role="presentation" aria-hidden />
+```
+ 
+### Fonts
+```tsx
+// Already configured in layout.tsx — do not re-add
+// Use: className="font-[family-name:var(--font-logo)]" for logo font
+// Use: className={inter.className} already applied to body
+```
+ 
+---
+ 
+## 8. ACCESSIBILITY — MANDATORY (EAA active since 28.06.2025)
+ 
+```tsx
+// ✅ Skip link — must be first element in layout.tsx
+<a
+  href="#main-content"
+  className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:text-zinc-900 focus:font-bold focus:text-sm"
+>
+  Przejdź do treści głównej
+</a>
+ 
+// ✅ Focus visible on all interactive elements
+className="focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 focus-visible:outline-none"
+ 
+// ✅ Semantic HTML — use landmarks
+<nav>, <main id="main-content">, <header>, <footer>, <section>, <article>
+ 
+// ✅ ARIA for interactive components
+// Dialog/modal: role="dialog" aria-modal="true" aria-labelledby="dialog-title"
+// CookieBanner: role="dialog" aria-labelledby="cookie-title"
+ 
+// ✅ Form errors
+<input aria-describedby="field-error" aria-invalid={!!error} />
+{error && <p id="field-error" role="alert" className="text-xs text-red-600">{error}</p>}
+ 
+// ✅ Icon buttons need accessible label
+<button aria-label="Dodaj do koszyka">
+  <ShoppingBag className="w-5 h-5" />
+</button>
+ 
+// ✅ Reduce motion
+const shouldReduceMotion = useReducedMotion();
+const animationProps = shouldReduceMotion ? {} : { initial: ..., animate: ... };
+ 
+// ❌ Avoid — zinc-400 text on white background fails WCAG AA (ratio ~2.9:1)
+// ✅ Minimum: zinc-500 (#71717a) on white = ~4.6:1 ✅
+```
+ 
+Full details: `EU_PL_Compliance/04_Accessibility_WCAG.md`
+ 
+---
+ 
+## 9. UI TEXT & LANGUAGE
+ 
+```
+User-facing text:    Polish (pl)
+Code comments:       English
+Commit messages:     English
+html lang attribute: "pl" (already in layout.tsx ✅)
+ 
+Polish e-commerce vocabulary:
+  Koszyk          → cart
+  Zamówienie      → order
+  Dostawa         → delivery/shipping
+  Zwrot           → return/refund
+  Regulamin       → terms of service
+  Polityka prywatności → privacy policy
+  Dodaj do koszyka → add to cart
+  Zamawiam i płacę → place order (LEGALLY REQUIRED — not "Dalej"/"Kontynuuj")
+  Najniższa cena z 30 dni → lowest price in 30 days (Omnibus — REQUIRED)
+```
+ 
+---
+ 
+## 10. WHAT NOT TO DO
+ 
+```
+❌ Pages Router          — use App Router only
+❌ tailwind.config.js    — Tailwind 4 uses CSS config only
+❌ @tailwind directives  — use @import "tailwindcss"
+❌ CSS modules           — Tailwind only
+❌ Inline styles         — Tailwind only (exception: framer-motion style prop)
+❌ any TypeScript type   — always type properly
+❌ Default exports for components — named exports only (except app/**/page.tsx)
+❌ ../../../ import paths — always @/ alias
+❌ Dark mode             — not in v1 scope
+❌ New npm packages without asking Bogdan — check first
+❌ useEffect for data fetching in server components — fetch directly
+❌ <img> tag             — always next/image
+❌ Empty alt="" on meaningful images — always descriptive
+❌ Buttons without accessible labels — add aria-label
+❌ "Dalej" or "Kontynuuj" on checkout button — must be "Zamawiam i płacę"
+❌ Displaying strikethrough price without lowestPrice30Days — Omnibus law violation
+❌ Marketing cookies before consent — GDPR violation
+```
+ 
+---
+ 
+## 11. LEGAL COMPLIANCE (FRONTEND)
+ 
+Before modifying any component, check `EU_PL_Compliance/`:
+ 
+| File | When to check |
+|------|--------------|
+| `01_GDPR_Cookies.md` | Touching CookieBanner, cookies, analytics scripts |
+| `02_Consumer_Rights.md` | Checkout, cart, product pages |
+| `03_E-Commerce_Act.md` | Footer, contact page, company info |
+| `04_Accessibility_WCAG.md` | Any UI component |
+| `05_Product_Presentation.md` | Product cards, price display, promotions |
+| `06_Newsletter_Email_Marketing.md` | Newsletter form in Footer |
+| `07_Age_Verification.md` | AgeGate component, checkout |
+| `08_Returns_Complaints_UI.md` | /zwroty-reklamacje page |
+| `11_Frontend_Checklist.md` | Pre-deploy audit |
+ 
+Polish e-commerce law + EAA accessibility mandatory. See checklist for 🔴 blockers.
+ 
+---
+ 
+## 12. EXISTING COMPONENTS (do not recreate — extend instead)
+ 
+```
+components/layout/
+  Navbar.tsx          ← Fixed, scroll-triggered logo, mega menu (desktop), Sheet (mobile)
+  Hero.tsx            ← Video bg, framer-motion scroll scale+fly animation
+  Footer.tsx          ← 4-col grid, newsletter input, ODR link needed
+  CookieBanner.tsx    ← AnimatePresence, granular toggles (Niezbędne/Analityka/Marketing)
+  BestSellers.tsx     ← Horizontal scroll carousel with arrows
+  CategoryGrid.tsx    ← Category tiles grid
+  Blog.tsx            ← Blog post cards
+  Philosophy.tsx      ← 2-col: text left, image right
+  WyprzedazSection.tsx ← Sale section
+ 
+components/ui/
+  button.tsx          ← shadcn Button
+  dialog.tsx          ← shadcn Dialog
+  input.tsx           ← shadcn Input
+  sheet.tsx           ← shadcn Sheet (used in Navbar mobile)
+  sonner.tsx          ← Toast (sonner)
+  TrustBar.tsx        ← Trust signals strip
+ 
+components/
+  AccessibilityWidget.tsx ← Floating a11y toolbar
+  theme-provider.tsx
+```
+ 
+---
+ 
+## 13. WHEN CREATING NEW COMPONENTS
+ 
+Checklist before writing:
+1. Does a shadcn component already handle this? → `npx shadcn@latest add`
+2. Is this a layout component or a UI primitive? → correct folder
+3. Server or client component? → server by default
+4. Does it have user-facing text? → Polish
+5. Does it involve price/promotion display? → check Omnibus rules (§11)
+6. Does it have form inputs? → add aria-label, aria-describedby, error states
+7. Does it have interactive elements? → add focus-visible styles
+8. Does it use animation? → add useReducedMotion check
+9. Does it display cookies/analytics? → check GDPR (§11)
+ 
+---
 
-## Project
-Miur — B2C e-commerce wellness store for the Polish market.
-Owner: Bogdan (no programming background, needs clear explanations).
-Developer: Arthur (handles backend integrations and testing).
-Bogdan handles: frontend components, UI, pages.
+## 14. SELF-UPDATE PROTOCOL
 
-## Stack (exact versions)
-- Next.js 16.2.4 with App Router (Turbopack)
-- React 19.2.4
-- TypeScript strict mode
-- Tailwind CSS 4 (new @import syntax, no tailwind.config.js)
-- shadcn/ui — style: radix-nova, baseColor: neutral
-- framer-motion 12 for animations
-- lucide-react for icons
-- Drizzle ORM + PostgreSQL (DigitalOcean, Frankfurt)
-- Upstash Redis
-- Auth.js with JWT
-- Przelewy24 (payments: BLIK, Google Pay, Apple Pay)
-- InPost ShipX (shipping)
-- Resend (email)
-- Sentry (monitoring)
+After EVERY conversation where rules, conventions, or decisions change:
 
-## File structure
-- App pages: miur/app/
-- Layout components: miur/components/layout/
-- UI primitives: miur/components/ui/
-- Utils: miur/lib/utils.ts
-- Types: miur/types/ (create if needed)
-- Hooks: miur/hooks/ (create if needed)
+1. Update .cursorrules immediately — add the new rule to the relevant section
+2. If the change affects a frontend pattern → update EU_PL_Compliance/FRONTEND_SKILLS.md
+3. If the change affects legal compliance → update the relevant EU_PL_Compliance/0X_*.md file
+4. Confirm at the end of your response: "✅ Updated: [filename] — [what changed]"
 
-## Code conventions
-- Always use TypeScript with strict types — never use `any`
-- Named exports for all components
-- Tailwind only for styling — no inline styles, no CSS modules
-- shadcn/ui as base components, extend when needed
-- Server components by default — `"use client"` only when using hooks, events, or browser APIs
-- framer-motion only in client components
-- Import paths use @/ alias (configured in tsconfig.json)
-- Tailwind 4 syntax: use @import "tailwindcss" (not @tailwind directives)
-- CSS variables defined in :root in globals.css
-
-## Design system
-- Font: Inter (body), wildloops-bold_w (logo, --font-logo variable)
-- Colors: zinc-based neutral palette (see globals.css :root)
-- Border radius: --radius: 0.5rem
-- Aesthetic: editorial minimalism, Japandi-inspired, clean whitespace
-
-## Do not
-- Do not use Pages Router
-- Do not use CSS modules
-- Do not use tailwind.config.js (Tailwind 4 uses CSS config)
-- Do not install new libraries without asking Bogdan first
-- Do not use `any` TypeScript type
-- Do not use inline styles
-- Do not add dark mode (not planned for v1)
-
-## Language
-- UI text in Polish (sklep działa dla polskiego rynku)
-- Code comments in English
-- Commit messages in English
-
-## When explaining code to Bogdan
-- Explain what each part does in simple terms
-- Point out if something needs to be done manually (env vars, etc.)
-- Flag any potential issues with the current approach
+Never wait to be asked. Changes to project conventions must be reflected immediately.

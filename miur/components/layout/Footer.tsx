@@ -1,6 +1,9 @@
 // Miur/miur/components/layout/Footer.tsx
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { FooterNewsletter } from "@/components/layout/FooterNewsletter";
+import { CookieSettingsLink } from "@/components/legal/CookieSettingsLink";
+import { SellerDataBlock } from "@/components/legal/SellerDataBlock";
+import { ODR_URL } from "@/lib/legal/seller";
 
 export function Footer() {
   return (
@@ -13,32 +16,25 @@ export function Footer() {
           Zapisz się do newslettera i odbierz 10zł zniżki na pierwsze zakupy
         </p>
 
-        <form className="group relative mb-6 flex w-full max-w-sm items-center border-b border-zinc-400 pb-2 transition-colors duration-500 hover:border-black">
-          <input
-            type="email"
-            placeholder="Twój adres e-mail:"
-            required
-            className="w-full bg-transparent text-[12px] tracking-wide outline-none transition-colors placeholder:text-zinc-500 focus:placeholder:text-zinc-900"
-          />
-          <button
-            type="submit"
-            className="text-zinc-500 transition-colors duration-300 group-hover:text-black"
-          >
-            <ArrowRight className="h-4 w-4" strokeWidth={1.2} />
-          </button>
-        </form>
+        <FooterNewsletter />
+      </div>
 
-        <p className="max-w-md text-[9px] leading-relaxed text-zinc-500">
-          Rabat -10 PLN aktywny w koszyku o wartości produktów min 150zł. Nie martw
-          się, nie będziemy Cie spamować, a zrezygnować z newslettera możesz w
-          każdej chwili. Sprawdź naszą{" "}
-          <Link
-            href="/polityka-prywatnosci"
-            className="underline transition-colors hover:text-zinc-800"
-          >
-            politykę prywatności
-          </Link>
+      <div className="mb-16 w-full max-w-6xl rounded-sm border border-zinc-100 bg-zinc-50/60 p-6 md:p-8">
+        <h3 className="mb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-900">
+          Dane sprzedawcy (UŚUDE art. 5)
+        </h3>
+        <div className="text-left text-sm text-zinc-700">
+          <SellerDataBlock />
+        </div>
+        <p className="mt-6 text-xs leading-relaxed text-zinc-600">
+          Konsument może skorzystać z pozasądowych sposobów rozpatrywania reklamacji, w tym platformy ODR:{" "}
+          <a className="font-medium underline underline-offset-2 hover:text-zinc-900" href={ODR_URL}>
+            {ODR_URL}
+          </a>
           .
+        </p>
+        <p className="mt-4 text-xs text-zinc-600">
+          Preferencje cookies: <CookieSettingsLink />
         </p>
       </div>
 
@@ -72,10 +68,10 @@ export function Footer() {
           >
             Polityka prywatności
           </Link>
-          <Link
-            href="/blog"
-            className="text-xs text-zinc-500 transition-colors hover:text-black"
-          >
+          <Link href="/dostepnosc" className="text-xs text-zinc-500 transition-colors hover:text-black">
+            Deklaracja dostępności
+          </Link>
+          <Link href="/blog" className="text-xs text-zinc-500 transition-colors hover:text-black">
             Blog
           </Link>
           <Link
@@ -84,10 +80,7 @@ export function Footer() {
           >
             Program partnerski
           </Link>
-          <Link
-            href="/opinie"
-            className="text-xs text-zinc-500 transition-colors hover:text-black"
-          >
+          <Link href="/opinie" className="text-xs text-zinc-500 transition-colors hover:text-black">
             Opinie o Miur
           </Link>
         </div>
@@ -102,10 +95,7 @@ export function Footer() {
           >
             Rejestracja
           </Link>
-          <Link
-            href="/logowanie"
-            className="text-xs text-zinc-500 transition-colors hover:text-black"
-          >
+          <Link href="/logowanie" className="text-xs text-zinc-500 transition-colors hover:text-black">
             Logowanie
           </Link>
           <Link
@@ -126,7 +116,7 @@ export function Footer() {
           >
             Twoje zamówienia
           </Link>
-          <button className="text-left text-xs text-zinc-500 transition-colors hover:text-black">
+          <button type="button" className="text-left text-xs text-zinc-500 transition-colors hover:text-black">
             Wyloguj
           </button>
         </div>
@@ -135,10 +125,7 @@ export function Footer() {
           <span className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-900">
             Obsługa klienta
           </span>
-          <Link
-            href="/kontakt"
-            className="text-xs text-zinc-500 transition-colors hover:text-black"
-          >
+          <Link href="/kontakt" className="text-xs text-zinc-500 transition-colors hover:text-black">
             Kontakt
           </Link>
           <Link
@@ -168,7 +155,7 @@ export function Footer() {
         </span>
       </div>
 
-      <div className="text-[9px] uppercase tracking-widest text-zinc-400">
+      <div className="text-[9px] uppercase tracking-widest text-zinc-500">
         © {new Date().getFullYear()} MIUR. WSZELKIE PRAWA ZASTRZEŻONE.
       </div>
     </footer>

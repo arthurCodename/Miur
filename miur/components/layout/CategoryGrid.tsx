@@ -1,23 +1,29 @@
 // Miur/miur/components/layout/CategoryGrid.tsx
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const seeAllLinkClass =
-  "inline-block text-[10px] font-bold uppercase tracking-widest text-zinc-900 hover:opacity-50 focus-visible:opacity-50 transition-opacity duration-500 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 rounded-sm";
+  "inline-flex flex-col items-stretch gap-1 text-[10px] font-bold uppercase tracking-widest text-zinc-900 hover:opacity-50 focus-visible:opacity-50 transition-opacity duration-500 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 rounded-sm";
 
 const carouselArrowBtnClass =
   "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-900 transition-all duration-500 hover:border-zinc-900 hover:bg-zinc-900 hover:text-white";
 
 const categories = [
   {
-    title: "Dla Niej",
-    href: "/dla-niej",
+    title: "Nowości",
+    href: "/nowosci",
     image: "https://images.unsplash.com/photo-1616012480717-fd9867059ca2?q=80&w=1200&auto=format&fit=crop",
-    desc: "Odkryj swoją zmysłowość",
+    desc: "Nasze nowe produkty",
   },
+  {
+  title: "Dla Niej",
+  href: "/dla-niej",
+  image: "https://images.unsplash.com/photo-1616012480717-fd9867059ca2?q=80&w=1200&auto=format&fit=crop",
+  desc: "Odkryj swoją zmysłowość",
+},
   {
     title: "Dla Niego",
     href: "/dla-niego",
@@ -50,45 +56,8 @@ const categories = [
   },
 ];
 
-function useCarouselScrub(itemCount: number) {
+export function CategoryGrid() {
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const [canScroll, setCanScroll] = useState(false);
-  const [scrollPct, setScrollPct] = useState(0);
-
-  const updateScrollMetrics = useCallback(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    if (max <= 1) {
-      setCanScroll(false);
-      setScrollPct(0);
-      return;
-    }
-    setCanScroll(true);
-    setScrollPct((el.scrollLeft / max) * 100);
-  }, []);
-
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    setTimeout(updateScrollMetrics, 100);
-    el.addEventListener("scroll", updateScrollMetrics, { passive: true });
-    const ro = new ResizeObserver(updateScrollMetrics);
-    ro.observe(el);
-    return () => {
-      el.removeEventListener("scroll", updateScrollMetrics);
-      ro.disconnect();
-    };
-  }, [updateScrollMetrics, itemCount]);
-
-  const handleScrubChange = (value: number) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    if (max <= 0) return;
-    el.scrollLeft = (value / 100) * max;
-    setScrollPct(value);
-  };
 
   const scrollBy = (direction: "left" | "right") => {
     const el = scrollerRef.current;
@@ -97,26 +66,18 @@ function useCarouselScrub(itemCount: number) {
     el.scrollBy({ left: direction === "right" ? cardWidth + 24 : -(cardWidth + 24), behavior: "smooth" });
   };
 
-  return { scrollerRef, canScroll, scrollPct, handleScrubChange, scrollBy };
-}
-
-export function CategoryGrid() {
-  const { scrollerRef, canScroll, scrollPct, handleScrubChange, scrollBy } =
-    useCarouselScrub(categories.length);
-
   return (
     <section className="w-full bg-white px-6 md:px-12 py-24 md:py-32">
       <div className="mb-10 md:mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div className="flex flex-col">
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mb-4">
-            Kolekcje
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 mb-4">
+            Nasze towary
           </span>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tighter text-zinc-900 uppercase">
-            Wybierz swoją ścieżkę
+            Wybierz kategorię
           </h2>
         </div>
         <div className="flex items-center gap-4 self-start md:self-auto">
-          {/* Стрілки навігації */}
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -137,6 +98,7 @@ export function CategoryGrid() {
           </div>
           <Link href="/produkty" className={seeAllLinkClass}>
             Zobacz wszystko
+            <span className="h-px w-full shrink-0 bg-zinc-900" aria-hidden />
           </Link>
         </div>
       </div>
@@ -172,26 +134,6 @@ export function CategoryGrid() {
         ))}
       </div>
 
-      {canScroll && (
-        <div className="mt-8">
-          <label htmlFor="category-carousel-scrub" className="sr-only">
-            Suwak przewijania kategorii
-          </label>
-          <input
-            id="category-carousel-scrub"
-            type="range"
-            min={0}
-            max={100}
-            step={0.25}
-            value={scrollPct}
-            onChange={(e) => handleScrubChange(Number(e.target.value))}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={Math.round(scrollPct)}
-            className="category-carousel-scrub w-full min-h-11 py-2 cursor-pointer block"
-          />
-        </div>
-      )}
     </section>
   );
 }

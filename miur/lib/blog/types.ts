@@ -15,4 +15,6 @@ export type BlogPost = {
   readTime: string;
   /** Already formatted PL date, e.g. "12 marca 2026" */
   publishedAt: string;
+  /** Współpraca komercyjna — wymaga widocznego oznaczenia w UI (UOKiK / prawo reklamy) */
+  sponsored?: boolean;
 };

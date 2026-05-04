@@ -1,14 +1,14 @@
 // Miur/miur/components/layout/BestSellers.tsx
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { ShoppingBag, ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { MOCK_BESTSELLERS } from "@/lib/catalog/bestsellers";
 import type { BestsellerProduct } from "@/lib/catalog/types";
 
 const seeAllLinkClass =
-  "inline-block text-[10px] font-bold uppercase tracking-widest text-zinc-900 hover:opacity-50 focus-visible:opacity-50 transition-opacity duration-500 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 rounded-sm";
+  "inline-flex flex-col items-stretch gap-1 text-[10px] font-bold uppercase tracking-widest text-zinc-900 hover:opacity-50 focus-visible:opacity-50 transition-opacity duration-500 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 rounded-sm";
 
 const carouselArrowBtnClass =
   "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-900 transition-all duration-500 hover:border-zinc-900 hover:bg-zinc-900 hover:text-white";
@@ -19,43 +19,6 @@ export function BestSellers({
   products?: BestsellerProduct[];
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const [canScroll, setCanScroll] = useState(false);
-  const [scrollPct, setScrollPct] = useState(0);
-
-  const updateScrollMetrics = useCallback(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    if (max <= 1) {
-      setCanScroll(false);
-      setScrollPct(0);
-      return;
-    }
-    setCanScroll(true);
-    setScrollPct((el.scrollLeft / max) * 100);
-  }, []);
-
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    setTimeout(updateScrollMetrics, 100);
-    el.addEventListener("scroll", updateScrollMetrics, { passive: true });
-    const ro = new ResizeObserver(updateScrollMetrics);
-    ro.observe(el);
-    return () => {
-      el.removeEventListener("scroll", updateScrollMetrics);
-      ro.disconnect();
-    };
-  }, [updateScrollMetrics]);
-
-  const handleScrubChange = (value: number) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    if (max <= 0) return;
-    el.scrollLeft = (value / 100) * max;
-    setScrollPct(value);
-  };
 
   const scrollBy = (direction: "left" | "right") => {
     const el = scrollerRef.current;
@@ -71,7 +34,7 @@ export function BestSellers({
     >
       <div className="mb-10 md:mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div className="flex flex-col">
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mb-4">
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 mb-4">
             Top Choice
           </span>
           <h2
@@ -102,6 +65,7 @@ export function BestSellers({
           </div>
           <Link href="/bestsellery" className={seeAllLinkClass}>
             Zobacz wszystko
+            <span className="h-px w-full shrink-0 bg-zinc-900" aria-hidden />
           </Link>
         </div>
       </div>
@@ -152,7 +116,7 @@ export function BestSellers({
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500">
                 {product.category}
               </span>
               <h3 className="text-sm font-bold text-zinc-900 tracking-tight mb-1">
@@ -161,45 +125,36 @@ export function BestSellers({
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-sm font-bold text-black">{product.price}</span>
                 {product.oldPrice && (
-                  <del className="text-xs text-zinc-400 font-medium line-through">
+                  <del className="text-xs font-medium text-zinc-500 line-through">
                     <span className="sr-only">Poprzednia cena: </span>
                     {product.oldPrice}
                   </del>
                 )}
               </div>
-              {product.omnibus && (
-                <span className="text-[8px] text-zinc-400 mt-1 uppercase tracking-tighter">
-                  Najniższa cena z 30 dni: {product.omnibus}
+              {product.oldPrice ? (
+                <span className="mt-1 text-[8px] uppercase tracking-tighter text-zinc-600">
+                  {product.omnibus
+                    ? `Najniższa cena z 30 dni przed obniżką: ${product.omnibus}`
+                    : "Najniższa cena z 30 dni przed obniżką: uzupełnij w systemie (wymóg Omnibus)."}
                 </span>
-              )}
+              ) : null}
+              {product.hygieneReturnExcluded !== false ? (
+                <p className="mt-2 rounded-sm border border-amber-200/80 bg-amber-50/90 p-2 text-[8px] font-medium leading-snug text-amber-950">
+                  Po otwarciu opakowania zwrot może być wykluczony ze względów higienicznych (art. 38 pkt 5
+                  ustawy o prawach konsumenta). Szczegóły:{" "}
+                  <a className="underline underline-offset-1" href="/zwroty-reklamacje">
+                    Zwroty i reklamacje
+                  </a>
+                  .
+                </p>
+              ) : null}
             </div>
           </article>
         ))}
       </div>
 
-      {canScroll && (
-        <div className="mt-8">
-          <label htmlFor="bestsellers-scrub" className="sr-only">
-            Suwak przewijania listy produktów
-          </label>
-          <input
-            id="bestsellers-scrub"
-            type="range"
-            min={0}
-            max={100}
-            step={0.25}
-            value={scrollPct}
-            onChange={(e) => handleScrubChange(Number(e.target.value))}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={Math.round(scrollPct)}
-            className="category-carousel-scrub w-full min-h-11 py-2 cursor-pointer block"
-          />
-        </div>
-      )}
-
-      <p className="mt-6 text-center text-[10px] text-zinc-400 uppercase tracking-[0.25em] sm:hidden">
-        Przesuń palcem lub użyj suwaka poniżej
+      <p className="mt-6 text-center text-[10px] text-zinc-500 uppercase tracking-[0.25em] sm:hidden">
+        Przesuń palcem, aby zobaczyć więcej
       </p>
     </section>
   );

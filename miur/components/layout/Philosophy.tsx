@@ -7,7 +7,7 @@ export function Philosophy() {
       
       {/* ТЕКСТОВА ЧАСТИНА */}
       <div className="flex flex-col justify-center p-10 py-24 md:p-24 lg:p-32 order-2 lg:order-1">
-        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mb-8">
+        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 mb-8">
           Nasza Filozofia
         </span>
         

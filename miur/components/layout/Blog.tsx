@@ -1,7 +1,7 @@
 // Miur/miur/components/layout/Blog.tsx
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import type { BlogPost } from "@/lib/blog/types";
@@ -11,52 +11,13 @@ type BlogProps = {
 };
 
 const seeAllLinkClass =
-  "inline-block text-[10px] font-bold uppercase tracking-widest text-zinc-900 hover:opacity-50 focus-visible:opacity-50 transition-opacity duration-500 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 rounded-sm";
+  "inline-flex flex-col items-stretch gap-1 text-[10px] font-bold uppercase tracking-widest text-zinc-900 hover:opacity-50 focus-visible:opacity-50 transition-opacity duration-500 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 rounded-sm";
 
 const carouselArrowBtnClass =
   "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-900 transition-all duration-500 hover:border-zinc-900 hover:bg-zinc-900 hover:text-white";
 
 export function Blog({ posts }: BlogProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const [canScroll, setCanScroll] = useState(false);
-  const [scrollPct, setScrollPct] = useState(0);
-
-  const updateScrollMetrics = useCallback(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    if (max <= 1) {
-      setCanScroll(false);
-      setScrollPct(0);
-      return;
-    }
-    setCanScroll(true);
-    setScrollPct((el.scrollLeft / max) * 100);
-  }, []);
-
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-
-    updateScrollMetrics();
-    el.addEventListener("scroll", updateScrollMetrics, { passive: true });
-    const ro = new ResizeObserver(updateScrollMetrics);
-    ro.observe(el);
-
-    return () => {
-      el.removeEventListener("scroll", updateScrollMetrics);
-      ro.disconnect();
-    };
-  }, [updateScrollMetrics, posts.length]);
-
-  const handleScrubChange = (value: number) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    if (max <= 0) return;
-    el.scrollLeft = (value / 100) * max;
-    setScrollPct(value);
-  };
 
   const scrollBy = (direction: "left" | "right") => {
     const el = scrollerRef.current;
@@ -81,7 +42,7 @@ export function Blog({ posts }: BlogProps) {
       <div className="relative z-10">
         <div className="mb-10 md:mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mb-4">
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 mb-4">
               Journal
             </span>
             <h2
@@ -112,6 +73,7 @@ export function Blog({ posts }: BlogProps) {
             </div>
             <Link href="/blog" className={seeAllLinkClass}>
               Zobacz wszystko
+              <span className="h-px w-full shrink-0 bg-zinc-900" aria-hidden />
             </Link>
           </div>
         </div>
@@ -120,7 +82,7 @@ export function Blog({ posts }: BlogProps) {
           id="blog-carousel"
           ref={scrollerRef}
           role="region"
-          aria-label="Najnowsze wpisy z bloga, przewijana lista. Do przewijania użyj suwaka poniżej lub gestów na urządzeniu dotykowym."
+          aria-label="Najnowsze wpisy z bloga, przewijana lista. Do przewijania użyj strzałek lub gestów na urządzeniu dotykowym."
           className="flex gap-5 md:gap-8 overflow-x-auto overscroll-x-contain snap-x snap-mandatory snap-always scroll-smooth touch-pan-x pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           {posts.map((post) => (
@@ -133,7 +95,11 @@ export function Blog({ posts }: BlogProps) {
                 href={`/blog/${post.slug}`}
                 className="relative flex w-full overflow-hidden rounded-sm bg-zinc-100 aspect-3/4 md:aspect-4/5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-zinc-900"
                 aria-labelledby={`blog-title-${post.id}`}
-                aria-describedby={`blog-meta-${post.id}`}
+                aria-describedby={
+                  post.sponsored
+                    ? `blog-meta-${post.id} blog-sponsored-${post.id}`
+                    : `blog-meta-${post.id}`
+                }
               >
                 <img
                   src={post.cover}
@@ -143,10 +109,18 @@ export function Blog({ posts }: BlogProps) {
 
                 <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-transparent opacity-70 transition-opacity duration-700 group-hover:opacity-90" />
 
-                <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
-                  <span className="bg-white px-3 py-1 rounded-full shadow-sm text-[8px] font-bold uppercase tracking-widest text-black">
+                <div className="absolute top-4 left-4 z-10 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-white px-3 py-1 text-[8px] font-bold uppercase tracking-widest text-black shadow-sm">
                     {post.category}
                   </span>
+                  {post.sponsored ? (
+                    <span
+                      id={`blog-sponsored-${post.id}`}
+                      className="rounded-full border border-white/40 bg-black/55 px-3 py-1 text-[8px] font-bold uppercase tracking-widest text-white backdrop-blur-sm"
+                    >
+                      Materiał sponsorowany
+                    </span>
+                  ) : null}
                 </div>
 
                 <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 flex justify-between items-end gap-4">
@@ -177,31 +151,8 @@ export function Blog({ posts }: BlogProps) {
           ))}
         </div>
 
-        {canScroll && (
-          <div className="mt-8 flex flex-col gap-3">
-            <label htmlFor="blog-carousel-scrub" className="sr-only">
-              Suwak przewijania listy wpisów bloga
-            </label>
-            <input
-              id="blog-carousel-scrub"
-              type="range"
-              min={0}
-              max={100}
-              step={0.25}
-              value={scrollPct}
-              onChange={(e) => handleScrubChange(Number(e.target.value))}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(scrollPct)}
-              aria-valuetext={`Przewinięto około ${Math.round(scrollPct)} procent`}
-              aria-label="Pozycja przewijania listy wpisów bloga"
-              className="category-carousel-scrub w-full min-h-11 py-2 cursor-pointer block"
-            />
-          </div>
-        )}
-
-        <p className="mt-6 text-center text-[10px] text-zinc-400 uppercase tracking-[0.25em] sm:hidden">
-          Przesuń palcem lub użyj suwaka poniżej
+        <p className="mt-6 text-center text-[10px] text-zinc-500 uppercase tracking-[0.25em] sm:hidden">
+          Przesuń palcem, aby zobaczyć więcej
         </p>
       </div>
     </section>

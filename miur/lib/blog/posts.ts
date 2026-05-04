@@ -48,6 +48,7 @@ export const MOCK_BLOG_POSTS: BlogPost[] = [
     category: "Bezpieczeństwo",
     readTime: "3 min",
     publishedAt: "11 lutego 2026",
+    sponsored: true,
   },
   {
     id: "p5",

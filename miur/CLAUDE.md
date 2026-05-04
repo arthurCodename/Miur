@@ -49,3 +49,4 @@ Miur/                    ← git root
 - Use @/ import alias — never use relative paths like ../../../
 - framer-motion animations must be in "use client" components
 - Server components fetch data directly — no useEffect for data fetching
+- Before modifying any frontend component, always check the relevant file in EU_PL_Compliance/ folder. The checklist is in 11_Frontend_Checklist.md. Polish e-commerce law applies. EAA accessibility and other laws are mandatory.
