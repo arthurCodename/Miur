@@ -2,7 +2,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Accessibility, Type, Contrast, Link2, X, TextSelect, Palette, MousePointer2, Volume2, Focus } from 'lucide-react';
+import { Accessibility, Type, Link2, X, TextSelect, Palette, MousePointer2, Volume2, Focus } from 'lucide-react';
 
 export function AccessibilityWidget() {
   const [isOpen, setIsOpen] = useState(false);

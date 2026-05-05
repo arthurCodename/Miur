@@ -1,13 +1,21 @@
+import dynamic from "next/dynamic";
 import { Hero } from "@/components/layout/Hero";
 import { TrustBar } from "@/components/ui/TrustBar";
 import { CategoryGrid } from "@/components/layout/CategoryGrid";
-import { BestSellers } from "@/components/layout/BestSellers";
-import { WyprzedazSection } from "@/components/layout/WyprzedazSection";
-import { Blog } from "@/components/layout/Blog";
-import { Philosophy } from "@/components/layout/Philosophy";
 import { getBestsellers } from "@/lib/catalog/bestsellers";
 import { getWyprzedazProducts, getWyprzedazTiles } from "@/lib/catalog/wyprzedaz";
 import { getBlogPosts } from "@/lib/blog/posts";
+
+const BestSellers = dynamic(() =>
+  import("@/components/layout/BestSellers").then((mod) => mod.BestSellers),
+);
+const WyprzedazSection = dynamic(() =>
+  import("@/components/layout/WyprzedazSection").then((mod) => mod.WyprzedazSection),
+);
+const Blog = dynamic(() => import("@/components/layout/Blog").then((mod) => mod.Blog));
+const Philosophy = dynamic(() =>
+  import("@/components/layout/Philosophy").then((mod) => mod.Philosophy),
+);
 
 export default async function Home() {
   const [bestsellers, wyprzedazTiles, wyprzedazProducts, blogPosts] =

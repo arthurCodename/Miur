@@ -3,6 +3,7 @@
 
 import { useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import type { BlogPost } from "@/lib/blog/types";
 
@@ -85,7 +86,7 @@ export function Blog({ posts }: BlogProps) {
           aria-label="Najnowsze wpisy z bloga, przewijana lista. Do przewijania użyj strzałek lub gestów na urządzeniu dotykowym."
           className="flex gap-5 md:gap-8 overflow-x-auto overscroll-x-contain snap-x snap-mandatory snap-always scroll-smooth touch-pan-x pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
-          {posts.map((post) => (
+          {posts.map((post, index) => (
             <article
               key={post.id}
               data-carousel-card
@@ -101,9 +102,12 @@ export function Blog({ posts }: BlogProps) {
                     : `blog-meta-${post.id}`
                 }
               >
-                <img
+                <Image
                   src={post.cover}
                   alt=""
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority={index < 2}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
                 />
 

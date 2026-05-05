@@ -4,16 +4,14 @@ import { useState, useEffect, useId } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ShieldCheck, Settings2 } from "lucide-react";
 import {
-  buildConsentPayload,
-  COOKIE_CONSENT_STORAGE_KEY,
   OPEN_COOKIE_PREFERENCES_EVENT,
-  parseStoredCookieConsent,
-  type CookieConsentPayload,
 } from "@/lib/cookie-consent";
+import { useCookieConsent } from "@/components/layout/CookieConsentContext";
 
 export default function CookieBanner() {
   const titleId = useId();
   const reduceMotion = useReducedMotion();
+  const { consent: savedConsent, saveConsent, acceptAll, rejectAll } = useCookieConsent();
   const [isVisible, setIsVisible] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -24,13 +22,10 @@ export default function CookieBanner() {
   });
 
   useEffect(() => {
-    const saved = parseStoredCookieConsent(
-      typeof window !== "undefined" ? localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY) : null,
-    );
-    if (saved) return;
+    if (savedConsent) return;
     const timer = setTimeout(() => setIsVisible(true), 2000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [savedConsent]);
 
   useEffect(() => {
     const onOpen = () => {
@@ -41,22 +36,31 @@ export default function CookieBanner() {
     return () => window.removeEventListener(OPEN_COOKIE_PREFERENCES_EVENT, onOpen);
   }, []);
 
-  const saveConsent = (payload: CookieConsentPayload) => {
-    localStorage.setItem(COOKIE_CONSENT_STORAGE_KEY, JSON.stringify(payload));
+  useEffect(() => {
+    if (!savedConsent) return;
+    setConsent({
+      essential: true,
+      analytics: savedConsent.analytics,
+      marketing: savedConsent.marketing,
+    });
+  }, [savedConsent]);
+
+  useEffect(() => {
+    if (!savedConsent) return;
     setIsVisible(false);
     setShowSettings(false);
-  };
+  }, [savedConsent]);
 
   const handleAcceptAll = () => {
-    saveConsent(buildConsentPayload({ analytics: true, marketing: true }));
+    acceptAll();
   };
 
   const handleRejectAll = () => {
-    saveConsent(buildConsentPayload({ analytics: false, marketing: false }));
+    rejectAll();
   };
 
   const handleSaveSettings = () => {
-    saveConsent(buildConsentPayload({ analytics: consent.analytics, marketing: consent.marketing }));
+    saveConsent({ analytics: consent.analytics, marketing: consent.marketing });
   };
 
   const motionProps = reduceMotion
@@ -68,7 +72,7 @@ export default function CookieBanner() {
       {isVisible && (
         <motion.div
           {...motionProps}
-          className="fixed bottom-6 left-6 right-6 z-[300] md:left-auto md:max-w-md"
+          className="fixed bottom-6 left-6 right-6 z-300 md:left-auto md:max-w-md"
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}

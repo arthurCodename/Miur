@@ -1,11 +1,10 @@
-// Miur/miur/components/layout/WyprzedazSection.tsx
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, ArrowRight, ArrowUpRight, ShoppingBag } from "lucide-react";
-import type { BestsellerProduct } from "@/lib/catalog/types";
-import type { SaleCategoryTile } from "@/lib/catalog/wyprzedaz";
+import type { BestsellerProduct, SaleCategoryTile } from "@/lib/catalog/types";
 
 const seeAllLinkClass =
   "inline-flex flex-col items-stretch gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white outline-none rounded-sm transition-colors duration-500 hover:text-zinc-400 focus-visible:text-white focus-visible:underline focus-visible:underline-offset-4";
@@ -89,7 +88,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
                 aria-label="Poprzedni kafelek wyprzedaży"
                 className={carouselArrowBtnDarkClass}
               >
-                <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
+                <ArrowLeft className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
               </button>
               <button
                 type="button"
@@ -97,7 +96,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
                 aria-label="Następny kafelek wyprzedaży"
                 className={carouselArrowBtnDarkClass}
               >
-                <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
+                <ArrowRight className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
               </button>
             </div>
             <Link href="/wyprzedaz" className={seeAllLinkClass}>
@@ -121,16 +120,19 @@ export function WyprzedazSection({ tiles, products }: Props) {
               aria-label="Kafelki wyprzedaży"
               className="flex gap-5 overflow-x-auto overscroll-x-contain pb-2 snap-x snap-mandatory scroll-smooth touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
-              {tiles.map((tile) => (
+              {tiles.map((tile, index) => (
                 <Link
                   key={tile.title}
                   href={tile.href}
                   data-carousel-card
                   className="group relative aspect-3/4 shrink-0 snap-start overflow-hidden rounded-sm bg-zinc-900 ring-1 ring-white/10 transition-shadow duration-500 hover:ring-amber-500/35 md:aspect-4/5 w-[min(82vw,340px)] md:w-[min(320px,38vw)] lg:w-[min(360px,32vw)]"
                 >
-                  <img
+                  <Image
                     src={tile.image}
                     alt=""
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    priority={index < 2}
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.4s] ease-out group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/25 to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-90" />
@@ -144,7 +146,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
                       </span>
                     </div>
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/25 text-white backdrop-blur-sm transition-all duration-500 group-hover:bg-white group-hover:text-zinc-950 md:h-12 md:w-12">
-                      <ArrowUpRight className="h-5 w-5" strokeWidth={1.5} />
+                      <ArrowUpRight className="h-5 w-5" strokeWidth={1.5} aria-hidden="true" />
                     </div>
                   </div>
                 </Link>
@@ -168,7 +170,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
                     aria-label="Poprzedni produkt wyprzedaży"
                     className={carouselArrowBtnDarkClass}
                   >
-                    <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
+                    <ArrowLeft className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                   </button>
                   <button
                     type="button"
@@ -176,7 +178,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
                     aria-label="Następny produkt wyprzedaży"
                     className={carouselArrowBtnDarkClass}
                   >
-                    <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
+                    <ArrowRight className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                   </button>
                 </div>
                 <Link href="/wyprzedaz" className={`${seeAllLinkClass} sm:text-right`}>
@@ -193,7 +195,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
               aria-label="Karuzela produktów wyprzedażowych"
               className={`flex gap-4 overflow-x-auto overscroll-x-contain pb-2 snap-x snap-mandatory snap-always touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:gap-8 ${prodScrollClass}`}
             >
-              {products.map((product) => (
+              {products.map((product, index) => (
                 <article
                   key={product.id}
                   data-carousel-card
@@ -213,21 +215,20 @@ export function WyprzedazSection({ tiles, products }: Props) {
                       className="absolute inset-0 z-0 block focus-visible:z-20 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-amber-400 motion-safe:transition-opacity motion-safe:duration-700"
                       aria-describedby={`wyprzedaz-price-${product.id}`}
                     >
-                      <img
+                      <Image
                         src={product.image}
                         alt={`${product.name} — zdjęcie produktu`}
-                        width={800}
-                        height={1067}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        priority={index < 2}
                         className="absolute inset-0 h-full w-full object-cover motion-safe:transition-opacity motion-safe:duration-700 group-hover:opacity-0 motion-reduce:group-hover:opacity-100"
-                        decoding="async"
                       />
-                      <img
+                      <Image
                         src={product.hoverImage}
                         alt=""
-                        width={800}
-                        height={1067}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-0 motion-safe:transition-opacity motion-safe:duration-700 group-hover:opacity-100 motion-reduce:opacity-0"
-                        decoding="async"
                         aria-hidden
                       />
                     </Link>
@@ -238,7 +239,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
                       aria-label={`Dodaj ${product.name} do koszyka`}
                     >
                       <span className="flex items-center justify-center gap-2">
-                        <ShoppingBag className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                        <ShoppingBag className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                         <span className="text-[9px] font-bold uppercase tracking-widest">
                           Do koszyka
                         </span>

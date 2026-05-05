@@ -4,10 +4,12 @@
 import { useRef } from "react";
 import { ShoppingBag, ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { MOCK_BESTSELLERS } from "@/lib/catalog/bestsellers";
+import Image from "next/image";
+import { MOCK_BESTSELLERS } from "@/lib/catalog/data/mock-products";
 import type { BestsellerProduct } from "@/lib/catalog/types";
 
 const seeAllLinkClass =
+
   "inline-flex flex-col items-stretch gap-1 text-[10px] font-bold uppercase tracking-widest text-zinc-900 hover:opacity-50 focus-visible:opacity-50 transition-opacity duration-500 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 rounded-sm";
 
 const carouselArrowBtnClass =
@@ -34,7 +36,7 @@ export function BestSellers({
     >
       <div className="mb-10 md:mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div className="flex flex-col">
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 mb-4">
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-700 mb-4">
             Top Choice
           </span>
           <h2
@@ -52,7 +54,7 @@ export function BestSellers({
               aria-label="Poprzedni produkt"
               className={carouselArrowBtnClass}
             >
-              <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
+              <ArrowLeft className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
             </button>
             <button
               type="button"
@@ -60,7 +62,7 @@ export function BestSellers({
               aria-label="Następny produkt"
               className={carouselArrowBtnClass}
             >
-              <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
+              <ArrowRight className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
             </button>
           </div>
           <Link href="/bestsellery" className={seeAllLinkClass}>
@@ -76,7 +78,7 @@ export function BestSellers({
         aria-label="Bestsellery, przewijana lista produktów"
         className="flex gap-4 md:gap-8 overflow-x-auto overscroll-x-contain snap-x snap-mandatory snap-always touch-pan-x pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
       >
-        {products.map((product) => (
+        {products.map((product, index) => (
           <article
             key={product.id}
             data-carousel-card
@@ -90,18 +92,21 @@ export function BestSellers({
                   </span>
                 </div>
               )}
-              <img
+              <Image
                 src={product.image}
                 alt={`${product.name} — zdjęcie produktu`}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                priority={index < 2}
                 className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 group-hover:opacity-0"
-                decoding="async"
               />
-              <img
+              <Image
                 src={product.hoverImage}
                 alt=""
                 aria-hidden="true"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-700 group-hover:opacity-100"
-                decoding="async"
               />
               <button
                 type="button"
@@ -109,14 +114,14 @@ export function BestSellers({
                 aria-label={`Dodaj ${product.name} do koszyka`}
               >
                 <span className="flex items-center justify-center gap-2">
-                  <ShoppingBag className="w-3.5 h-3.5 shrink-0" aria-hidden />
+                  <ShoppingBag className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                   <span className="text-[9px] font-bold uppercase tracking-widest">Do koszyka</span>
                 </span>
               </button>
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-700">
                 {product.category}
               </span>
               <h3 className="text-sm font-bold text-zinc-900 tracking-tight mb-1">
@@ -125,7 +130,7 @@ export function BestSellers({
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-sm font-bold text-black">{product.price}</span>
                 {product.oldPrice && (
-                  <del className="text-xs font-medium text-zinc-500 line-through">
+                  <del className="text-xs font-medium text-zinc-600 line-through">
                     <span className="sr-only">Poprzednia cena: </span>
                     {product.oldPrice}
                   </del>
@@ -153,7 +158,7 @@ export function BestSellers({
         ))}
       </div>
 
-      <p className="mt-6 text-center text-[10px] text-zinc-500 uppercase tracking-[0.25em] sm:hidden">
+      <p className="mt-6 text-center text-[10px] text-zinc-700 uppercase tracking-[0.25em] sm:hidden">
         Przesuń palcem, aby zobaczyć więcej
       </p>
     </section>

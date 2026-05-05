@@ -1,9 +1,10 @@
-// Miur/miur/components/layout/CategoryGrid.tsx
 "use client";
 
 import { useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { categories } from "@/lib/catalog/data/categories";
 
 const seeAllLinkClass =
   "inline-flex flex-col items-stretch gap-1 text-[10px] font-bold uppercase tracking-widest text-zinc-900 hover:opacity-50 focus-visible:opacity-50 transition-opacity duration-500 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 rounded-sm";
@@ -11,52 +12,8 @@ const seeAllLinkClass =
 const carouselArrowBtnClass =
   "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-900 transition-all duration-500 hover:border-zinc-900 hover:bg-zinc-900 hover:text-white";
 
-const categories = [
-  {
-    title: "Nowości",
-    href: "/nowosci",
-    image: "https://images.unsplash.com/photo-1616012480717-fd9867059ca2?q=80&w=1200&auto=format&fit=crop",
-    desc: "Nasze nowe produkty",
-  },
-  {
-  title: "Dla Niej",
-  href: "/dla-niej",
-  image: "https://images.unsplash.com/photo-1616012480717-fd9867059ca2?q=80&w=1200&auto=format&fit=crop",
-  desc: "Odkryj swoją zmysłowość",
-},
-  {
-    title: "Dla Niego",
-    href: "/dla-niego",
-    image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=1200&auto=format&fit=crop",
-    desc: "Męska strefa wellness",
-  },
-  {
-    title: "Dla Par",
-    href: "/dla-par",
-    image: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?q=80&w=1200&auto=format&fit=crop",
-    desc: "Wspólne chwile",
-  },
-  {
-    title: "Zdrowie Seksualne",
-    href: "/zdrowie-seksualne",
-    image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=1200&auto=format&fit=crop",
-    desc: "Zadbaj o siebie",
-  },
-  {
-    title: "Drogeria",
-    href: "/drogeria",
-    image: "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?q=80&w=1200&auto=format&fit=crop",
-    desc: "Pielęgnacja i wellness",
-  },
-  {
-    title: "Akcesoria",
-    href: "/akcesoria",
-    image: "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?q=80&w=1200&auto=format&fit=crop",
-    desc: "Dodatki i akcesoria",
-  },
-];
-
 export function CategoryGrid() {
+  
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   const scrollBy = (direction: "left" | "right") => {
@@ -70,7 +27,7 @@ export function CategoryGrid() {
     <section className="w-full bg-white px-6 md:px-12 py-24 md:py-32">
       <div className="mb-10 md:mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div className="flex flex-col">
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 mb-4">
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-700 mb-4">
             Nasze towary
           </span>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tighter text-zinc-900 uppercase">
@@ -85,7 +42,7 @@ export function CategoryGrid() {
               aria-label="Poprzednia kategoria"
               className={carouselArrowBtnClass}
             >
-              <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
+              <ArrowLeft className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
             </button>
             <button
               type="button"
@@ -93,7 +50,7 @@ export function CategoryGrid() {
               aria-label="Następna kategoria"
               className={carouselArrowBtnClass}
             >
-              <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
+              <ArrowRight className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
             </button>
           </div>
           <Link href="/produkty" className={seeAllLinkClass}>
@@ -109,19 +66,22 @@ export function CategoryGrid() {
         aria-label="Kategorie produktów"
         className="flex gap-4 md:gap-6 overflow-x-auto overscroll-x-contain snap-x snap-mandatory snap-always touch-pan-x pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
       >
-        {categories.map((category) => (
+        {categories.map((category, index) => (
           <Link
             key={category.title}
             href={category.href}
             data-carousel-card
-            className="group relative aspect-[3/4] overflow-hidden bg-zinc-100 flex shrink-0 snap-start w-[min(72vw,280px)] md:w-[min(28vw,320px)] lg:w-[min(22vw,300px)]"
+            className="group relative aspect-3/4 overflow-hidden bg-zinc-100 flex shrink-0 snap-start w-[min(72vw,280px)] md:w-[min(28vw,320px)] lg:w-[min(22vw,300px)]"
           >
-            <img
+            <Image
               src={category.image}
               alt={category.title}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              priority={index < 2}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 transition-opacity duration-700 group-hover:opacity-80" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-60 transition-opacity duration-700 group-hover:opacity-80" />
             <div className="absolute bottom-0 left-0 w-full p-8 flex flex-col">
               <span className="text-white/70 text-[9px] uppercase tracking-widest mb-2 font-medium transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                 {category.desc}

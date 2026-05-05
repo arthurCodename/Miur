@@ -1,6 +1,7 @@
 "use client";
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { Menu, Search, ShoppingBag, ChevronRight, X } from 'lucide-react';
 import { 
@@ -39,6 +40,8 @@ const menuData = [
 ];
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
   const { scrollY } = useScroll();
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(menuData[0].title);
@@ -56,7 +59,7 @@ export default function Navbar() {
         
         {/* ULTRA-SMOOTH SCRIM GRADIENT */}
         <motion.div
-          style={{ opacity: gradientOpacity }}
+          style={{ opacity: isHomePage ? gradientOpacity : 1 }}
           className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[140px] md:h-[180px]"
           aria-hidden
         >
@@ -82,15 +85,21 @@ export default function Navbar() {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <button className="p-2 -ml-2 outline-none active:scale-95">
-                  <Menu className="w-6 h-6" strokeWidth={1.5} />
+                <button
+                  className="p-2 -ml-2 outline-none active:scale-95"
+                  aria-label="Otwórz menu"
+                >
+                  <Menu className="w-6 h-6" strokeWidth={1.5} aria-hidden="true" />
                 </button>
               </SheetTrigger>
               <SheetContent side="left" className="w-[85%] bg-zinc-950 border-none text-white p-0 flex flex-col" showCloseButton={false}>
                 <SheetTitle className="sr-only">Menu nawigacyjne</SheetTitle>
                 <div className="flex items-center justify-end px-6 pt-[calc(env(safe-area-inset-top)+20px)] pb-2">
-                   <SheetClose className="p-2 -mr-2 hover:bg-white/10 rounded-full transition-colors">
-                     <X className="w-6 h-6 text-zinc-400" strokeWidth={1.5} />
+                   <SheetClose
+                     className="p-2 -mr-2 hover:bg-white/10 rounded-full transition-colors"
+                     aria-label="Zamknij menu"
+                   >
+                     <X className="w-6 h-6 text-zinc-400" strokeWidth={1.5} aria-hidden="true" />
                    </SheetClose>
                 </div>
                 <div className="flex-1 px-6 pt-2 flex flex-col overflow-y-auto no-scrollbar">
@@ -98,7 +107,7 @@ export default function Navbar() {
                     <motion.div key={cat.title} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.03 }}>
                       <Link href={cat.href} className="group flex items-center justify-between py-3.5 border-b border-white/5">
                         <span className="text-[13px] font-bold uppercase tracking-[0.15em]">{cat.title}</span>
-                        <ChevronRight className="w-4 h-4 text-zinc-600" />
+                        <ChevronRight className="w-4 h-4 text-zinc-600" aria-hidden="true" />
                       </Link>
                     </motion.div>
                   ))}
@@ -126,7 +135,7 @@ export default function Navbar() {
 
         {/* ЦЕНТРАЛЬНА ЧАСТИНА */}
         <div className="justify-self-center text-white">
-          <motion.div style={{ opacity: logoOpacity }} className="px-4 py-2">
+          <motion.div style={{ opacity: isHomePage ? logoOpacity : 1 }} className="px-4 py-2">
             <Link href="/" className="text-2xl font-bold tracking-tighter font-[family-name:var(--font-logo)]">
               Miur
             </Link>
@@ -138,9 +147,9 @@ export default function Navbar() {
           <nav className="hidden lg:flex gap-8 text-[9px] font-bold uppercase tracking-[0.3em]">
             <Link href="/kontakt" className="hover:opacity-50">Kontakt</Link>
           </nav>
-          <Link href="/cart" className="group flex items-center">
+          <Link href="/cart" className="group flex items-center" aria-label="Otwórz koszyk">
             <div className="relative p-2 border border-white/10 group-hover:border-white/40 rounded-full transition-colors">
-              <ShoppingBag className="w-5 h-5" strokeWidth={1.2} />
+              <ShoppingBag className="w-5 h-5" strokeWidth={1.2} aria-hidden="true" />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-white text-black text-[8px] font-bold flex items-center justify-center rounded-full">0</span>
             </div>
           </Link>

@@ -1,4 +1,5 @@
 export const COOKIE_CONSENT_STORAGE_KEY = "miur_cookie_consent" as const;
+export const COOKIE_CONSENT_STATUS_STORAGE_KEY = "cookie-consent" as const;
 export const COOKIE_BANNER_VERSION = "1.0" as const;
 
 export type CookieConsentPayload = {
@@ -15,6 +16,8 @@ export type LegacyCookieConsent = {
   analytics: boolean;
   marketing: boolean;
 };
+
+export type CookieConsentStatus = "granted" | "denied";
 
 export function isCookieConsentPayload(v: unknown): v is CookieConsentPayload {
   if (!v || typeof v !== "object") return false;
@@ -65,6 +68,10 @@ export function buildConsentPayload(partial: {
     analytics: partial.analytics,
     marketing: partial.marketing,
   };
+}
+
+export function getConsentStatusFromPayload(payload: CookieConsentPayload): CookieConsentStatus {
+  return payload.analytics || payload.marketing ? "granted" : "denied";
 }
 
 export const OPEN_COOKIE_PREFERENCES_EVENT = "miur:open-cookie-preferences" as const;

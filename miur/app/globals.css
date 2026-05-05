@@ -33,9 +33,40 @@
   * {
     @apply border-[#e4e4e7];
   }
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
   body {
     @apply bg-white text-[#09090b] antialiased;
   }
+}
+
+/* Global scrollbar styling for manual page scrolling */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #71717a #18181b;
+}
+
+body::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+body::-webkit-scrollbar-track {
+  background: #18181b;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: #71717a;
+  border-radius: 9999px;
+  border: 2px solid #18181b;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
 }
 /* Accessibility Classes */
 /* --- Accessibility Classes --- */
