@@ -10,6 +10,9 @@
 !.yarn/releases
 !.yarn/versions
 
+# pnpm local store (can be ~500MB, must NOT be committed)
+.pnpm-store/
+
 # testing
 /coverage
 
@@ -32,6 +35,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# but DO commit the example template — it documents required vars
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +44,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# repomix dumps (do not commit large code snapshots)
+repomix-output.*
+almostfinish.md
+onlinestore.md
+
+# IDE / editor folders that shouldn't be in deploy artefacts
+.idea/
+.vscode/
+.obsidian/
+obsidian-local-rest-api/
+
+# OS junk
+Thumbs.db
