@@ -77,7 +77,7 @@ export const MOCK_BESTSELLERS: BestsellerProduct[] = [
     id: "7",
     slug: "calm-line",
     name: "Calm Line",
-    category: "Seksualne zdrowie",
+    category: "Zdrowie Seksualne",
     price: "59,00 zł",
     oldPrice: null,
     omnibus: null,

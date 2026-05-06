@@ -25,3 +25,14 @@ export type SaleCategoryTile = {
   image: string;
   desc: string;
 };
+
+export type ProductReview = {
+  id: string;
+  author: string;
+  /** 1–5 */
+  rating: number;
+  comment: string;
+  /** Wyświetlana data (demo — string). */
+  date: string;
+  isVerified: boolean;
+};

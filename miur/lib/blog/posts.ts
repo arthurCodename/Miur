@@ -79,3 +79,7 @@ export const MOCK_BLOG_POSTS: BlogPost[] = [
 export async function getBlogPosts(): Promise<BlogPost[]> {
   return MOCK_BLOG_POSTS;
 }
+
+export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  return MOCK_BLOG_POSTS.find((p) => p.slug === slug) ?? null;
+}
