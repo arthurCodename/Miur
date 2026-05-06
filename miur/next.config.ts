@@ -8,6 +8,10 @@ import { validateProductionEnv } from "./lib/env/server-env";
 validateProductionEnv();
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    // Pin root to this app to avoid parent lockfile auto-detection noise.
+    root: process.cwd(),
+  },
   images: {
     remotePatterns: [
       {
