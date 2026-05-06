@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { reportClientError } from "@/lib/observability/report-error";
 
 export default function Error({
   error,
@@ -11,7 +12,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    reportClientError(error);
   }, [error]);
 
   return (
@@ -22,6 +23,9 @@ export default function Error({
         Wystąpił nieoczekiwany problem. Spróbuj ponownie lub skontaktuj się z nami, jeśli sytuacja się
         powtarza.
       </p>
+      {error.digest ? (
+        <p className="mt-2 text-[10px] font-mono text-zinc-400">ID: {error.digest}</p>
+      ) : null}
       <div className="mt-8 flex flex-wrap justify-center gap-4">
         <button
           type="button"

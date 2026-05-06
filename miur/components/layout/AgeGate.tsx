@@ -1,30 +1,59 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 
 const STORAGE_KEY = "miur_age_verified";
 
+/**
+ * Reads the "age verified" flag from localStorage via useSyncExternalStore so
+ * we don't need a setState-in-effect pattern.
+ *  - Server snapshot: `null` (we don't know the value during SSR)
+ *  - Client snapshot: `true` if user previously confirmed, otherwise `false`
+ *
+ * The `null` value is what lets us hide the gate on first paint instead of
+ * flashing it for a frame before the localStorage read completes.
+ */
+function readVerifiedFromStorage(): boolean {
+  try {
+    return localStorage.getItem(STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function subscribeToStorage(callback: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const handler = (e: StorageEvent) => {
+    if (e.key === STORAGE_KEY) callback();
+  };
+  window.addEventListener("storage", handler);
+  return () => window.removeEventListener("storage", handler);
+}
+
+function useAgeVerified(): boolean | null {
+  return useSyncExternalStore(
+    subscribeToStorage,
+    readVerifiedFromStorage,
+    () => null,
+  );
+}
+
 export function AgeGate() {
-  const [verified, setVerified] = useState<boolean | null>(null);
+  const verified = useAgeVerified();
 
-  useEffect(() => {
-    try {
-      setVerified(localStorage.getItem(STORAGE_KEY) === "true");
-    } catch {
-      setVerified(false);
-    }
-  }, []);
-
+  // During SSR or first paint: render nothing so the gate never flashes for users
+  // who already confirmed their age.
   if (verified !== false) return null;
 
   const confirm = () => {
     try {
       localStorage.setItem(STORAGE_KEY, "true");
     } catch {
-      /* ignore */
+      /* ignore — Safari private mode etc. */
     }
-    setVerified(true);
+    // Force re-render: dispatch a storage event so useSyncExternalStore picks it up.
+    window.dispatchEvent(new StorageEvent("storage", { key: STORAGE_KEY }));
   };
 
   const leave = () => {

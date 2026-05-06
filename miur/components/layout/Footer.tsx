@@ -1,9 +1,10 @@
 // Miur/miur/components/layout/Footer.tsx
 import Link from "next/link";
+import { FooterLogoutButton } from "@/components/layout/FooterLogoutButton";
 import { FooterNewsletter } from "@/components/layout/FooterNewsletter";
 import { CookieSettingsLink } from "@/components/legal/CookieSettingsLink";
 import { SellerDataBlock } from "@/components/legal/SellerDataBlock";
-import { ODR_URL } from "@/lib/legal/seller";
+import { ODR_URL, sellerLegal } from "@/lib/legal/seller";
 
 export function Footer() {
   return (
@@ -45,10 +46,10 @@ export function Footer() {
           </span>
           <span className="mb-2 text-xs text-zinc-500">Pn-Pt 8:00-16:00</span>
           <a
-            href="mailto:pomoc@miur.pl"
+            href={`mailto:${sellerLegal.email}`}
             className="text-xs font-medium text-zinc-800 transition-colors hover:text-black"
           >
-            pomoc@miur.pl
+            {sellerLegal.email}
           </a>
         </div>
 
@@ -116,9 +117,7 @@ export function Footer() {
           >
             Twoje zamówienia
           </Link>
-          <button type="button" className="text-left text-xs text-zinc-500 transition-colors hover:text-black">
-            Wyloguj
-          </button>
+          <FooterLogoutButton />
         </div>
 
         <div className="flex flex-col gap-3">

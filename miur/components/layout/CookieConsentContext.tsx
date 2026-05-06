@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useSyncExternalStore } from "react";
 import {
   buildConsentPayload,
   COOKIE_CONSENT_STATUS_STORAGE_KEY,
@@ -21,28 +21,61 @@ type CookieConsentContextValue = {
 
 const CookieConsentContext = createContext<CookieConsentContextValue | null>(null);
 
+const CONSENT_CHANGED_EVENT = "miur:cookie-consent-changed";
+
+/**
+ * Read & subscribe to the consent payload via useSyncExternalStore so we never
+ * call setState inside useEffect (React 19 lint rule).
+ *
+ * Subscribes to:
+ *  - cross-tab changes (native `storage` event)
+ *  - same-tab changes (custom `miur:cookie-consent-changed` event we dispatch
+ *    ourselves in `saveConsent`)
+ */
+function subscribeToConsent(callback: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === COOKIE_CONSENT_STORAGE_KEY) callback();
+  };
+  const onCustom = () => callback();
+  window.addEventListener("storage", onStorage);
+  window.addEventListener(CONSENT_CHANGED_EVENT, onCustom);
+  return () => {
+    window.removeEventListener("storage", onStorage);
+    window.removeEventListener(CONSENT_CHANGED_EVENT, onCustom);
+  };
+}
+
+function getConsentSnapshot(): CookieConsentPayload | null {
+  try {
+    return parseStoredCookieConsent(localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY));
+  } catch {
+    return null;
+  }
+}
+
+function getServerConsentSnapshot(): CookieConsentPayload | null {
+  return null;
+}
+
 export function CookieConsentProvider({ children }: { children: React.ReactNode }) {
-  const [consent, setConsent] = useState<CookieConsentPayload | null>(null);
-  const [status, setStatus] = useState<CookieConsentStatus | null>(null);
+  const consent = useSyncExternalStore(subscribeToConsent, getConsentSnapshot, getServerConsentSnapshot);
+  const status = consent ? getConsentStatusFromPayload(consent) : null;
 
-  useEffect(() => {
-    const stored = parseStoredCookieConsent(localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY));
-    if (!stored) return;
-    const nextStatus = getConsentStatusFromPayload(stored);
-    setConsent(stored);
-    setStatus(nextStatus);
-    localStorage.setItem(COOKIE_CONSENT_STATUS_STORAGE_KEY, nextStatus);
-  }, []);
-
-  const saveConsent = (options: { analytics: boolean; marketing: boolean }) => {
+  const saveConsent = useCallback((options: { analytics: boolean; marketing: boolean }) => {
     const payload = buildConsentPayload(options);
     const nextStatus = getConsentStatusFromPayload(payload);
 
-    localStorage.setItem(COOKIE_CONSENT_STORAGE_KEY, JSON.stringify(payload));
-    localStorage.setItem(COOKIE_CONSENT_STATUS_STORAGE_KEY, nextStatus);
-    setConsent(payload);
-    setStatus(nextStatus);
-  };
+    try {
+      localStorage.setItem(COOKIE_CONSENT_STORAGE_KEY, JSON.stringify(payload));
+      localStorage.setItem(COOKIE_CONSENT_STATUS_STORAGE_KEY, nextStatus);
+    } catch {
+      // Safari private mode etc. — proceed with in-memory state only.
+    }
+
+    // Notify same-tab subscribers (storage event only fires cross-tab).
+    window.dispatchEvent(new Event(CONSENT_CHANGED_EVENT));
+  }, []);
 
   const value = useMemo<CookieConsentContextValue>(
     () => ({
@@ -52,7 +85,7 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
       acceptAll: () => saveConsent({ analytics: true, marketing: true }),
       rejectAll: () => saveConsent({ analytics: false, marketing: false }),
     }),
-    [consent, status],
+    [consent, status, saveConsent],
   );
 
   return <CookieConsentContext.Provider value={value}>{children}</CookieConsentContext.Provider>;

@@ -1,5 +1,6 @@
 // Miur/miur/app/layout.tsx
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -56,11 +57,15 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // CSP nonce is set per-request in middleware.ts; falls back to "" when middleware
+  // didn't run (static prerender / non-matching path) so React stays happy.
+  const nonce = (await headers()).get("x-nonce") ?? "";
+
   return (
     <html lang="pl" className={logoFont.variable} suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen flex flex-col antialiased bg-white`}>
@@ -68,6 +73,7 @@ export default function RootLayout({
           name={siteTitle}
           url={siteUrl}
           logo={`${siteUrl}/next.svg`}
+          nonce={nonce}
         />
         <CookieConsentProvider>
           <ThemeProvider
@@ -76,7 +82,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <ConsentScripts />
+            <ConsentScripts nonce={nonce} />
             <div className="flex min-h-screen flex-col">
               <a
                 href="#main-content"

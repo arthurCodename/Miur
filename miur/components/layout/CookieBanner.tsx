@@ -7,60 +7,81 @@ import {
   OPEN_COOKIE_PREFERENCES_EVENT,
 } from "@/lib/cookie-consent";
 import { useCookieConsent } from "@/components/layout/CookieConsentContext";
+import { useIsMounted } from "@/lib/hooks/useIsMounted";
 
 export default function CookieBanner() {
   const titleId = useId();
   const reduceMotion = useReducedMotion();
   const { consent: savedConsent, saveConsent, acceptAll, rejectAll } = useCookieConsent();
-  const [isVisible, setIsVisible] = useState(false);
+  const isMounted = useIsMounted();
+
+  // Banner visibility is purely event-driven: it is "open" when the user has
+  // never made a choice OR has explicitly clicked "Manage cookies" in the footer.
+  // No setState-in-effect needed — we toggle from event listeners only.
+  const [isOpenedManually, setIsOpenedManually] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  const [consent, setConsent] = useState({
+  // Local "draft" toggles for when the user is editing in the settings view.
+  // Initialised lazily from saved consent — synced via key reset rather than effect.
+  const [draftConsent, setDraftConsent] = useState(() => ({
     essential: true as const,
-    analytics: false,
-    marketing: false,
-  });
+    analytics: savedConsent?.analytics ?? false,
+    marketing: savedConsent?.marketing ?? false,
+  }));
 
-  useEffect(() => {
-    if (savedConsent) return;
-    const timer = setTimeout(() => setIsVisible(true), 2000);
-    return () => clearTimeout(timer);
-  }, [savedConsent]);
+  // If the saved consent identity changes (e.g. user opened settings, clicked
+  // "Save"), the next time settings opens we want fresh values. We re-key the
+  // settings panel on `savedConsent.timestamp` instead — see below.
+  // (No effect-driven sync needed.)
 
   useEffect(() => {
     const onOpen = () => {
       setShowSettings(true);
-      setIsVisible(true);
+      setIsOpenedManually(true);
+      setDraftConsent({
+        essential: true,
+        analytics: savedConsent?.analytics ?? false,
+        marketing: savedConsent?.marketing ?? false,
+      });
     };
     window.addEventListener(OPEN_COOKIE_PREFERENCES_EVENT, onOpen);
     return () => window.removeEventListener(OPEN_COOKIE_PREFERENCES_EVENT, onOpen);
-  }, []);
-
-  useEffect(() => {
-    if (!savedConsent) return;
-    setConsent({
-      essential: true,
-      analytics: savedConsent.analytics,
-      marketing: savedConsent.marketing,
-    });
+    // savedConsent is read inside the callback at the time of the click — capturing
+    // the latest value via closure is fine for this one-shot listener.
   }, [savedConsent]);
 
+  // Determine visibility from props/state, not effects.
+  // First-time visitor → show banner after 2s (still ok to use a delay effect
+  // because it doesn't call setState — it only flips a CSS-driven flag).
+  const [delayElapsed, setDelayElapsed] = useState(false);
   useEffect(() => {
-    if (!savedConsent) return;
-    setIsVisible(false);
-    setShowSettings(false);
+    if (savedConsent) return;
+    const id = setTimeout(() => setDelayElapsed(true), 2000);
+    return () => clearTimeout(id);
   }, [savedConsent]);
+
+  const isVisible = isMounted && (isOpenedManually || (!savedConsent && delayElapsed));
+
+  // When user saves preferences we close the panel — this is now driven by
+  // event handlers below (`handleSaveSettings` / `handleAcceptAll` / `handleRejectAll`)
+  // rather than a "savedConsent changed → close" effect.
 
   const handleAcceptAll = () => {
     acceptAll();
+    setIsOpenedManually(false);
+    setShowSettings(false);
   };
 
   const handleRejectAll = () => {
     rejectAll();
+    setIsOpenedManually(false);
+    setShowSettings(false);
   };
 
   const handleSaveSettings = () => {
-    saveConsent({ analytics: consent.analytics, marketing: consent.marketing });
+    saveConsent({ analytics: draftConsent.analytics, marketing: draftConsent.marketing });
+    setIsOpenedManually(false);
+    setShowSettings(false);
   };
 
   const motionProps = reduceMotion
@@ -155,14 +176,14 @@ export default function CookieBanner() {
                   <CookieToggle
                     title="Analityka"
                     desc="Pomaga nam ulepszać sklep (np. statystyki odwiedzin)."
-                    checked={consent.analytics}
-                    onChange={() => setConsent((p) => ({ ...p, analytics: !p.analytics }))}
+                    checked={draftConsent.analytics}
+                    onChange={() => setDraftConsent((p) => ({ ...p, analytics: !p.analytics }))}
                   />
                   <CookieToggle
                     title="Marketing"
                     desc="Personalizacja reklam i pomiar kampanii."
-                    checked={consent.marketing}
-                    onChange={() => setConsent((p) => ({ ...p, marketing: !p.marketing }))}
+                    checked={draftConsent.marketing}
+                    onChange={() => setDraftConsent((p) => ({ ...p, marketing: !p.marketing }))}
                   />
                 </div>
 

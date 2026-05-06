@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, ArrowUpRight, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
+import { ProductCardCartButton } from "@/components/catalog/ProductCardCartButton";
 import type { BestsellerProduct, SaleCategoryTile } from "@/lib/catalog/types";
 
 const seeAllLinkClass =
@@ -233,18 +234,16 @@ export function WyprzedazSection({ tiles, products }: Props) {
                       />
                     </Link>
 
-                    <button
-                      type="button"
-                      className="absolute bottom-4 left-4 right-4 z-10 flex min-h-11 translate-y-12 items-center justify-center rounded-full bg-zinc-950 py-3 text-white opacity-0 motion-safe:transition-all motion-safe:duration-500 group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100 focus-visible:translate-y-0 focus-visible:opacity-100 hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                      aria-label={`Dodaj ${product.name} do koszyka`}
-                    >
-                      <span className="flex items-center justify-center gap-2">
-                        <ShoppingBag className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                        <span className="text-[9px] font-bold uppercase tracking-widest">
-                          Do koszyka
-                        </span>
-                      </span>
-                    </button>
+                    <ProductCardCartButton
+                      product={{
+                        id: product.id,
+                        slug: product.slug,
+                        name: product.name,
+                        image: product.image,
+                        category: product.category,
+                        price: product.price,
+                      }}
+                    />
                   </div>
 
                   <div className="flex flex-col gap-1 px-0.5">

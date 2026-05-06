@@ -1,25 +1,47 @@
 // Miur/miur/components/layout/Hero.tsx
 "use client";
 import { useRef, useState, useEffect } from 'react';
-import { useScroll, useTransform, motion } from 'framer-motion';
+import { useScroll, useTransform, motion, MotionConfig } from 'framer-motion';
 import { ArrowDown, Play, Pause } from 'lucide-react';
+import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 
 export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(true);
-  
+  const reducedMotion = usePrefersReducedMotion();
+
+  // Single source of truth: did the user explicitly pause via the button?
+  // Final play state is derived from this + OS reduced-motion preference.
+  const [userPaused, setUserPaused] = useState(false);
+  const isPlaying = !userPaused && !reducedMotion;
+
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
 
   useEffect(() => {
     const checkScreen = () => {
       setIsMobileOrTablet(window.innerWidth < 1024);
     };
-    
+
     checkScreen();
     window.addEventListener('resize', checkScreen);
     return () => window.removeEventListener('resize', checkScreen);
   }, []);
+
+  // Imperatively sync the <video> element to derived state. Effect only
+  // calls play/pause on the DOM node — no React state updates here, which
+  // keeps us compatible with React 19's set-state-in-effect rule.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (isPlaying) {
+      v.play().catch(() => {
+        // play() can reject (e.g. autoplay blocked); we ignore — the user can
+        // still resume via the toggle button.
+      });
+    } else {
+      v.pause();
+    }
+  }, [isPlaying]);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -27,14 +49,7 @@ export function Hero() {
   });
 
   const toggleVideo = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
+    setUserPaused((prev) => !prev);
   };
 
   const finalScale = isMobileOrTablet ? 0.25 : 0.18;
@@ -50,12 +65,13 @@ export function Hero() {
   const logoOpacity = useTransform(scrollYProgress, [0.58, 0.65], [1, 0]);
 
   return (
+    <MotionConfig reducedMotion="user">
     <section ref={containerRef} className="relative h-[130vh] w-full bg-white font-sans">
       <div className="sticky top-0 h-screen w-full overflow-hidden bg-black z-10">
-        
+
         <video
           ref={videoRef}
-          autoPlay
+          autoPlay={!reducedMotion}
           loop
           muted
           playsInline
@@ -64,7 +80,9 @@ export function Hero() {
           aria-hidden="true"
           className="absolute inset-0 z-0 h-full w-full object-cover opacity-50"
         >
-          <source src="/hero.webm" type="video/webm" />
+          {/* Single H.264 source — covers all evergreen browsers and is currently
+              smaller than our WebM master. Re-add a <source type="video/webm">
+              ABOVE this <source> only after re-encoding to <5 MB. */}
           <source src="/hero.mp4" type="video/mp4" />
         </video>
 
@@ -118,11 +136,12 @@ export function Hero() {
           className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 opacity-30"
         >
            <span className="text-[8px] uppercase tracking-[0.5em] text-white/40">Scroluj</span>
-           <ArrowDown className="w-3 h-3 text-white/40 animate-bounce" />
+           <ArrowDown className="w-3 h-3 text-white/40 motion-safe:animate-bounce" />
         </motion.div>
       </div>
 
       <div className="h-[30vh] w-full bg-white" />
     </section>
+    </MotionConfig>
   );
 }

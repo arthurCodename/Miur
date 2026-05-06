@@ -19,28 +19,66 @@ export function AccessibilityWidget() {
     adhdProfile: false,  // Маска фокусування
   });
 
-  // 1. Керування CSS класами (Збільшення, Контраст тощо)
+  // 1. Toggle a11y classes on <body> based on the user's preferences.
   useEffect(() => {
     const body = document.body;
-    settings.largeText ? body.classList.add('a11y-large-text') : body.classList.remove('a11y-large-text');
-    settings.readableFont ? body.classList.add('a11y-readable-font') : body.classList.remove('a11y-readable-font');
-    settings.highContrast ? body.classList.add('a11y-high-contrast') : body.classList.remove('a11y-high-contrast');
-    settings.grayscale ? body.classList.add('a11y-grayscale') : body.classList.remove('a11y-grayscale');
-    settings.highlightLinks ? body.classList.add('a11y-highlight-links') : body.classList.remove('a11y-highlight-links');
-    settings.bigCursor ? body.classList.add('a11y-big-cursor') : body.classList.remove('a11y-big-cursor');
+    body.classList.toggle("a11y-large-text", settings.largeText);
+    body.classList.toggle("a11y-readable-font", settings.readableFont);
+    body.classList.toggle("a11y-high-contrast", settings.highContrast);
+    body.classList.toggle("a11y-grayscale", settings.grayscale);
+    body.classList.toggle("a11y-highlight-links", settings.highlightLinks);
+    body.classList.toggle("a11y-big-cursor", settings.bigCursor);
   }, [settings]);
 
-  // 3. Логіка для "ADHD Profile" (Відслідковування миші для маски)
+  // 3. ADHD reading mask — keep a 120px window around the cursor visible.
   useEffect(() => {
     if (!settings.adhdProfile) return;
-    
+
     const handleMouseMove = (e: MouseEvent) => {
-      setMouseY(e.clientY); // Записуємо висоту курсора
+      setMouseY(e.clientY);
     };
-    
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [settings.adhdProfile]);
+
+  // 4. Screen reader (Web Speech API): when active, click any element with text
+  //    to have it spoken in Polish. Cancels any pending utterance on click.
+  useEffect(() => {
+    if (!settings.screenReader) return;
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      // Find the closest element that carries a meaningful text label.
+      const speakable = target.closest<HTMLElement>(
+        "p, h1, h2, h3, h4, h5, h6, li, button, a, label, span, [data-speakable]",
+      );
+      if (!speakable) return;
+
+      const text =
+        speakable.getAttribute("aria-label") ||
+        speakable.textContent?.trim() ||
+        "";
+      if (!text) return;
+
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "pl-PL";
+      utterance.rate = 0.95;
+      window.speechSynthesis.speak(utterance);
+    };
+
+    document.body.classList.add("a11y-screen-reader-active");
+    document.addEventListener("click", handleClick);
+    return () => {
+      window.speechSynthesis.cancel();
+      document.body.classList.remove("a11y-screen-reader-active");
+      document.removeEventListener("click", handleClick);
+    };
+  }, [settings.screenReader]);
 
   const toggleSetting = (key: keyof typeof settings) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }));

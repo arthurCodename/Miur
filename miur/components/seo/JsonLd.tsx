@@ -2,6 +2,8 @@ type OrganizationJsonLdProps = {
   name: string;
   url: string;
   logo: string;
+  /** CSP nonce — required when strict-dynamic CSP is enabled in middleware. */
+  nonce?: string;
 };
 
 export type ProductAvailability =
@@ -18,9 +20,11 @@ export interface ProductJsonLdProps {
   currency?: "PLN";
   availability: ProductAvailability;
   url?: string;
+  /** CSP nonce — required when strict-dynamic CSP is enabled in middleware. */
+  nonce?: string;
 }
 
-export function OrganizationJsonLd({ name, url, logo }: OrganizationJsonLdProps) {
+export function OrganizationJsonLd({ name, url, logo, nonce }: OrganizationJsonLdProps) {
   const data = {
     "@context": "https://schema.org",
     "@type": "Store",
@@ -32,6 +36,7 @@ export function OrganizationJsonLd({ name, url, logo }: OrganizationJsonLdProps)
   return (
     <script
       type="application/ld+json"
+      nonce={nonce}
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );
@@ -45,6 +50,7 @@ export function ProductJsonLd({
   currency = "PLN",
   availability,
   url,
+  nonce,
 }: ProductJsonLdProps) {
   const data = {
     "@context": "https://schema.org",
@@ -65,6 +71,7 @@ export function ProductJsonLd({
   return (
     <script
       type="application/ld+json"
+      nonce={nonce}
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );
