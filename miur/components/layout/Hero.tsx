@@ -18,13 +18,19 @@ export function Hero() {
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
 
   useEffect(() => {
-    const checkScreen = () => {
-      setIsMobileOrTablet(window.innerWidth < 1024);
-    };
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const syncFromMq = (matches: boolean) => setIsMobileOrTablet(matches);
+    syncFromMq(mq.matches);
+    const onChange = (event: MediaQueryListEvent) => syncFromMq(event.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
-    checkScreen();
-    window.addEventListener('resize', checkScreen);
-    return () => window.removeEventListener('resize', checkScreen);
+  useEffect(() => {
+    const v = videoRef.current;
+    // #region agent log
+    fetch('http://127.0.0.1:7554/ingest/3239a698-9bf4-4fb8-9931-cbcf4f49426c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b22d81'},body:JSON.stringify({sessionId:'b22d81',runId:'initial',hypothesisId:'H1_H2',location:'components/layout/Hero.tsx:31',message:'Hero mounted video snapshot',data:{hasVideoNode:Boolean(v),src:v?.currentSrc ?? null,readyState:v?.readyState ?? null,networkState:v?.networkState ?? null,userAgent:typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
   }, []);
 
   // Imperatively sync the <video> element to derived state. Effect only
@@ -34,14 +40,20 @@ export function Hero() {
     const v = videoRef.current;
     if (!v) return;
     if (isPlaying) {
+      // #region agent log
+      fetch('http://127.0.0.1:7554/ingest/3239a698-9bf4-4fb8-9931-cbcf4f49426c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b22d81'},body:JSON.stringify({sessionId:'b22d81',runId:'initial',hypothesisId:'H2_H4',location:'components/layout/Hero.tsx:44',message:'Video play requested',data:{isPlaying,userPaused,reducedMotion,readyState:v.readyState,networkState:v.networkState},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       v.play().catch(() => {
+        // #region agent log
+        fetch('http://127.0.0.1:7554/ingest/3239a698-9bf4-4fb8-9931-cbcf4f49426c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b22d81'},body:JSON.stringify({sessionId:'b22d81',runId:'initial',hypothesisId:'H2',location:'components/layout/Hero.tsx:48',message:'Video play rejected',data:{isPlaying,userPaused,reducedMotion,currentSrc:v.currentSrc},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
         // play() can reject (e.g. autoplay blocked); we ignore — the user can
         // still resume via the toggle button.
       });
     } else {
       v.pause();
     }
-  }, [isPlaying]);
+  }, [isPlaying, reducedMotion, userPaused]);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -71,12 +83,25 @@ export function Hero() {
 
         <video
           ref={videoRef}
+          src="/hero.mp4"
+          onError={() => {
+            const v = videoRef.current;
+            // #region agent log
+            fetch('http://127.0.0.1:7554/ingest/3239a698-9bf4-4fb8-9931-cbcf4f49426c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b22d81'},body:JSON.stringify({sessionId:'b22d81',runId:'initial',hypothesisId:'H1',location:'components/layout/Hero.tsx:86',message:'Video element error',data:{src:v?.currentSrc ?? null,readyState:v?.readyState ?? null,networkState:v?.networkState ?? null,errorCode:v?.error?.code ?? null,errorMessage:v?.error?.message ?? null},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
+          }}
+          onLoadedData={() => {
+            const v = videoRef.current;
+            // #region agent log
+            fetch('http://127.0.0.1:7554/ingest/3239a698-9bf4-4fb8-9931-cbcf4f49426c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b22d81'},body:JSON.stringify({sessionId:'b22d81',runId:'initial',hypothesisId:'H1',location:'components/layout/Hero.tsx:91',message:'Video loaded data',data:{src:v?.currentSrc ?? null,readyState:v?.readyState ?? null,networkState:v?.networkState ?? null,duration:v?.duration ?? null},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
+          }}
           autoPlay={!reducedMotion}
           loop
           muted
           playsInline
           poster="/hero-poster.jpg"
-          preload="metadata"
+          preload="auto"
           aria-hidden="true"
           className="absolute inset-0 z-0 h-full w-full object-cover opacity-50"
         >

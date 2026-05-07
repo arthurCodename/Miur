@@ -36,6 +36,9 @@ export default function CookieBanner() {
 
   useEffect(() => {
     const onOpen = () => {
+      // #region agent log
+      fetch('http://127.0.0.1:7554/ingest/3239a698-9bf4-4fb8-9931-cbcf4f49426c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b22d81'},body:JSON.stringify({sessionId:'b22d81',runId:'initial',hypothesisId:'H3',location:'components/layout/CookieBanner.tsx:40',message:'Cookie banner open event handled',data:{hadSavedConsent:Boolean(savedConsent),savedAnalytics:savedConsent?.analytics ?? null,savedMarketing:savedConsent?.marketing ?? null},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       setShowSettings(true);
       setIsOpenedManually(true);
       setDraftConsent({
