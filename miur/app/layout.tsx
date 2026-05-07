@@ -20,8 +20,17 @@ import { getSiteUrl } from "@/lib/site-url";
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
 const logoFont = localFont({
-  src: "../public/fonts/wildloops-bold_w.ttf",
+  src: [
+    {
+      path: "../public/fonts/wildloops-bold_w.ttf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
   variable: "--font-logo",
+  display: "swap",
+  fallback: ["Times New Roman", "serif"],
+  adjustFontFallback: "Times New Roman",
 });
 
 const siteUrl = getSiteUrl();

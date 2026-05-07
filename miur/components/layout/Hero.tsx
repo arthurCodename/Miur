@@ -26,13 +26,6 @@ export function Hero() {
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
-  useEffect(() => {
-    const v = videoRef.current;
-    // #region agent log
-    fetch('http://127.0.0.1:7554/ingest/3239a698-9bf4-4fb8-9931-cbcf4f49426c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b22d81'},body:JSON.stringify({sessionId:'b22d81',runId:'initial',hypothesisId:'H1_H2',location:'components/layout/Hero.tsx:31',message:'Hero mounted video snapshot',data:{hasVideoNode:Boolean(v),src:v?.currentSrc ?? null,readyState:v?.readyState ?? null,networkState:v?.networkState ?? null,userAgent:typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-  }, []);
-
   // Imperatively sync the <video> element to derived state. Effect only
   // calls play/pause on the DOM node — no React state updates here, which
   // keeps us compatible with React 19's set-state-in-effect rule.
@@ -40,13 +33,7 @@ export function Hero() {
     const v = videoRef.current;
     if (!v) return;
     if (isPlaying) {
-      // #region agent log
-      fetch('http://127.0.0.1:7554/ingest/3239a698-9bf4-4fb8-9931-cbcf4f49426c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b22d81'},body:JSON.stringify({sessionId:'b22d81',runId:'initial',hypothesisId:'H2_H4',location:'components/layout/Hero.tsx:44',message:'Video play requested',data:{isPlaying,userPaused,reducedMotion,readyState:v.readyState,networkState:v.networkState},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       v.play().catch(() => {
-        // #region agent log
-        fetch('http://127.0.0.1:7554/ingest/3239a698-9bf4-4fb8-9931-cbcf4f49426c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b22d81'},body:JSON.stringify({sessionId:'b22d81',runId:'initial',hypothesisId:'H2',location:'components/layout/Hero.tsx:48',message:'Video play rejected',data:{isPlaying,userPaused,reducedMotion,currentSrc:v.currentSrc},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         // play() can reject (e.g. autoplay blocked); we ignore — the user can
         // still resume via the toggle button.
       });
@@ -84,32 +71,15 @@ export function Hero() {
         <video
           ref={videoRef}
           src="/hero.mp4"
-          onError={() => {
-            const v = videoRef.current;
-            // #region agent log
-            fetch('http://127.0.0.1:7554/ingest/3239a698-9bf4-4fb8-9931-cbcf4f49426c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b22d81'},body:JSON.stringify({sessionId:'b22d81',runId:'initial',hypothesisId:'H1',location:'components/layout/Hero.tsx:86',message:'Video element error',data:{src:v?.currentSrc ?? null,readyState:v?.readyState ?? null,networkState:v?.networkState ?? null,errorCode:v?.error?.code ?? null,errorMessage:v?.error?.message ?? null},timestamp:Date.now()})}).catch(()=>{});
-            // #endregion
-          }}
-          onLoadedData={() => {
-            const v = videoRef.current;
-            // #region agent log
-            fetch('http://127.0.0.1:7554/ingest/3239a698-9bf4-4fb8-9931-cbcf4f49426c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b22d81'},body:JSON.stringify({sessionId:'b22d81',runId:'initial',hypothesisId:'H1',location:'components/layout/Hero.tsx:91',message:'Video loaded data',data:{src:v?.currentSrc ?? null,readyState:v?.readyState ?? null,networkState:v?.networkState ?? null,duration:v?.duration ?? null},timestamp:Date.now()})}).catch(()=>{});
-            // #endregion
-          }}
           autoPlay={!reducedMotion}
           loop
           muted
           playsInline
           poster="/hero-poster.jpg"
-          preload="auto"
+          preload="metadata"
           aria-hidden="true"
           className="absolute inset-0 z-0 h-full w-full object-cover opacity-50"
-        >
-          {/* Single H.264 source — covers all evergreen browsers and is currently
-              smaller than our WebM master. Re-add a <source type="video/webm">
-              ABOVE this <source> only after re-encoding to <5 MB. */}
-          <source src="/hero.mp4" type="video/mp4" />
-        </video>
+        />
 
         <div className="absolute inset-0 z-50 flex items-center justify-center lg:justify-end px-6 lg:px-24 pointer-events-none overflow-visible">
           <motion.div
