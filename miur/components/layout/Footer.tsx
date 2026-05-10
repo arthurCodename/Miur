@@ -149,7 +149,7 @@ export function Footer() {
       </div>
 
       <div className="mb-8 flex w-full items-center justify-center overflow-visible">
-        <span className="select-none pr-4 pl-6 font-[family-name:var(--font-logo)] text-[10vw] font-bold leading-none tracking-tighter text-zinc-900 md:pl-10 md:text-[6vw]">
+        <span className="brand-logo-wordmark select-none pr-4 pl-6 font-(family-name:--font-logo) text-[10vw] font-bold leading-none text-zinc-900 md:pl-10 md:text-[6vw]">
           Miur
         </span>
       </div>

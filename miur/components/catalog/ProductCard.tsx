@@ -94,7 +94,7 @@ export function ProductCard({ product, className, priority = false, ...props }: 
           </span>
         ) : null}
         {product.hygieneReturnExcluded !== false ? (
-          <p className="mt-2 rounded-sm border border-amber-200/80 bg-amber-50/90 p-2 text-[8px] leading-snug font-medium text-amber-950">
+          <p className="mt-2 rounded-sm border border-amber-200/80 bg-amber-50/90 p-2 text-[8px] leading-snug font-medium text-amber-950 transition-all duration-200 md:max-h-0 md:overflow-hidden md:border-transparent md:bg-transparent md:p-0 md:opacity-0 md:group-hover:max-h-24 md:group-hover:border-amber-200/80 md:group-hover:bg-amber-50/90 md:group-hover:p-2 md:group-hover:opacity-100 md:group-focus-within:max-h-24 md:group-focus-within:border-amber-200/80 md:group-focus-within:bg-amber-50/90 md:group-focus-within:p-2 md:group-focus-within:opacity-100">
             Po otwarciu opakowania zwrot może być wykluczony ze względów higienicznych (art. 38 pkt 5 ustawy o
             prawach konsumenta). Szczegóły:{" "}
             <Link className="underline underline-offset-1" href="/zwroty-reklamacje">

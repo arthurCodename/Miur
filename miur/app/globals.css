@@ -68,6 +68,28 @@ body::-webkit-scrollbar-thumb {
 body::-webkit-scrollbar-thumb:hover {
   background: #52525b;
 }
+
+/* Shared wordmark treatment for decorative Wild-Loops glyph overhangs (swashes). */
+.brand-logo-wordmark {
+  display: inline-block;
+  overflow: visible;
+  padding-inline: 0.12em;
+  letter-spacing: 0.02em;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+}
+
+/* Visual-only local preview mode (NEXT_PUBLIC_VISUAL_ONLY=1). */
+.visual-only :is(a, button, input, select, textarea, [role="button"]) {
+  pointer-events: none !important;
+}
+
+.visual-only input,
+.visual-only textarea {
+  user-select: none;
+  caret-color: transparent;
+}
+
 /* Accessibility Classes */
 /* --- Accessibility Classes --- */
 .a11y-large-text {

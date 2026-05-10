@@ -71,13 +71,17 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const visualOnlyMode = process.env.NEXT_PUBLIC_VISUAL_ONLY === "1";
+
   // CSP nonce is set per-request in middleware.ts; falls back to "" when middleware
   // didn't run (static prerender / non-matching path) so React stays happy.
   const nonce = (await headers()).get("x-nonce") ?? "";
 
   return (
     <html lang="pl" className={logoFont.variable} suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen flex flex-col antialiased bg-white`}>
+      <body
+        className={`${inter.className} min-h-screen flex flex-col antialiased bg-white ${visualOnlyMode ? "visual-only" : ""}`}
+      >
         <OrganizationJsonLd
           name={siteTitle}
           url={siteUrl}
@@ -91,7 +95,7 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <ConsentScripts nonce={nonce} />
+            {!visualOnlyMode && <ConsentScripts nonce={nonce} />}
             <div className="flex min-h-screen flex-col">
               <a
                 href="#main-content"
@@ -100,14 +104,14 @@ export default async function RootLayout({
                 Przejdź do treści głównej
               </a>
               <Navbar />
-              <AccessibilityWidget />
-              <CookieBanner />
-              <AgeGate />
+              {!visualOnlyMode && <AccessibilityWidget />}
+              {!visualOnlyMode && <CookieBanner />}
+              {!visualOnlyMode && <AgeGate />}
               <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
                 {children}
               </main>
               <Footer />
-              <Toaster richColors position="top-center" />
+              {!visualOnlyMode && <Toaster richColors position="top-center" />}
             </div>
           </ThemeProvider>
         </CookieConsentProvider>

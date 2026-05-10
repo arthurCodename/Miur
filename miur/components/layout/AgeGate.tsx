@@ -62,13 +62,13 @@ export function AgeGate() {
 
   return (
     <div
-      className="fixed inset-0 z-[400] flex items-center justify-center bg-zinc-950 px-6"
+      className="fixed inset-0 z-400 flex items-center justify-center bg-zinc-950 px-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="age-gate-title"
     >
       <div className="max-w-md text-center">
-        <h1 id="age-gate-title" className="mb-4 text-2xl font-bold text-white">
+        <h1 id="age-gate-title" className="brand-logo-wordmark mb-4 text-2xl font-bold font-(family-name:--font-logo) text-white">
           Miur
         </h1>
         <p className="mb-8 text-sm leading-relaxed text-zinc-300">

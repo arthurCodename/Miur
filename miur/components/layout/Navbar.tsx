@@ -57,7 +57,7 @@ export default function Navbar() {
 
   return (
     <div 
-      className="fixed top-0 left-0 w-full z-[100]"
+      className="fixed top-0 left-0 w-full z-100"
       onMouseLeave={() => setIsMegaMenuOpen(false)}
     >
       <header className="relative isolate z-50 grid grid-cols-3 items-center px-6 pb-8 pt-[calc(env(safe-area-inset-top)+20px)] transition-all duration-500 md:px-12 md:pt-8">
@@ -86,7 +86,7 @@ export default function Navbar() {
         </motion.div>
 
         {/* ЛІВА ЧАСТИНА */}
-        <div className="flex items-center gap-6 justify-self-start text-white">
+        <div className="flex items-center gap-3 justify-self-start text-white md:gap-6">
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
@@ -124,20 +124,20 @@ export default function Navbar() {
             </Sheet>
           </div>
 
-          <div className="hidden md:flex items-center gap-6 cursor-pointer group" onMouseEnter={() => setIsMegaMenuOpen(true)}>
-            <div className="flex items-center gap-3">
+          <div className="hidden md:flex h-8 items-center gap-6 cursor-pointer group" onMouseEnter={() => setIsMegaMenuOpen(true)}>
+            <div className="flex h-full items-center gap-3">
               <Menu className="w-5 h-5 group-hover:opacity-50 transition-opacity" strokeWidth={1.2} />
-              <span className="text-[9px] font-bold uppercase tracking-[0.3em]">Menu</span>
+              <span className="text-[9px] font-bold uppercase leading-none tracking-[0.3em]">Menu</span>
             </div>
           </div>
           
-          <SearchConsole className="flex min-w-0 max-w-[min(100%,12rem)] sm:max-w-[14rem] md:max-w-none" />
+          <SearchConsole className="flex min-w-0 max-w-[min(100%,9rem)] sm:max-w-48 md:h-8 md:max-w-none" />
         </div>
 
         {/* ЦЕНТРАЛЬНА ЧАСТИНА */}
         <div className="justify-self-center text-white">
           <motion.div style={{ opacity: isHomePage ? logoOpacity : 1 }} className="px-4 py-2">
-            <Link href="/" className="text-2xl font-bold tracking-tighter font-[family-name:var(--font-logo)]">
+            <Link href="/" className="brand-logo-wordmark text-2xl font-bold font-(family-name:--font-logo)">
               Miur
             </Link>
           </motion.div>

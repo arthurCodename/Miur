@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack --hostname 127.0.0.1 --port 3000",
+    "dev:turbo": "next dev --hostname 127.0.0.1 --port 3000",
+    "dev:visual": "NEXT_PUBLIC_VISUAL_ONLY=1 next dev --webpack --hostname 127.0.0.1 --port 3000",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

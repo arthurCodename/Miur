@@ -281,7 +281,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
                       </span>
                     ) : null}
                     {product.hygieneReturnExcluded !== false ? (
-                      <p className="mt-2 rounded-sm border border-amber-500/30 bg-amber-500/10 p-2 text-[8px] font-medium leading-snug text-amber-100/95">
+                      <p className="mt-2 rounded-sm border border-amber-500/30 bg-amber-500/10 p-2 text-[8px] font-medium leading-snug text-amber-100/95 transition-all duration-200 md:max-h-0 md:overflow-hidden md:border-transparent md:bg-transparent md:p-0 md:opacity-0 md:group-hover:max-h-24 md:group-hover:border-amber-500/30 md:group-hover:bg-amber-500/10 md:group-hover:p-2 md:group-hover:opacity-100 md:group-focus-within:max-h-24 md:group-focus-within:border-amber-500/30 md:group-focus-within:bg-amber-500/10 md:group-focus-within:p-2 md:group-focus-within:opacity-100">
                         Po otwarciu opakowania zwrot może być wykluczony (higiena, art. 38 pkt 5 UoPK).{" "}
                         <a className="underline underline-offset-1" href="/zwroty-reklamacje">
                           Więcej

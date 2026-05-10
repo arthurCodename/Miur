@@ -153,7 +153,16 @@ import { cn } from "@/lib/utils";
 ### Typography
 ```
 Body:     Inter (Google Fonts, subsets: latin, latin-ext)
-Logo:     wildloops-bold_w.ttf → var(--font-logo) → font-[family-name:var(--font-logo)]
+Logo:     wildloops-bold_w.ttf → var(--font-logo) → font-(family-name:--font-logo)
+```
+
+### Logo Wordmark Safety (Wild-Loops)
+```
+For every visible "Miur" logo wordmark using Wild-Loops:
+1) Always add class `brand-logo-wordmark` (defined in app/globals.css)
+2) Never use negative tracking (`tracking-tight`, `tracking-tighter`, custom negative letter-spacing)
+3) Keep container compatible with swashes: no clipping on x-axis for logo wrappers
+4) If creating a new logo placement, reuse existing pattern from Hero/Navbar/Footer instead of custom one-off styles
 ```
  
 ### Color Palette (zinc-based neutrals)
@@ -267,7 +276,7 @@ text-[14vw]                     → hero display text (responsive)
 // Product card base pattern
 <div className="group relative overflow-hidden">
   {/* Image with hover zoom */}
-  <div className="overflow-hidden aspect-[3/4]">
+  <div className="overflow-hidden aspect-3/4">
     <Image 
       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
       alt="Product description"  // Always descriptive
@@ -392,7 +401,7 @@ import Image from "next/image";
 ### Fonts
 ```tsx
 // Already configured in layout.tsx — do not re-add
-// Use: className="font-[family-name:var(--font-logo)]" for logo font
+// Use: className="font-(family-name:--font-logo)" for logo font
 // Use: className={inter.className} already applied to body
 ```
  
@@ -404,7 +413,7 @@ import Image from "next/image";
 // ✅ Skip link — must be first element in layout.tsx
 <a
   href="#main-content"
-  className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:text-zinc-900 focus:font-bold focus:text-sm"
+  className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-9999 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:text-zinc-900 focus:font-bold focus:text-sm"
 >
   Przejdź do treści głównej
 </a>
