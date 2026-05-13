@@ -33,21 +33,34 @@
   * {
     @apply border-[#e4e4e7];
   }
-  html,
+
+  /*
+   * Polityka szerokości (cała aplikacja, wszystkie strony):
+   * dokument nie może poszerzać się poza viewport w poziomie.
+   * Bardzo szerokie treści (tabele prawne, kod) — owijaj lokalnie: max-w-full overflow-x-auto.
+   */
+  html {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+    scrollbar-width: thin;
+    scrollbar-color: #71717a #18181b;
+  }
+
   body {
     width: 100%;
     max-width: 100%;
-    overflow-x: hidden;
-  }
-  body {
+    overflow-x: clip;
     @apply bg-white text-[#09090b] antialiased;
   }
-}
 
-/* Global scrollbar styling for manual page scrolling */
-html {
-  scrollbar-width: thin;
-  scrollbar-color: #71717a #18181b;
+  /* Treść z layout.tsx — druga linia obrony pod flex/grid w children */
+  #main-content {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
 }
 
 body::-webkit-scrollbar {
@@ -69,14 +82,17 @@ body::-webkit-scrollbar-thumb:hover {
   background: #52525b;
 }
 
-/* Shared wordmark treatment for decorative Wild-Loops glyph overhangs (swashes). */
+/* Wild Loops wordmark — ten sam plik TTF wszędzie; bez faux-bold i bez trików rasteru (Chrome/Windows). */
 .brand-logo-wordmark {
   display: inline-block;
   overflow: visible;
   padding-inline: 0.12em;
   letter-spacing: 0.02em;
-  text-rendering: optimizeLegibility;
+  font-family: var(--font-logo), Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  font-synthesis: none;
   font-kerning: normal;
+  text-rendering: auto;
 }
 
 /* Visual-only local preview mode (NEXT_PUBLIC_VISUAL_ONLY=1). */

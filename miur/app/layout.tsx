@@ -20,17 +20,28 @@ import { getSiteUrl } from "@/lib/site-url";
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
 const logoFont = localFont({
+  /* Wild Loops z kitu: woff2 → woff → ttf; bold = 600 (jak u dostawcy). */
   src: [
     {
+      path: "../public/fonts/wildloops-bold_w.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/wildloops-bold_w.woff",
+      weight: "600",
+      style: "normal",
+    },
+    {
       path: "../public/fonts/wildloops-bold_w.ttf",
-      weight: "700",
+      weight: "600",
       style: "normal",
     },
   ],
   variable: "--font-logo",
   display: "swap",
-  fallback: ["Times New Roman", "serif"],
-  adjustFontFallback: "Times New Roman",
+  fallback: ["Georgia", "Times New Roman", "serif"],
+  adjustFontFallback: false,
 });
 
 const siteUrl = getSiteUrl();
@@ -78,9 +89,9 @@ export default async function RootLayout({
   const nonce = (await headers()).get("x-nonce") ?? "";
 
   return (
-    <html lang="pl" className={logoFont.variable} suppressHydrationWarning>
+    <html lang="pl" className={`${logoFont.variable} max-w-full overflow-x-clip`} suppressHydrationWarning>
       <body
-        className={`${inter.className} min-h-screen flex flex-col antialiased bg-white ${visualOnlyMode ? "visual-only" : ""}`}
+        className={`${inter.className} min-h-screen min-w-0 max-w-full overflow-x-clip flex flex-col antialiased bg-white ${visualOnlyMode ? "visual-only" : ""}`}
       >
         <OrganizationJsonLd
           name={siteTitle}
@@ -96,7 +107,7 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             {!visualOnlyMode && <ConsentScripts nonce={nonce} />}
-            <div className="flex min-h-screen flex-col">
+            <div className="flex min-h-screen min-w-0 w-full max-w-full flex-col overflow-x-clip">
               <a
                 href="#main-content"
                 className="sr-only left-4 top-4 z-500 rounded-sm bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-lg outline-none ring-2 ring-zinc-900 transition-none focus:not-sr-only focus:absolute focus:inline-block"
@@ -108,7 +119,7 @@ export default async function RootLayout({
               {!visualOnlyMode && <CookieBanner />}
               {!visualOnlyMode && <AgeGate />}
               <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
-                {children}
+                <div className="min-w-0 w-full max-w-full overflow-x-clip">{children}</div>
               </main>
               <Footer />
               {!visualOnlyMode && <Toaster richColors position="top-center" />}

@@ -27,7 +27,7 @@ export default async function Home() {
     ]);
 
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex w-full min-w-0 max-w-full flex-col overflow-x-clip">
       <Hero />
       <TrustBar />
       <CategoryGrid />

@@ -24,7 +24,7 @@ export function ProductCard({ product, className, priority = false, ...props }: 
   const productHref = `/produkt/${product.slug}`;
 
   return (
-    <article className={cn("group flex flex-col", className)} {...props}>
+    <article className={cn("group relative flex flex-col", className)} {...props}>
       <div className="relative mb-6 aspect-3/4 overflow-hidden bg-zinc-50">
         {product.tag ? (
           <div className="absolute top-4 left-4 z-10 rounded-full bg-white px-3 py-1 shadow-sm">
@@ -94,7 +94,17 @@ export function ProductCard({ product, className, priority = false, ...props }: 
           </span>
         ) : null}
         {product.hygieneReturnExcluded !== false ? (
-          <p className="mt-2 rounded-sm border border-amber-200/80 bg-amber-50/90 p-2 text-[8px] leading-snug font-medium text-amber-950 transition-all duration-200 md:max-h-0 md:overflow-hidden md:border-transparent md:bg-transparent md:p-0 md:opacity-0 md:group-hover:max-h-24 md:group-hover:border-amber-200/80 md:group-hover:bg-amber-50/90 md:group-hover:p-2 md:group-hover:opacity-100 md:group-focus-within:max-h-24 md:group-focus-within:border-amber-200/80 md:group-focus-within:bg-amber-50/90 md:group-focus-within:p-2 md:group-focus-within:opacity-100">
+          <p
+            className={cn(
+              "mt-2 rounded-sm border border-amber-200/80 bg-amber-50/90 p-2 text-[8px] font-medium leading-snug text-amber-950",
+              "transition-opacity duration-200",
+              /* md+: out of document flow so hover does not shift sibling tiles */
+              "md:absolute md:bottom-0 md:left-0 md:right-0 md:z-20 md:mt-0 md:shadow-md",
+              "md:opacity-0 md:invisible md:pointer-events-none",
+              "md:group-hover:visible md:group-hover:opacity-100 md:group-hover:pointer-events-auto",
+              "md:group-focus-within:visible md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto",
+            )}
+          >
             Po otwarciu opakowania zwrot może być wykluczony ze względów higienicznych (art. 38 pkt 5 ustawy o
             prawach konsumenta). Szczegóły:{" "}
             <Link className="underline underline-offset-1" href="/zwroty-reklamacje">

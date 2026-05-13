@@ -35,11 +35,8 @@ export function SearchConsole({ className }: SearchConsoleProps) {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className={cn("group flex min-w-0 max-w-full items-center gap-2 text-white", className)}
-    >
-      <div className="flex h-full min-w-0 flex-1 items-center border-b border-transparent transition-[border-color,width] duration-300 focus-within:border-white/80 group-hover:border-white/30 md:w-40 md:max-w-44 md:opacity-100 lg:w-52 lg:max-w-56">
+    <form onSubmit={handleSubmit} className={cn("flex min-w-0 max-w-full items-center gap-2 text-white", className)}>
+      <div className="group flex h-full min-w-0 flex-1 items-center border-b border-transparent transition-[border-color,width] duration-300 hover:border-white/30 focus-within:border-white/80 md:w-40 md:max-w-44 md:opacity-100 lg:w-52 lg:max-w-56">
         <input
           type="search"
           name="q"
@@ -51,14 +48,14 @@ export function SearchConsole({ className }: SearchConsoleProps) {
           className="min-w-0 flex-1 bg-transparent text-[10px] font-bold uppercase leading-none tracking-widest text-white outline-none placeholder:text-white/50"
           enterKeyHint="search"
         />
+        <button
+          type="submit"
+          className="hidden shrink-0 rounded-full p-1.5 text-white/70 outline-none transition-[opacity,color,background-color] duration-200 hover:bg-white/10 hover:text-white focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-white/60 md:flex md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto"
+          aria-label="Szukaj"
+        >
+          <Search className="h-5 w-5" strokeWidth={1.2} aria-hidden />
+        </button>
       </div>
-      <button
-        type="submit"
-        className="hidden shrink-0 rounded-full p-1.5 text-white/70 outline-none transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/60 md:inline-flex"
-        aria-label="Szukaj"
-      >
-        <Search className="h-5 w-5" strokeWidth={1.2} aria-hidden />
-      </button>
     </form>
   );
 }

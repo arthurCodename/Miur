@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import { ProductCardCartButton } from "@/components/catalog/ProductCardCartButton";
 import type { BestsellerProduct, SaleCategoryTile } from "@/lib/catalog/types";
+import { cn } from "@/lib/utils";
 
 const seeAllLinkClass =
   "inline-flex flex-col items-stretch gap-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white outline-none rounded-sm transition-colors duration-500 hover:text-zinc-400 focus-visible:text-white focus-visible:underline focus-visible:underline-offset-4";
@@ -200,7 +201,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
                 <article
                   key={product.id}
                   data-carousel-card
-                  className="group flex w-[min(72vw,240px)] shrink-0 snap-start snap-always flex-col sm:w-[min(46vw,260px)] md:w-[240px] lg:w-[260px]"
+                  className="group relative flex w-[min(72vw,240px)] shrink-0 snap-start snap-always flex-col sm:w-[min(46vw,260px)] md:w-[240px] lg:w-[260px]"
                 >
                   <div className="relative mb-6 aspect-3/4 overflow-hidden rounded-sm bg-white shadow-xl shadow-black/30 ring-1 ring-white/10">
                     {product.tag && (
@@ -281,7 +282,16 @@ export function WyprzedazSection({ tiles, products }: Props) {
                       </span>
                     ) : null}
                     {product.hygieneReturnExcluded !== false ? (
-                      <p className="mt-2 rounded-sm border border-amber-500/30 bg-amber-500/10 p-2 text-[8px] font-medium leading-snug text-amber-100/95 transition-all duration-200 md:max-h-0 md:overflow-hidden md:border-transparent md:bg-transparent md:p-0 md:opacity-0 md:group-hover:max-h-24 md:group-hover:border-amber-500/30 md:group-hover:bg-amber-500/10 md:group-hover:p-2 md:group-hover:opacity-100 md:group-focus-within:max-h-24 md:group-focus-within:border-amber-500/30 md:group-focus-within:bg-amber-500/10 md:group-focus-within:p-2 md:group-focus-within:opacity-100">
+                      <p
+                        className={cn(
+                          "mt-2 rounded-sm border border-amber-500/30 bg-amber-500/10 p-2 text-[8px] font-medium leading-snug text-amber-100/95",
+                          "transition-opacity duration-200",
+                          "md:absolute md:bottom-0 md:left-0 md:right-0 md:z-20 md:mt-0 md:shadow-lg md:shadow-black/40",
+                          "md:opacity-0 md:invisible md:pointer-events-none",
+                          "md:group-hover:visible md:group-hover:opacity-100 md:group-hover:pointer-events-auto",
+                          "md:group-focus-within:visible md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto",
+                        )}
+                      >
                         Po otwarciu opakowania zwrot może być wykluczony (higiena, art. 38 pkt 5 UoPK).{" "}
                         <a className="underline underline-offset-1" href="/zwroty-reklamacje">
                           Więcej

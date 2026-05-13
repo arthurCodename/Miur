@@ -8,7 +8,7 @@ import { ODR_URL, sellerLegal } from "@/lib/legal/seller";
 
 export function Footer() {
   return (
-    <footer className="relative isolate flex flex-col items-center overflow-hidden border-t border-zinc-100 bg-white px-6 pb-12 pt-24 font-sans text-zinc-900 lg:px-12">
+    <footer className="relative isolate flex min-w-0 max-w-full flex-col items-center overflow-x-clip border-t border-zinc-100 bg-white px-6 pb-12 pt-24 font-sans text-zinc-900 lg:px-12">
       <div className="mb-24 flex w-full max-w-xl flex-col items-center text-center">
         <h3 className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-900 md:text-[11px]">
           Mamy dla Ciebie bonus
@@ -148,8 +148,8 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="mb-8 flex w-full items-center justify-center overflow-visible">
-        <span className="brand-logo-wordmark select-none pr-4 pl-6 font-(family-name:--font-logo) text-[10vw] font-bold leading-none text-zinc-900 md:pl-10 md:text-[6vw]">
+      <div className="mb-8 flex w-full max-w-full items-center justify-center overflow-x-clip px-2">
+        <span className="brand-logo-wordmark select-none pr-4 pl-6 text-[10vw] leading-none text-zinc-900 md:pl-10 md:text-[6vw]">
           Miur
         </span>
       </div>

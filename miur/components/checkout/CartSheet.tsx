@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetFooter,
   SheetHeader,
@@ -27,6 +29,12 @@ export function CartSheet({ children }: CartSheetProps) {
   const removeItem = useCartStore((s) => s.removeItem);
 
   const isMounted = useIsMounted();
+  const pathname = usePathname();
+  const [cartOpen, setCartOpen] = useState(false);
+
+  useEffect(() => {
+    setCartOpen(false);
+  }, [pathname]);
 
   const totalPrice = useMemo(
     () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
@@ -34,7 +42,7 @@ export function CartSheet({ children }: CartSheetProps) {
   );
 
   return (
-    <Sheet>
+    <Sheet open={cartOpen} onOpenChange={setCartOpen}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent
         side="right"
@@ -71,27 +79,31 @@ export function CartSheet({ children }: CartSheetProps) {
                   key={item.id}
                   className="flex gap-3 border-b border-zinc-100 pb-5 last:border-b-0 last:pb-0"
                 >
-                  <Link
-                    href={`/produkt/${item.slug}`}
-                    className="relative size-[72px] shrink-0 overflow-hidden rounded-md bg-zinc-100"
-                  >
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      fill
-                      sizes="72px"
-                      className="object-cover"
-                    />
-                  </Link>
+                  <SheetClose asChild>
+                    <Link
+                      href={`/produkt/${item.slug}`}
+                      className="relative size-[72px] shrink-0 overflow-hidden rounded-md bg-zinc-100"
+                    >
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        fill
+                        sizes="72px"
+                        className="object-cover"
+                      />
+                    </Link>
+                  </SheetClose>
 
                   <div className="flex min-w-0 flex-1 flex-col gap-2">
                     <div className="flex gap-2">
-                      <Link
-                        href={`/produkt/${item.slug}`}
-                        className="min-w-0 flex-1 text-sm font-semibold leading-snug text-zinc-900 underline-offset-2 hover:underline"
-                      >
-                        {item.name}
-                      </Link>
+                      <SheetClose asChild>
+                        <Link
+                          href={`/produkt/${item.slug}`}
+                          className="min-w-0 flex-1 text-left text-sm font-semibold leading-snug text-zinc-900 underline-offset-2 hover:underline"
+                        >
+                          {item.name}
+                        </Link>
+                      </SheetClose>
                       <button
                         type="button"
                         onClick={() => removeItem(item.id)}
@@ -154,12 +166,14 @@ export function CartSheet({ children }: CartSheetProps) {
               {!isMounted ? "" : `Razem: ${formatPlnAmount(totalPrice)}`}
             </p>
             {isMounted && items.length > 0 ? (
-              <Link
-                href="/checkout"
-                className="flex min-h-12 w-full items-center justify-center rounded-full bg-zinc-900 px-6 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
-              >
-                Przejdź do kasy
-              </Link>
+              <SheetClose asChild>
+                <Link
+                  href="/checkout"
+                  className="flex min-h-12 w-full items-center justify-center rounded-full bg-zinc-900 px-6 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                >
+                  Przejdź do kasy
+                </Link>
+              </SheetClose>
             ) : (
               <span
                 className="flex min-h-12 w-full cursor-not-allowed items-center justify-center rounded-full bg-zinc-300 px-6 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500"

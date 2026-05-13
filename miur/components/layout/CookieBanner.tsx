@@ -56,7 +56,7 @@ export default function CookieBanner() {
   const [delayElapsed, setDelayElapsed] = useState(false);
   useEffect(() => {
     if (savedConsent) return;
-    const id = setTimeout(() => setDelayElapsed(true), 2000);
+    const id = setTimeout(() => setDelayElapsed(true), 100);
     return () => clearTimeout(id);
   }, [savedConsent]);
 

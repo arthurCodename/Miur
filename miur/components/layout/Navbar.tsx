@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
@@ -51,13 +51,17 @@ export default function Navbar() {
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(menuData[0].title);
 
+  useEffect(() => {
+    setIsMegaMenuOpen(false);
+  }, [pathname]);
+
   // Градієнт з'являється після 50px скролу і стає повним на 200px
   const gradientOpacity = useTransform(scrollY, [0, 150], [0, 1]);
   const logoOpacity = useTransform(scrollY, [550, 750], [0, 1]);
 
   return (
-    <div 
-      className="fixed top-0 left-0 w-full z-100"
+    <div
+      className="fixed top-0 left-0 z-100 max-w-full min-w-0 overflow-x-clip w-full"
       onMouseLeave={() => setIsMegaMenuOpen(false)}
     >
       <header className="relative isolate z-50 grid grid-cols-3 items-center px-6 pb-8 pt-[calc(env(safe-area-inset-top)+20px)] transition-all duration-500 md:px-12 md:pt-8">
@@ -109,14 +113,16 @@ export default function Navbar() {
                 </div>
                 <nav
                   aria-label="Główne kategorie"
-                  className="flex-1 px-6 pt-2 flex flex-col overflow-y-auto no-scrollbar"
+                  className="flex-1 px-6 pt-2 flex flex-col overflow-y-auto overflow-x-hidden no-scrollbar"
                 >
                   {menuData.map((cat, idx) => (
                     <motion.div key={cat.title} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.03 }}>
-                      <Link href={cat.href} className="group flex items-center justify-between py-3.5 border-b border-white/5">
-                        <span className="text-[13px] font-bold uppercase tracking-[0.15em]">{cat.title}</span>
-                        <ChevronRight className="w-4 h-4 text-zinc-600" aria-hidden="true" />
-                      </Link>
+                      <SheetClose asChild>
+                        <Link href={cat.href} className="group flex items-center justify-between py-3.5 border-b border-white/5">
+                          <span className="text-[13px] font-bold uppercase tracking-[0.15em]">{cat.title}</span>
+                          <ChevronRight className="w-4 h-4 text-zinc-600" aria-hidden="true" />
+                        </Link>
+                      </SheetClose>
                     </motion.div>
                   ))}
                 </nav>
@@ -137,7 +143,7 @@ export default function Navbar() {
         {/* ЦЕНТРАЛЬНА ЧАСТИНА */}
         <div className="justify-self-center text-white">
           <motion.div style={{ opacity: isHomePage ? logoOpacity : 1 }} className="px-4 py-2">
-            <Link href="/" className="brand-logo-wordmark text-2xl font-bold font-(family-name:--font-logo)">
+            <Link href="/" className="brand-logo-wordmark text-2xl text-white">
               Miur
             </Link>
           </motion.div>
@@ -161,13 +167,14 @@ export default function Navbar() {
           <motion.nav
             aria-label="Kategorie produktów"
             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            className="hidden md:flex absolute top-0 left-0 w-full bg-zinc-950 text-white pt-32 pb-16 px-12 border-b border-zinc-800/50 h-[80vh] z-40"
+            className="hidden md:flex absolute top-0 left-0 w-full max-w-full min-w-0 flex-row overflow-x-clip bg-zinc-950 text-white pt-32 pb-16 px-12 border-b border-zinc-800/50 h-[80vh] z-40"
           >
-            <ul className="w-1/4 border-r border-zinc-800 flex flex-col gap-6 overflow-y-auto no-scrollbar">
+            <ul className="w-1/4 min-w-0 shrink-0 border-r border-zinc-800 flex flex-col gap-6 overflow-y-auto overflow-x-hidden no-scrollbar">
               {menuData.map((cat) => (
                 <li key={cat.title}>
                   <Link
                     href={cat.href}
+                    onClick={() => setIsMegaMenuOpen(false)}
                     onMouseEnter={() => setActiveTab(cat.title)}
                     onFocus={() => setActiveTab(cat.title)}
                     className={`block text-left text-[11px] font-bold uppercase tracking-[0.2em] transition-all outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-sm ${
@@ -179,7 +186,7 @@ export default function Navbar() {
                 </li>
               ))}
             </ul>
-            <div className="w-3/4 pl-16 grid grid-cols-3 gap-12 overflow-y-auto no-scrollbar">
+            <div className="min-w-0 flex-1 pl-16 grid grid-cols-3 gap-12 overflow-y-auto overflow-x-hidden no-scrollbar">
                {menuData.find(c => c.title === activeTab)?.sections?.map((s, i) => (
                  <div key={i} className="flex flex-col gap-4">
                    <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-100">{s.heading}</h4>

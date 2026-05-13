@@ -66,11 +66,11 @@ export function Hero() {
     <MotionConfig reducedMotion="user">
       <section
         ref={containerRef}
-        className="relative w-full bg-black font-sans"
+        className="relative w-full max-w-full overflow-x-hidden bg-black font-sans"
         style={{ height: "calc(var(--app-vh, 1vh) * 130)" }}
       >
         <div
-          className="sticky top-0 z-10 w-full overflow-hidden bg-black"
+          className="sticky top-0 z-10 w-full max-w-full overflow-x-hidden overflow-y-hidden bg-black"
           style={{ height: "calc(var(--app-vh, 1vh) * 100)" }}
         >
           <video
@@ -88,7 +88,7 @@ export function Hero() {
             <source src="/hero.mp4" type="video/mp4" />
           </video>
 
-          <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center overflow-visible px-6 lg:justify-end lg:px-24">
+          <div className="pointer-events-none absolute inset-0 z-50 flex max-w-full items-center justify-center overflow-hidden px-6 lg:justify-end lg:px-24">
             <motion.div
               style={{
                 scale,
@@ -99,9 +99,9 @@ export function Hero() {
                   ? "center center"
                   : "right center",
               }}
-              className="isolate flex flex-col items-center overflow-visible lg:items-end"
+              className="isolate flex max-w-full flex-col items-center overflow-hidden lg:items-end"
             >
-              <h1 className="brand-logo-wordmark font-(family-name:--font-logo) text-[20vw] font-bold leading-none text-white drop-shadow-2xl lg:text-[14vw]">
+              <h1 className="brand-logo-wordmark text-[20vw] leading-none text-white drop-shadow-2xl lg:text-[14vw]">
                 Miur
               </h1>
             </motion.div>
