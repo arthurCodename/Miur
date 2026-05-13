@@ -4,6 +4,7 @@ import { FooterLogoutButton } from "@/components/layout/FooterLogoutButton";
 import { FooterNewsletter } from "@/components/layout/FooterNewsletter";
 import { CookieSettingsLink } from "@/components/legal/CookieSettingsLink";
 import { SellerDataBlock } from "@/components/legal/SellerDataBlock";
+import { MiurWordmark } from "@/components/brand/MiurWordmark";
 import { ODR_URL, sellerLegal } from "@/lib/legal/seller";
 
 export function Footer() {
@@ -149,8 +150,8 @@ export function Footer() {
       </div>
 
       <div className="mb-8 flex w-full max-w-full items-center justify-center overflow-x-clip px-2">
-        <span className="brand-logo-wordmark select-none pr-4 pl-6 text-[10vw] leading-none text-zinc-900 md:pl-10 md:text-[6vw]">
-          Miur
+        <span className="inline-flex select-none pr-4 pl-6 text-zinc-900 md:pl-10">
+          <MiurWordmark title="Miur" className="h-[10vw] w-auto md:h-[6vw]" />
         </span>
       </div>
 

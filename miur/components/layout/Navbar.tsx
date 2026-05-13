@@ -9,6 +9,7 @@ import { SearchConsole } from "@/components/layout/SearchConsole";
 import { CartSheet } from "@/components/checkout/CartSheet";
 import { AuthNavLink } from "@/components/layout/AuthNavLink";
 import { CartIcon } from "@/components/layout/CartIcon";
+import { MiurWordmark } from "@/components/brand/MiurWordmark";
 import { 
   Sheet, 
   SheetContent, 
@@ -143,8 +144,12 @@ export default function Navbar() {
         {/* ЦЕНТРАЛЬНА ЧАСТИНА */}
         <div className="justify-self-center text-white">
           <motion.div style={{ opacity: isHomePage ? logoOpacity : 1 }} className="px-4 py-2">
-            <Link href="/" className="brand-logo-wordmark text-2xl text-white">
-              Miur
+            <Link
+              href="/"
+              aria-label="Miur — strona główna"
+              className="inline-flex items-center text-white outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
+            >
+              <MiurWordmark decorative className="h-7 w-auto md:h-8" />
             </Link>
           </motion.div>
         </div>

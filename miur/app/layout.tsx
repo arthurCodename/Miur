@@ -2,7 +2,6 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Inter } from "next/font/google";
-import localFont from "next/font/local";
 import "./globals.css";
 
 import Navbar from "../components/layout/Navbar";
@@ -18,31 +17,6 @@ import { OrganizationJsonLd } from "../components/seo/JsonLd";
 import { getSiteUrl } from "@/lib/site-url";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
-
-const logoFont = localFont({
-  /* Wild Loops z kitu: woff2 → woff → ttf; bold = 600 (jak u dostawcy). */
-  src: [
-    {
-      path: "../public/fonts/wildloops-bold_w.woff2",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "../public/fonts/wildloops-bold_w.woff",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "../public/fonts/wildloops-bold_w.ttf",
-      weight: "600",
-      style: "normal",
-    },
-  ],
-  variable: "--font-logo",
-  display: "swap",
-  fallback: ["Georgia", "Times New Roman", "serif"],
-  adjustFontFallback: false,
-});
 
 const siteUrl = getSiteUrl();
 const siteTitle = "Miur Wellness Store";
@@ -89,14 +63,14 @@ export default async function RootLayout({
   const nonce = (await headers()).get("x-nonce") ?? "";
 
   return (
-    <html lang="pl" className={`${logoFont.variable} max-w-full overflow-x-clip`} suppressHydrationWarning>
+    <html lang="pl" className="max-w-full overflow-x-clip" suppressHydrationWarning>
       <body
         className={`${inter.className} min-h-screen min-w-0 max-w-full overflow-x-clip flex flex-col antialiased bg-white ${visualOnlyMode ? "visual-only" : ""}`}
       >
         <OrganizationJsonLd
           name={siteTitle}
           url={siteUrl}
-          logo={`${siteUrl}/next.svg`}
+          logo={`${siteUrl}/brand/miur-wordmark.svg`}
           nonce={nonce}
         />
         <CookieConsentProvider>

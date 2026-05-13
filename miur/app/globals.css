@@ -82,19 +82,6 @@ body::-webkit-scrollbar-thumb:hover {
   background: #52525b;
 }
 
-/* Wild Loops wordmark — ten sam plik TTF wszędzie; bez faux-bold i bez trików rasteru (Chrome/Windows). */
-.brand-logo-wordmark {
-  display: inline-block;
-  overflow: visible;
-  padding-inline: 0.12em;
-  letter-spacing: 0.02em;
-  font-family: var(--font-logo), Georgia, "Times New Roman", serif;
-  font-weight: 600;
-  font-synthesis: none;
-  font-kerning: normal;
-  text-rendering: auto;
-}
-
 /* Visual-only local preview mode (NEXT_PUBLIC_VISUAL_ONLY=1). */
 .visual-only :is(a, button, input, select, textarea, [role="button"]) {
   pointer-events: none !important;

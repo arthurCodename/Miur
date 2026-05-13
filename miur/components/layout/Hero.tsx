@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import { useScroll, useTransform, motion, MotionConfig } from "framer-motion";
 import { ArrowDown, Play, Pause } from "lucide-react";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
+import { MiurWordmark } from "@/components/brand/MiurWordmark";
 
 export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -101,8 +102,11 @@ export function Hero() {
               }}
               className="isolate flex max-w-full flex-col items-center overflow-hidden lg:items-end"
             >
-              <h1 className="brand-logo-wordmark text-[20vw] leading-none text-white drop-shadow-2xl lg:text-[14vw]">
-                Miur
+              <h1 className="leading-none text-white drop-shadow-2xl">
+                <MiurWordmark
+                  title="Miur"
+                  className="mx-auto h-[20vw] w-auto lg:mx-0 lg:h-[14vw]"
+                />
               </h1>
             </motion.div>
           </div>

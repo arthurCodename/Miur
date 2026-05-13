@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useIsMounted } from "@/lib/hooks/useIsMounted";
+import { MiurWordmark } from "@/components/brand/MiurWordmark";
 
 const STORAGE_KEY = "miur_age_verified";
 
@@ -85,11 +86,8 @@ export function AgeGate() {
       aria-labelledby="age-gate-title"
     >
       <div className="max-w-md text-center">
-        <h1
-          id="age-gate-title"
-          className="brand-logo-wordmark mb-10 pb-4 text-2xl text-white"
-        >
-          Miur
+        <h1 id="age-gate-title" className="mb-10 flex justify-center pb-4 text-white">
+          <MiurWordmark title="Miur" className="h-8 w-auto" />
         </h1>
         <p className="mb-8 text-sm leading-relaxed text-zinc-300">
           Sklep jest przeznaczony wyłącznie dla osób pełnoletnich (18+). Korzystając z serwisu potwierdzasz,

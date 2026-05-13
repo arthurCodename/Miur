@@ -195,13 +195,13 @@ export function WyprzedazSection({ tiles, products }: Props) {
               ref={productsScrollRef}
               role="region"
               aria-label="Karuzela produktów wyprzedażowych"
-              className={`flex gap-4 overflow-x-auto overscroll-x-contain pb-2 snap-x snap-mandatory snap-always touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:gap-8 ${prodScrollClass}`}
+              className={`flex gap-4 overflow-x-auto overscroll-x-contain pb-2 md:pb-24 snap-x snap-mandatory snap-always touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:gap-8 ${prodScrollClass}`}
             >
               {products.map((product, index) => (
                 <article
                   key={product.id}
                   data-carousel-card
-                  className="group relative flex w-[min(72vw,240px)] shrink-0 snap-start snap-always flex-col sm:w-[min(46vw,260px)] md:w-[240px] lg:w-[260px]"
+                  className="group relative flex w-[min(72vw,240px)] shrink-0 snap-start snap-always flex-col sm:w-[min(46vw,260px)] md:w-[240px] md:hover:z-30 md:focus-within:z-30 lg:w-[260px]"
                 >
                   <div className="relative mb-6 aspect-3/4 overflow-hidden rounded-sm bg-white shadow-xl shadow-black/30 ring-1 ring-white/10">
                     {product.tag && (
@@ -247,7 +247,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1 px-0.5">
+                  <div className="relative flex flex-col gap-1 px-0.5">
                     <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500">
                       {product.category}
                     </span>
@@ -286,7 +286,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
                         className={cn(
                           "mt-2 rounded-sm border border-amber-500/30 bg-amber-500/10 p-2 text-[8px] font-medium leading-snug text-amber-100/95",
                           "transition-opacity duration-200",
-                          "md:absolute md:bottom-0 md:left-0 md:right-0 md:z-20 md:mt-0 md:shadow-lg md:shadow-black/40",
+                          "md:absolute md:left-0 md:right-0 md:top-full md:z-20 md:mt-1.5 md:shadow-lg md:shadow-black/40",
                           "md:opacity-0 md:invisible md:pointer-events-none",
                           "md:group-hover:visible md:group-hover:opacity-100 md:group-hover:pointer-events-auto",
                           "md:group-focus-within:visible md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto",

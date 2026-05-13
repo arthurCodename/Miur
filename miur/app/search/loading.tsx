@@ -8,7 +8,7 @@ export default function SearchLoading() {
         <Skeleton className="h-4 w-72 max-w-full" />
       </div>
 
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-3 md:gap-x-6 md:gap-y-16 lg:grid-cols-4 lg:gap-y-20">
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="flex flex-col gap-4">
             <Skeleton className="aspect-3/4 w-full rounded-sm" />

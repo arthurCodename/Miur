@@ -29,7 +29,7 @@ export default async function WyprzedazPage() {
         </p>
       ) : (
         <div
-          className="mx-auto grid max-w-7xl grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 md:gap-x-6 md:gap-y-12 lg:grid-cols-4 lg:gap-x-8"
+          className="mx-auto grid max-w-7xl grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-3 md:gap-x-6 md:gap-y-16 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-20"
           aria-label="Produkty w promocji"
         >
           {products.map((product, index) => (
