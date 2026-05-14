@@ -1,73 +1,55 @@
 /**
- * Palety tła dla {@link PageGradientHero}: komplementarne, analogowe, monochromatyczne.
- * Losowany indeks po montażu na kliencie (patrz komponent).
+ * Palety tła dla {@link PageGradientHero}: jasne, mało nasycone pastele (referencja UI).
+ * Losowany indeks po montażu na kliencie — bez mismatch hydracji z SSR.
  */
-export type GradientSchemeKind = "complementary" | "analogous" | "monochromatic";
+export type GradientSchemeKind = "pastel" | "complementary" | "analogous" | "monochromatic";
 
 export type PageGradientPalette = {
   kind: GradientSchemeKind;
-  /** Główny gradient liniowy (HSL). */
+  /** Główny gradient liniowy (jasne HSL, niska saturacja). */
   linear: string;
-  /** Opcjonalny radial „glow” (HSL), blend multiply. */
+  /** Opcjonalny delikatny radial „wash” (normal blend). */
   glow?: { color: string; opacity: number };
 };
 
 export const PAGE_GRADIENT_PALETTES: PageGradientPalette[] = [
-  /* — Komplementarne (wysoki kontrast) — */
+  /* — Pastel: błękit → biel → chłodny róż (diagonal jak w referencji) — */
   {
-    kind: "complementary",
+    kind: "pastel",
     linear:
-      "linear-gradient(128deg, hsl(218 72% 34%) 0%, hsl(218 55% 28%) 38%, hsl(28 92% 52%) 72%, hsl(18 90% 46%) 100%)",
-    glow: { color: "hsl(52 100% 62%)", opacity: 0.22 },
+      "linear-gradient(135deg, hsl(210 28% 94%) 0%, hsl(210 12% 98%) 32%, hsl(0 0% 100%) 52%, hsl(330 18% 97%) 78%, hsl(330 22% 95%) 100%)",
+    glow: { color: "hsl(225 35% 93%)", opacity: 0.55 },
   },
   {
-    kind: "complementary",
+    kind: "pastel",
     linear:
-      "linear-gradient(135deg, hsl(265 58% 38%) 0%, hsl(200 70% 36%) 45%, hsl(38 96% 54%) 100%)",
-    glow: { color: "hsl(330 85% 72%)", opacity: 0.18 },
+      "linear-gradient(128deg, hsl(265 16% 95%) 0%, hsl(240 10% 98%) 38%, hsl(0 0% 100%) 55%, hsl(25 20% 96%) 100%)",
+    glow: { color: "hsl(300 22% 94%)", opacity: 0.45 },
   },
   {
-    kind: "complementary",
+    kind: "pastel",
     linear:
-      "linear-gradient(118deg, hsl(168 65% 32%) 0%, hsl(152 50% 28%) 40%, hsl(8 82% 48%) 85%, hsl(350 75% 42%) 100%)",
-    glow: { color: "hsl(95 90% 58%)", opacity: 0.2 },
+      "linear-gradient(142deg, hsl(195 22% 94%) 0%, hsl(180 10% 97%) 40%, hsl(0 0% 100%) 58%, hsl(340 16% 96%) 100%)",
+    glow: { color: "hsl(200 28% 93%)", opacity: 0.5 },
   },
-  /* — Analogowe (sąsiednie barwy) — */
+  /* — Bardzo blade lawenda / brzoskwinia (jak lewy panel referencji) — */
   {
-    kind: "analogous",
+    kind: "pastel",
     linear:
-      "linear-gradient(125deg, hsl(212 70% 38%) 0%, hsl(198 65% 40%) 35%, hsl(185 58% 42%) 70%, hsl(172 52% 38%) 100%)",
-    glow: { color: "hsl(230 100% 75%)", opacity: 0.2 },
+      "linear-gradient(155deg, hsl(250 14% 96%) 0%, hsl(0 0% 100%) 45%, hsl(28 18% 96%) 100%)",
+    glow: { color: "hsl(270 18% 95%)", opacity: 0.4 },
   },
+  /* — Lawenda → róż → delikatna cytryna (mesh w jednym linear, nasycone tylko lekko) — */
   {
-    kind: "analogous",
+    kind: "pastel",
     linear:
-      "linear-gradient(130deg, hsl(285 55% 36%) 0%, hsl(305 48% 40%) 38%, hsl(325 52% 44%) 72%, hsl(340 48% 40%) 100%)",
-    glow: { color: "hsl(270 90% 70%)", opacity: 0.16 },
-  },
-  {
-    kind: "analogous",
-    linear:
-      "linear-gradient(122deg, hsl(42 88% 46%) 0%, hsl(32 90% 48%) 34%, hsl(22 88% 50%) 68%, hsl(12 85% 46%) 100%)",
-    glow: { color: "hsl(55 100% 68%)", opacity: 0.18 },
-  },
-  /* — Monochromatyczne (jedna barwa, różna jasność) — */
-  {
-    kind: "monochromatic",
-    linear:
-      "linear-gradient(135deg, hsl(240 45% 22%) 0%, hsl(240 38% 32%) 45%, hsl(240 32% 44%) 100%)",
-    glow: { color: "hsl(240 55% 58%)", opacity: 0.25 },
+      "linear-gradient(118deg, hsl(270 22% 94%) 0%, hsl(320 18% 96%) 35%, hsl(0 0% 100%) 52%, hsl(45 28% 96%) 88%, hsl(35 22% 95%) 100%)",
+    glow: { color: "hsl(330 24% 94%)", opacity: 0.42 },
   },
   {
-    kind: "monochromatic",
+    kind: "pastel",
     linear:
-      "linear-gradient(125deg, hsl(160 42% 20%) 0%, hsl(160 38% 32%) 50%, hsl(160 35% 46%) 100%)",
-    glow: { color: "hsl(165 50% 55%)", opacity: 0.22 },
-  },
-  {
-    kind: "monochromatic",
-    linear:
-      "linear-gradient(130deg, hsl(320 42% 24%) 0%, hsl(320 38% 36%) 48%, hsl(320 32% 48%) 100%)",
-    glow: { color: "hsl(315 55% 62%)", opacity: 0.2 },
+      "linear-gradient(125deg, hsl(160 14% 95%) 0%, hsl(200 12% 97%) 42%, hsl(0 0% 100%) 62%, hsl(310 14% 96%) 100%)",
+    glow: { color: "hsl(175 20% 93%)", opacity: 0.38 },
   },
 ];

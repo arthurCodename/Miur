@@ -103,12 +103,14 @@ export function Hero() {
               }}
               className="isolate flex max-w-full flex-col items-center overflow-hidden lg:items-end"
             >
-              <h1 className="leading-none text-white drop-shadow-2xl">
-                <MiurWordmark
-                  title="Miur"
-                  className="mx-auto text-[min(28vw,42rem)] leading-none lg:mx-0 lg:text-[min(19vw,30rem)]"
-                />
-              </h1>
+              <div className="rounded-xl px-5 py-4 ring-1 ring-inset ring-white/22 md:rounded-2xl md:px-8 md:py-5 md:ring-white/28">
+                <h1 className="leading-none text-white drop-shadow-2xl">
+                  <MiurWordmark
+                    title="Miur"
+                    className="mx-auto text-[min(22.5vw,33.5rem)] leading-none lg:mx-0 lg:text-[min(15.2vw,24rem)]"
+                  />
+                </h1>
+              </div>
             </motion.div>
           </div>
 

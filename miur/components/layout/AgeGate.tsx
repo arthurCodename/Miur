@@ -87,7 +87,7 @@ export function AgeGate() {
     >
       <div className="max-w-md text-center">
         <h1 id="age-gate-title" className="mb-10 flex justify-center pb-4 text-white">
-          <MiurWordmark title="Miur" className="text-[clamp(2.25rem,8vw,3.25rem)] leading-none" />
+          <MiurWordmark title="Miur" className="text-[clamp(1.85rem,6.6vw,2.65rem)] leading-none" />
         </h1>
         <p className="mb-8 text-sm leading-relaxed text-zinc-300">
           Sklep jest przeznaczony wyłącznie dla osób pełnoletnich (18+). Korzystając z serwisu potwierdzasz,

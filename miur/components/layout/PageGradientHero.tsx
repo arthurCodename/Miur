@@ -53,36 +53,36 @@ export function PageGradientHero({
           aria-hidden
           className="pointer-events-none absolute inset-0 z-1"
           style={{
-            backgroundImage: `radial-gradient(ellipse 85% 70% at 25% 15%, ${palette.glow.color}, transparent 62%)`,
+            backgroundImage: `radial-gradient(ellipse 92% 72% at 22% 18%, ${palette.glow.color}, transparent 68%)`,
             opacity: palette.glow.opacity,
-            mixBlendMode: "multiply",
+            mixBlendMode: "normal",
           }}
         />
       ) : null}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-2 bg-linear-to-t from-black/55 via-black/20 to-black/10"
+        className="pointer-events-none absolute inset-0 z-2 bg-linear-to-t from-zinc-900/[0.04] via-transparent to-white/25"
       />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-3"
         style={{
           backgroundImage:
-            "radial-gradient(ellipse 70% 50% at 80% 90%, rgba(255,255,255,0.12), transparent 55%)",
+            "radial-gradient(ellipse 75% 55% at 85% 88%, rgba(255,255,255,0.55), transparent 58%)",
           mixBlendMode: "soft-light",
         }}
       />
       <div className="relative z-10 flex min-h-[inherit] flex-col justify-end px-6 pb-8 pt-10 md:px-12 md:pb-12 md:pt-14">
         {eyebrow ? (
-          <p className="mb-2 max-w-3xl text-[10px] font-bold uppercase tracking-[0.28em] text-white/85 md:text-[11px]">
+          <p className="mb-2 max-w-3xl text-[10px] font-bold uppercase tracking-[0.28em] text-zinc-600 md:text-[11px]">
             {eyebrow}
           </p>
         ) : null}
         <h1
           id="page-gradient-hero-title"
           className={cn(
-            "max-w-[min(92vw,56rem)] text-balance text-4xl font-bold uppercase leading-[0.95] tracking-tighter text-white",
-            "drop-shadow-[0_2px_28px_rgba(0,0,0,0.42)] md:text-6xl lg:text-7xl",
+            "max-w-[min(92vw,56rem)] text-balance text-4xl font-bold uppercase leading-[0.95] tracking-tighter text-zinc-900",
+            "md:text-6xl lg:text-7xl",
             titleClassName,
           )}
         >
