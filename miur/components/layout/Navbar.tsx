@@ -149,7 +149,7 @@ export default function Navbar() {
               aria-label="Miur — strona główna"
               className="inline-flex items-center text-white outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
             >
-              <MiurWordmark decorative className="text-[1.85rem] leading-none md:text-[2.1rem]" />
+              <MiurWordmark decorative className="text-[1.48rem] leading-none md:text-[1.68rem]" />
             </Link>
           </motion.div>
         </div>

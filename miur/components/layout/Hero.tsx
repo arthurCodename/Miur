@@ -72,7 +72,7 @@ export function Hero() {
         style={{ height: "calc(var(--app-vh, 1vh) * 130)" }}
       >
         <div
-          className="sticky top-0 z-10 w-full max-w-full shrink-0 overflow-x-hidden overflow-y-hidden bg-black"
+          className="sticky top-0 z-10 w-full max-w-full shrink-0 overflow-x-hidden bg-black"
           style={{ height: "calc(var(--app-vh, 1vh) * 100)" }}
         >
           <video
@@ -90,7 +90,7 @@ export function Hero() {
             <source src="/hero.mp4" type="video/mp4" />
           </video>
 
-          <div className="pointer-events-none absolute inset-0 z-50 flex max-w-full items-center justify-center overflow-hidden px-6 lg:justify-end lg:px-24">
+          <div className="pointer-events-none absolute inset-0 z-50 flex max-w-full items-center justify-center overflow-x-hidden px-6 py-8 lg:justify-end lg:px-24 lg:py-10">
             <motion.div
               style={{
                 scale,
@@ -101,16 +101,14 @@ export function Hero() {
                   ? "center center"
                   : "right center",
               }}
-              className="isolate flex max-w-full flex-col items-center overflow-hidden lg:items-end"
+              className="isolate flex max-w-full flex-col items-center lg:items-end"
             >
-              <div className="rounded-xl px-5 py-4 ring-1 ring-inset ring-white/22 md:rounded-2xl md:px-8 md:py-5 md:ring-white/28">
-                <h1 className="leading-none text-white drop-shadow-2xl">
-                  <MiurWordmark
-                    title="Miur"
-                    className="mx-auto text-[min(22.5vw,33.5rem)] leading-none lg:mx-0 lg:text-[min(15.2vw,24rem)]"
-                  />
-                </h1>
-              </div>
+              <h1 className="px-1 py-2 leading-[1.05] text-white drop-shadow-2xl md:px-2 md:py-3">
+                <MiurWordmark
+                  title="Miur"
+                  className="mx-auto text-[min(18vw,26.8rem)] leading-[inherit] lg:mx-0 lg:text-[min(12.2vw,19.2rem)]"
+                />
+              </h1>
             </motion.div>
           </div>
 
