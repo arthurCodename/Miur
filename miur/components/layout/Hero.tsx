@@ -106,7 +106,7 @@ export function Hero() {
               <h1 className="px-1 py-2 leading-[1.05] text-white drop-shadow-2xl md:px-2 md:py-3">
                 <MiurWordmark
                   title="Miur"
-                  className="mx-auto text-[min(18vw,26.8rem)] leading-[inherit] lg:mx-0 lg:text-[min(12.2vw,19.2rem)]"
+                  className="mx-auto text-[min(20.7vw,30.75rem)] leading-[inherit] lg:mx-0 lg:text-[min(14vw,22rem)]"
                 />
               </h1>
             </motion.div>

@@ -37,7 +37,7 @@ export function PageGradientHero({
   return (
     <section
       className={cn(
-        "relative isolate w-full max-w-full overflow-hidden pt-24 md:pt-28",
+        "relative w-full max-w-full overflow-hidden pt-24 md:pt-28",
         "min-h-[min(42vh,20rem)] md:min-h-[min(40vh,26rem)]",
         className,
       )}
@@ -51,25 +51,28 @@ export function PageGradientHero({
       {palette.glow ? (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 z-1"
+          className="pointer-events-none absolute inset-0 z-[1]"
           style={{
             backgroundImage: `radial-gradient(ellipse 92% 72% at 22% 18%, ${palette.glow.color}, transparent 68%)`,
             opacity: palette.glow.opacity,
-            mixBlendMode: "normal",
           }}
         />
       ) : null}
+      {/* Bez mix-blend — na iOS Safari daje często ciemne pasy / złe kompozycje */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-2 bg-linear-to-t from-zinc-900/[0.04] via-transparent to-white/25"
+        className="pointer-events-none absolute inset-0 z-[2]"
+        style={{
+          background:
+            "linear-gradient(to top, rgba(255,255,255,0.22) 0%, transparent 45%, rgba(24,24,27,0.035) 100%)",
+        }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-3"
+        className="pointer-events-none absolute inset-0 z-[3]"
         style={{
           backgroundImage:
-            "radial-gradient(ellipse 75% 55% at 85% 88%, rgba(255,255,255,0.55), transparent 58%)",
-          mixBlendMode: "soft-light",
+            "radial-gradient(ellipse 75% 55% at 85% 88%, rgba(255,255,255,0.42), transparent 58%)",
         }}
       />
       <div className="relative z-10 flex min-h-[inherit] flex-col justify-end px-6 pb-8 pt-10 md:px-12 md:pb-12 md:pt-14">

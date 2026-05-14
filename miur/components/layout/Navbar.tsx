@@ -142,7 +142,7 @@ export default function Navbar() {
         </div>
 
         {/* ЦЕНТРАЛЬНА ЧАСТИНА */}
-        <div className="justify-self-center text-white">
+        <div className="justify-self-center translate-y-1.5 text-white md:translate-y-2">
           <motion.div style={{ opacity: isHomePage ? logoOpacity : 1 }} className="px-4 py-2">
             <Link
               href="/"
