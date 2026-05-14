@@ -69,7 +69,7 @@ export function Hero() {
       <section
         ref={containerRef}
         className="relative flex w-full max-w-full flex-col overflow-x-hidden bg-white font-sans"
-        style={{ height: "calc(var(--app-vh, 1vh) * 130)" }}
+        style={{ height: "calc(var(--app-vh, 1vh) * 106)" }}
       >
         <div
           className="sticky top-0 z-10 w-full max-w-full shrink-0 overflow-x-hidden bg-black"
@@ -164,7 +164,7 @@ export function Hero() {
           <TrustBar />
         </div>
 
-        {/* Reszta 130vh — miejsce na scroll animacji logo; bez „paska” między wideo a TrustBar */}
+        {/* Biały „tor” pod TrustBar — tylko tyle wysokości ile zostaje z sekcji (bez zmian w navbarze). */}
         <div className="min-h-0 flex-1 bg-white" aria-hidden />
       </section>
     </MotionConfig>

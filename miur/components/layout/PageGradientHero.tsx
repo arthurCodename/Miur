@@ -43,36 +43,46 @@ export function PageGradientHero({
       )}
       aria-labelledby="page-gradient-hero-title"
     >
+      {/* Bazowy gradient — zawsze; WebKit źle interpoluje do słowa „transparent” (czarne smugi). */}
       <div
         aria-hidden
-        className="absolute inset-0 z-0"
+        className="absolute inset-0 z-0 transform-gpu"
         style={{ background: palette.linear }}
       />
       {palette.glow ? (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 z-[1]"
+          className="pointer-events-none absolute inset-0 z-1 hidden md:block"
           style={{
-            backgroundImage: `radial-gradient(ellipse 92% 72% at 22% 18%, ${palette.glow.color}, transparent 68%)`,
+            backgroundImage: `radial-gradient(ellipse 92% 72% at 22% 18%, ${palette.glow.color}, rgba(255,255,255,0) 68%)`,
             opacity: palette.glow.opacity,
           }}
         />
       ) : null}
-      {/* Bez mix-blend — na iOS Safari daje często ciemne pasy / złe kompozycje */}
+      {/* Jedna prosta warstwa na mobile (WebKit) — bez radial + wielu blendów */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-[2]"
+        className="pointer-events-none absolute inset-0 z-1 md:hidden"
         style={{
+          opacity: 0.4,
           background:
-            "linear-gradient(to top, rgba(255,255,255,0.22) 0%, transparent 45%, rgba(24,24,27,0.035) 100%)",
+            "linear-gradient(to bottom, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0) 52%)",
         }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-[3]"
+        className="pointer-events-none absolute inset-0 z-2 hidden md:block"
+        style={{
+          background:
+            "linear-gradient(to top, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 45%, rgba(24,24,27,0.035) 100%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-3 hidden md:block"
         style={{
           backgroundImage:
-            "radial-gradient(ellipse 75% 55% at 85% 88%, rgba(255,255,255,0.42), transparent 58%)",
+            "radial-gradient(ellipse 75% 55% at 85% 88%, rgba(255,255,255,0.42), rgba(255,255,255,0) 58%)",
         }}
       />
       <div className="relative z-10 flex min-h-[inherit] flex-col justify-end px-6 pb-8 pt-10 md:px-12 md:pb-12 md:pt-14">
