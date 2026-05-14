@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { z } from "zod";
 import type { InPostModal, InPostPoint } from "@/lib/inpost/types";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 
 /**
  * Polish phone: 9 digits, optionally prefixed with +48 / 48 / 0048.
@@ -157,9 +158,10 @@ export default function CheckoutPage() {
     <>
       <Script src="https://geowidget.easypack24.net/js/sdk-for-javascript.js" strategy="lazyOnload" />
 
-      <main className="mx-auto max-w-2xl px-6 py-16 md:py-24">
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl">Kasa</h1>
-        <p className="mt-2 text-sm text-zinc-600">Uzupełnij dane dostawy i płatności.</p>
+      <div className="bg-white">
+        <PageGradientHero title="Kasa" eyebrow="Zamówienie" />
+        <main className="mx-auto max-w-2xl px-6 py-16 md:py-24">
+        <p className="text-sm text-zinc-600">Uzupełnij dane dostawy i płatności.</p>
 
         <form className="mt-10 flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)} noValidate>
           {/* Personal details */}
@@ -347,7 +349,8 @@ export default function CheckoutPage() {
             {isSubmitting ? "Składanie zamówienia…" : "Złóż zamówienie"}
           </button>
         </form>
-      </main>
+        </main>
+      </div>
     </>
   );
 }

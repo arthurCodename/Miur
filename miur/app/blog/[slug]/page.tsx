@@ -3,7 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { getBlogPostBySlug, getBlogPosts } from "@/lib/blog/posts";
+import { cn } from "@/lib/utils";
+import { blogCardPillBase, pillMarkerTypography } from "@/lib/ui/pill-marker-classes";
 
 type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
@@ -40,8 +43,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   return (
-    <main className="bg-white px-6 py-12 md:px-12 md:py-16">
-      <article className="mx-auto max-w-3xl">
+    <main className="bg-white">
+      <PageGradientHero title={post.title} eyebrow={post.category} titleClassName="max-w-[min(90vw,48rem)] text-3xl md:text-5xl lg:text-6xl" />
+      <article className="mx-auto max-w-3xl px-6 py-12 md:px-12 md:py-16">
         <Link
           href="/blog"
           className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 transition-colors hover:text-zinc-900"
@@ -51,11 +55,19 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </Link>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
-          <span className="rounded-full bg-zinc-900 px-3 py-1 text-[8px] font-bold uppercase tracking-widest text-white">
+          <span
+            className={cn(blogCardPillBase, pillMarkerTypography, "bg-zinc-900 text-white")}
+          >
             {post.category}
           </span>
           {post.sponsored ? (
-            <span className="rounded-full border border-zinc-300 bg-white px-3 py-1 text-[8px] font-bold uppercase tracking-widest text-zinc-900">
+            <span
+              className={cn(
+                blogCardPillBase,
+                pillMarkerTypography,
+                "border border-zinc-300 bg-white text-zinc-900",
+              )}
+            >
               Materiał sponsorowany
             </span>
           ) : null}
@@ -63,10 +75,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             {post.publishedAt} · {post.readTime}
           </span>
         </div>
-
-        <h1 className="mt-6 text-3xl font-bold tracking-tighter text-zinc-900 md:text-4xl lg:text-[2.75rem] lg:leading-[1.1]">
-          {post.title}
-        </h1>
 
         <p className="mt-5 max-w-2xl text-base leading-relaxed text-zinc-700 md:text-lg">{post.excerpt}</p>
 

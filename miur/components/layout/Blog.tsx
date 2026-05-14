@@ -6,6 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import type { BlogPost } from "@/lib/blog/types";
+import { cn } from "@/lib/utils";
+import { blogCardPillBase, pillMarkerTypography } from "@/lib/ui/pill-marker-classes";
 
 type BlogProps = {
   posts: BlogPost[];
@@ -114,13 +116,23 @@ export function Blog({ posts }: BlogProps) {
                 <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-transparent opacity-70 transition-opacity duration-700 group-hover:opacity-90" />
 
                 <div className="absolute top-4 left-4 z-10 flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-white px-3 py-1 text-[8px] font-bold uppercase tracking-widest text-black shadow-sm">
+                  <span
+                    className={cn(
+                      blogCardPillBase,
+                      pillMarkerTypography,
+                      "bg-white text-black shadow-sm",
+                    )}
+                  >
                     {post.category}
                   </span>
                   {post.sponsored ? (
                     <span
                       id={`blog-sponsored-${post.id}`}
-                      className="rounded-full border border-white/40 bg-black/55 px-3 py-1 text-[8px] font-bold uppercase tracking-widest text-white backdrop-blur-sm"
+                      className={cn(
+                        blogCardPillBase,
+                        pillMarkerTypography,
+                        "border border-white/40 bg-black/55 text-white backdrop-blur-sm",
+                      )}
                     >
                       Materiał sponsorowany
                     </span>

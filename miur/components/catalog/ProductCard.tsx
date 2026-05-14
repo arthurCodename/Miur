@@ -4,6 +4,11 @@ import Link from "next/link";
 import type { BestsellerProduct } from "@/lib/catalog/types";
 import { cn } from "@/lib/utils";
 import { ProductCardCartButton } from "@/components/catalog/ProductCardCartButton";
+import {
+  pillMarkerTypography,
+  productImageTagLight,
+  productImageTagShell,
+} from "@/lib/ui/pill-marker-classes";
 
 type ProductCardProps = Omit<ComponentPropsWithoutRef<"article">, "children"> & {
   product: BestsellerProduct;
@@ -33,8 +38,8 @@ export function ProductCard({ product, className, priority = false, ...props }: 
     >
       <div className="relative mb-6 aspect-3/4 overflow-hidden bg-zinc-50">
         {product.tag ? (
-          <div className="absolute top-4 left-4 z-10 rounded-full bg-white px-3 py-1 shadow-sm">
-            <span className="text-[8px] font-bold uppercase tracking-widest text-black">{product.tag}</span>
+          <div className={cn(productImageTagShell, productImageTagLight)}>
+            <span className={cn(pillMarkerTypography, "min-w-0 truncate")}>{product.tag}</span>
           </div>
         ) : null}
 

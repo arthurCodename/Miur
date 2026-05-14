@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { sellerLegal } from "@/lib/legal/seller";
 
 export const metadata: Metadata = {
@@ -11,9 +12,10 @@ const REVIEW = "2026-05-03";
 
 export default function AccessibilityStatementPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16 md:py-24">
-      <h1 className="text-3xl font-bold tracking-tighter text-zinc-900">Deklaracja dostępności</h1>
-      <p className="mt-2 text-sm text-zinc-600">Ostatni przegląd: {REVIEW}</p>
+    <main className="bg-white">
+      <PageGradientHero title="Deklaracja dostępności" eyebrow="WCAG · EAA" />
+      <div className="mx-auto max-w-3xl px-6 py-16 md:py-24">
+      <p className="text-sm text-zinc-600">Ostatni przegląd: {REVIEW}</p>
 
       <article className="mt-10 space-y-6 text-sm leading-relaxed text-zinc-700">
         <section>
@@ -58,5 +60,6 @@ export default function AccessibilityStatementPage() {
         </Link>
       </p>
     </div>
+    </main>
   );
 }

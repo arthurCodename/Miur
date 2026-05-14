@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { reportClientError } from "@/lib/observability/report-error";
 
 export default function Error({
@@ -16,10 +17,10 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="mx-auto flex min-h-[40vh] max-w-lg flex-col items-center justify-center px-6 py-24 text-center">
-      <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400">Błąd</p>
-      <h1 className="mt-4 text-2xl font-bold tracking-tighter text-zinc-900">Coś poszło nie tak</h1>
-      <p className="mt-3 text-sm text-zinc-600">
+    <div className="bg-white">
+      <PageGradientHero title="Coś poszło nie tak" eyebrow="Błąd" />
+      <div className="mx-auto flex min-h-[40vh] max-w-lg flex-col items-center justify-center px-6 py-16 text-center md:py-24">
+      <p className="text-sm text-zinc-600">
         Wystąpił nieoczekiwany problem. Spróbuj ponownie lub skontaktuj się z nami, jeśli sytuacja się
         powtarza.
       </p>
@@ -41,6 +42,7 @@ export default function Error({
           Kontakt
         </Link>
       </div>
+    </div>
     </div>
   );
 }

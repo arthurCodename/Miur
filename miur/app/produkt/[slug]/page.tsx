@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ProductReviews } from "@/components/catalog/ProductReviews";
 import { AddToCartButton } from "@/components/ui/AddToCartButton";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { getProductBySlug } from "@/lib/api/products";
 import { findMockProductBySlug } from "@/lib/catalog/find-mock-product";
 
@@ -36,7 +37,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
     : "Najniższa cena z 30 dni przed obniżką: uzupełnij w systemie (wymóg Omnibus).";
 
   return (
-    <main className="min-h-[50vh] bg-white px-6 py-12 md:px-12 md:py-16">
+    <main className="min-h-[50vh] bg-white">
+      <PageGradientHero
+        title={product.name}
+        eyebrow={product.category}
+        titleClassName="line-clamp-3 text-3xl md:text-5xl lg:text-6xl"
+      />
+      <div className="px-6 py-12 md:px-12 md:py-16">
       <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-2 md:gap-14 lg:gap-16">
         <div className="relative aspect-4/5 w-full overflow-hidden rounded-sm bg-zinc-50">
           <Image
@@ -53,9 +60,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-600">
             {product.category}
           </span>
-          <h1 className="mt-3 text-3xl font-bold tracking-tighter text-zinc-900 uppercase md:text-4xl lg:text-[2.75rem] lg:leading-tight">
+          <p className="mt-3 text-3xl font-bold tracking-tighter text-zinc-900 uppercase md:text-4xl lg:text-[2.75rem] lg:leading-tight">
             {product.name}
-          </h1>
+          </p>
 
           <div className="mt-8 flex flex-wrap items-baseline gap-3">
             <span className="text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl">{product.price}</span>
@@ -104,6 +111,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </div>
 
       <ProductReviews slug={slug} />
+      </div>
     </main>
   );
 }

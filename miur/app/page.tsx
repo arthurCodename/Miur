@@ -1,6 +1,5 @@
 import dynamic from "next/dynamic";
 import { Hero } from "@/components/layout/Hero";
-import { TrustBar } from "@/components/ui/TrustBar";
 import { CategoryGrid } from "@/components/layout/CategoryGrid";
 import { getBestsellers } from "@/lib/catalog/bestsellers";
 import { getWyprzedazProducts, getWyprzedazTiles } from "@/lib/catalog/wyprzedaz";
@@ -29,7 +28,6 @@ export default async function Home() {
   return (
     <div className="flex w-full min-w-0 max-w-full flex-col overflow-x-clip">
       <Hero />
-      <TrustBar />
       <CategoryGrid />
       <BestSellers products={bestsellers} />
       <WyprzedazSection tiles={wyprzedazTiles} products={wyprzedazProducts} />

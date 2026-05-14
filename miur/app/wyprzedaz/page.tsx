@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ProductCard } from "@/components/catalog/ProductCard";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { getWyprzedazProducts } from "@/lib/catalog/wyprzedaz";
 
 export const metadata: Metadata = {
@@ -11,13 +12,11 @@ export default async function WyprzedazPage() {
   const products = await getWyprzedazProducts();
 
   return (
-    <main className="min-h-[50vh] bg-white px-6 py-12 md:px-12 md:py-16">
+    <main className="min-h-[50vh] bg-white">
+      <PageGradientHero title="Wyprzedaż" eyebrow="Promocje" />
+      <div className="px-6 py-12 md:px-12 md:py-16">
       <header className="mx-auto mb-10 max-w-7xl md:mb-14">
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">Promocje</p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tighter text-zinc-900 uppercase md:text-4xl">
-          Wyprzedaż
-        </h1>
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-700 md:text-base">
+        <p className="max-w-2xl text-sm leading-relaxed text-zinc-700 md:text-base">
           Wybrane produkty w obniżonych cenach. Ceny zgodne z dyrektywą Omnibus — przy każdej promocji
           podajemy najniższą cenę z 30 dni przed obniżką.
         </p>
@@ -37,6 +36,7 @@ export default async function WyprzedazPage() {
           ))}
         </div>
       )}
+      </div>
     </main>
   );
 }

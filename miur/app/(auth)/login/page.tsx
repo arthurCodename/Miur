@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { z } from "zod";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 
 const loginSchema = z.object({
@@ -43,12 +44,13 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-6 py-16">
+    <div className="bg-white">
+      <PageGradientHero title="Logowanie" eyebrow="Konto" />
+      <main className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-6 py-16">
       <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm md:p-10">
-        <h1 className="text-center text-2xl font-bold tracking-tight text-zinc-900">Logowanie</h1>
-        <p className="mt-2 text-center text-sm text-zinc-600">Zaloguj się, aby zobaczyć swoje zamówienia.</p>
+        <p className="text-center text-sm text-zinc-600">Zaloguj się, aby zobaczyć swoje zamówienia.</p>
 
-        <form className="mt-8 flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form className="mt-6 flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="login-email" className="text-xs font-semibold uppercase tracking-wide text-zinc-700">
               E-mail
@@ -103,5 +105,6 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+    </div>
   );
 }

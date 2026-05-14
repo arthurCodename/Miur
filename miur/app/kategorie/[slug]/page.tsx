@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { SortSelect } from "@/components/catalog/SortSelect";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { getCategoryProducts } from "@/lib/api/products";
 import { getCategoryBySlug } from "@/lib/catalog/category-by-slug";
 
@@ -40,12 +41,11 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const { category, products } = result;
 
   return (
-    <main className="min-h-[50vh] bg-white px-6 py-12 md:px-12 md:py-16">
+    <main className="min-h-[50vh] bg-white">
+      <PageGradientHero title={category.title} eyebrow="Kategoria" />
+      <div className="px-6 py-12 md:px-12 md:py-16">
       <header className="mx-auto mb-10 max-w-6xl md:mb-14">
-        <h1 className="text-3xl font-bold tracking-tighter text-zinc-900 uppercase md:text-4xl">
-          {category.title}
-        </h1>
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-700 md:text-base">{category.desc}</p>
+        <p className="max-w-2xl text-sm leading-relaxed text-zinc-700 md:text-base">{category.desc}</p>
       </header>
 
       {products.length === 0 ? (
@@ -71,6 +71,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           </div>
         </>
       )}
+      </div>
     </main>
   );
 }

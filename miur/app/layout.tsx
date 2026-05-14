@@ -16,7 +16,11 @@ import { ThemeProvider } from "../components/theme-provider";
 import { OrganizationJsonLd } from "../components/seo/JsonLd";
 import { getSiteUrl } from "@/lib/site-url";
 
-const inter = Inter({ subsets: ["latin", "latin-ext"] });
+const inter = Inter({
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 const siteUrl = getSiteUrl();
 const siteTitle = "Miur Wellness Store";
@@ -63,9 +67,13 @@ export default async function RootLayout({
   const nonce = (await headers()).get("x-nonce") ?? "";
 
   return (
-    <html lang="pl" className="max-w-full overflow-x-clip" suppressHydrationWarning>
+    <html
+      lang="pl"
+      className={`max-w-full overflow-x-clip ${inter.variable}`}
+      suppressHydrationWarning
+    >
       <body
-        className={`${inter.className} min-h-screen min-w-0 max-w-full overflow-x-clip flex flex-col antialiased bg-white ${visualOnlyMode ? "visual-only" : ""}`}
+        className={`${inter.className} min-h-screen min-w-0 max-w-full overflow-x-clip flex flex-col bg-white ${visualOnlyMode ? "visual-only" : ""}`}
       >
         <OrganizationJsonLd
           name={siteTitle}

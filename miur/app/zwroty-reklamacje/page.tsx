@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { ComplaintForm } from "@/components/legal/ComplaintForm";
 import { WithdrawalForm } from "@/components/legal/WithdrawalForm";
 import { SellerDataBlock } from "@/components/legal/SellerDataBlock";
@@ -12,9 +13,10 @@ export const metadata: Metadata = {
 
 export default function ReturnsPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16 md:py-24">
-      <h1 className="text-3xl font-bold tracking-tighter text-zinc-900">Zwroty i reklamacje</h1>
-      <p className="mt-3 text-sm text-zinc-600">
+    <main className="bg-white">
+      <PageGradientHero title="Zwroty i reklamacje" eyebrow="Pomoc" />
+      <div className="mx-auto max-w-3xl px-6 py-16 md:py-24">
+      <p className="text-sm text-zinc-600">
         Poniżej znajdziesz informacje o prawie odstąpienia (14 dni), wyjątkach oraz reklamacjach i rękojmi.
       </p>
 
@@ -80,5 +82,6 @@ export default function ReturnsPage() {
         </Link>
       </p>
     </div>
+    </main>
   );
 }

@@ -5,6 +5,7 @@ import { useScroll, useTransform, motion, MotionConfig } from "framer-motion";
 import { ArrowDown, Play, Pause } from "lucide-react";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { MiurWordmark } from "@/components/brand/MiurWordmark";
+import { TrustBar } from "@/components/ui/TrustBar";
 
 export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -67,11 +68,11 @@ export function Hero() {
     <MotionConfig reducedMotion="user">
       <section
         ref={containerRef}
-        className="relative w-full max-w-full overflow-x-hidden bg-black font-sans"
+        className="relative flex w-full max-w-full flex-col overflow-x-hidden bg-white font-sans"
         style={{ height: "calc(var(--app-vh, 1vh) * 130)" }}
       >
         <div
-          className="sticky top-0 z-10 w-full max-w-full overflow-x-hidden overflow-y-hidden bg-black"
+          className="sticky top-0 z-10 w-full max-w-full shrink-0 overflow-x-hidden overflow-y-hidden bg-black"
           style={{ height: "calc(var(--app-vh, 1vh) * 100)" }}
         >
           <video
@@ -105,7 +106,7 @@ export function Hero() {
               <h1 className="leading-none text-white drop-shadow-2xl">
                 <MiurWordmark
                   title="Miur"
-                  className="mx-auto h-[20vw] w-auto lg:mx-0 lg:h-[14vw]"
+                  className="mx-auto text-[min(28vw,42rem)] leading-none lg:mx-0 lg:text-[min(19vw,30rem)]"
                 />
               </h1>
             </motion.div>
@@ -159,6 +160,12 @@ export function Hero() {
           </motion.div>
         </div>
 
+        <div className="relative z-20 w-full shrink-0">
+          <TrustBar />
+        </div>
+
+        {/* Reszta 130vh — miejsce na scroll animacji logo; bez „paska” między wideo a TrustBar */}
+        <div className="min-h-0 flex-1 bg-white" aria-hidden />
       </section>
     </MotionConfig>
   );

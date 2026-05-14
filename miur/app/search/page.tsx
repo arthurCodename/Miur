@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Frown } from "lucide-react";
 import { ProductCard } from "@/components/catalog/ProductCard";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { searchProducts } from "@/lib/api/products";
 
 type SearchPageProps = {
@@ -26,17 +27,16 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const products = await searchProducts(queryRaw);
 
   return (
-    <main className="min-h-[50vh] bg-white px-6 py-12 md:px-12 md:py-16">
+    <main className="min-h-[50vh] bg-white">
+      <PageGradientHero title="Wyniki wyszukiwania" eyebrow="Szukaj" />
+      <div className="px-6 py-12 md:px-12 md:py-16">
       <header className="mx-auto mb-10 max-w-7xl md:mb-14">
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl">
-          Wyniki wyszukiwania
-        </h1>
         {queryRaw.trim() ? (
-          <p className="mt-3 text-sm text-zinc-600">
+          <p className="text-sm text-zinc-600">
             Fraza: <span className="font-medium text-zinc-900">&quot;{queryRaw.trim()}&quot;</span>
           </p>
         ) : (
-          <p className="mt-3 text-sm text-zinc-600">Nie podano frazy wyszukiwania.</p>
+          <p className="text-sm text-zinc-600">Nie podano frazy wyszukiwania.</p>
         )}
       </header>
 
@@ -62,6 +62,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           ))}
         </div>
       )}
+      </div>
     </main>
   );
 }

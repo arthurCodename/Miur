@@ -5,6 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import { ProductCardCartButton } from "@/components/catalog/ProductCardCartButton";
+import {
+  pillMarkerTypography,
+  productImageTagPromo,
+  productImageTagShell,
+} from "@/lib/ui/pill-marker-classes";
 import type { BestsellerProduct, SaleCategoryTile } from "@/lib/catalog/types";
 import { cn } from "@/lib/utils";
 
@@ -204,13 +209,11 @@ export function WyprzedazSection({ tiles, products }: Props) {
                   className="group relative flex w-[min(72vw,240px)] shrink-0 snap-start snap-always flex-col sm:w-[min(46vw,260px)] md:w-[240px] md:hover:z-30 md:focus-within:z-30 lg:w-[260px]"
                 >
                   <div className="relative mb-6 aspect-3/4 overflow-hidden rounded-sm bg-white shadow-xl shadow-black/30 ring-1 ring-white/10">
-                    {product.tag && (
-                      <div className="absolute left-4 top-4 z-10 rounded-full bg-amber-500 px-3 py-1 shadow-md">
-                        <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-950">
-                          {product.tag}
-                        </span>
+                    {product.tag ? (
+                      <div className={cn(productImageTagShell, productImageTagPromo)}>
+                        <span className={cn(pillMarkerTypography, "min-w-0 truncate")}>{product.tag}</span>
                       </div>
-                    )}
+                    ) : null}
 
                     <Link
                       href={`/produkt/${product.slug}`}

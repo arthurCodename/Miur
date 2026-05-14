@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { PrintButton } from "@/components/legal/PrintButton";
 import { SellerDataBlock } from "@/components/legal/SellerDataBlock";
 import { ODR_URL, sellerLegal } from "@/lib/legal/seller";
@@ -13,10 +14,11 @@ const VERSION = "2026-05-03";
 
 export default function TermsPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16 md:py-24">
+    <div className="bg-white">
+      <PageGradientHero title="Regulamin" eyebrow="Sklep internetowy Miur" />
+      <div className="mx-auto max-w-3xl px-6 py-16 md:py-24">
       <header className="mb-12 border-b border-zinc-100 pb-8">
-        <h1 className="text-3xl font-bold tracking-tighter text-zinc-900">Regulamin sklepu internetowego Miur</h1>
-        <p className="mt-2 text-sm text-zinc-600">Wersja z dnia: {VERSION}</p>
+        <p className="text-sm text-zinc-600">Wersja z dnia: {VERSION}</p>
         <PrintButton />
       </header>
 
@@ -208,6 +210,7 @@ export default function TermsPage() {
           Strona główna
         </Link>
       </p>
+    </div>
     </div>
   );
 }
