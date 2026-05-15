@@ -38,7 +38,7 @@ export function PageGradientHero({
     <section
       className={cn(
         "relative w-full max-w-full overflow-hidden border-b border-black pt-24 md:pt-28",
-        "min-h-[min(46vh,22rem)] md:min-h-[min(44vh,30rem)]",
+        "min-h-[min(42vh,20rem)] md:min-h-[min(40vh,26rem)]",
         className,
       )}
       aria-labelledby="page-gradient-hero-title"
@@ -94,8 +94,8 @@ export function PageGradientHero({
         <h1
           id="page-gradient-hero-title"
           className={cn(
-            "max-w-[min(92vw,56rem)] text-balance text-7xl font-bold uppercase leading-[0.95] tracking-tighter text-zinc-900",
-            "md:text-[7.5rem] lg:text-[9rem]",
+            "max-w-[min(92vw,56rem)] text-balance text-4xl font-bold uppercase leading-[0.95] tracking-tighter text-zinc-900",
+            "md:text-6xl lg:text-7xl",
             titleClassName,
           )}
         >
