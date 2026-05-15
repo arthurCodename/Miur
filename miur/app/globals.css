@@ -67,12 +67,11 @@
     overflow-x: clip;
     scrollbar-width: thin;
     scrollbar-color: #71717a #18181b;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    html {
-      scroll-behavior: smooth;
-    }
+    /* iOS: nie „pompuj” tekstu przy obrócie / pasku adresu; mniej wrażenia „zoom”. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* Wyłącza double-tap zoom i skraca opóźnienie dotyku (Safari / Chrome mobile). */
+    touch-action: manipulation;
   }
 
   body {

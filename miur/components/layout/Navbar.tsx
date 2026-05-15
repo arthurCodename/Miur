@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
 import { Menu, ChevronRight, X } from 'lucide-react';
 import { toast } from "sonner";
 import { SearchConsole } from "@/components/layout/SearchConsole";
@@ -42,13 +42,31 @@ const menuData = [
   { title: "MASTURBATORY", href: "/masturbatory", sections: [] },
   { title: "DROGERIA", href: "/drogeria", sections: [] },
   { title: "PROMOCJE", href: "/promocje", sections: [] },
-  { title: "BESTSELLERY", href: "/bestsellery", sections: [] }
+  { title: "BESTSELLERY", href: "/bestsellery", sections: [] },
 ];
+
+/** Dłuższy, łagodniejszy zanik w dół — na mobile wymaga min. ~180px wysokości, żeby nie „urywać” gradientu. */
+const NAV_SCRIM_GRADIENT = `linear-gradient(to bottom,
+  rgba(0, 0, 0, 0.95) 0%,
+  rgba(0, 0, 0, 0.82) 10%,
+  rgba(0, 0, 0, 0.65) 22%,
+  rgba(0, 0, 0, 0.48) 34%,
+  rgba(0, 0, 0, 0.32) 44%,
+  rgba(0, 0, 0, 0.21) 52%,
+  rgba(0, 0, 0, 0.13) 62%,
+  rgba(0, 0, 0, 0.08) 72%,
+  rgba(0, 0, 0, 0.045) 82%,
+  rgba(0, 0, 0, 0.022) 90%,
+  rgba(0, 0, 0, 0.01) 95%,
+  rgba(0, 0, 0, 0) 100%)`;
 
 export default function Navbar() {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
   const { scrollY } = useScroll();
+  const scrimRef = useRef<HTMLDivElement>(null);
+  const logoNavRef = useRef<HTMLDivElement>(null);
+  const scrollRafRef = useRef<number | null>(null);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(menuData[0].title);
 
@@ -56,9 +74,34 @@ export default function Navbar() {
     setIsMegaMenuOpen(false);
   }, [pathname]);
 
-  // Градієнт з'являється після 50px скролу і стає повним на 200px
-  const gradientOpacity = useTransform(scrollY, [0, 150], [0, 1]);
-  const logoOpacity = useTransform(scrollY, [550, 750], [0, 1]);
+  const applyScrollLinkedOpacity = useCallback(() => {
+    const y = scrollY.get();
+    const el = scrimRef.current;
+    if (el) {
+      el.style.opacity = isHomePage ? String(Math.min(1, Math.max(0, y / 150))) : "1";
+    }
+    const logoEl = logoNavRef.current;
+    if (logoEl) {
+      if (!isHomePage) {
+        logoEl.style.opacity = "1";
+      } else {
+        const lo = y <= 550 ? 0 : y >= 750 ? 1 : (y - 550) / 200;
+        logoEl.style.opacity = String(Math.min(1, Math.max(0, lo)));
+      }
+    }
+  }, [scrollY, isHomePage]);
+
+  useMotionValueEvent(scrollY, "change", () => {
+    if (scrollRafRef.current != null) return;
+    scrollRafRef.current = window.requestAnimationFrame(() => {
+      scrollRafRef.current = null;
+      applyScrollLinkedOpacity();
+    });
+  });
+
+  useEffect(() => {
+    applyScrollLinkedOpacity();
+  }, [applyScrollLinkedOpacity, pathname]);
 
   return (
     <div
@@ -67,28 +110,16 @@ export default function Navbar() {
     >
       <header className="relative isolate z-50 grid grid-cols-3 items-center px-6 pb-8 pt-[calc(env(safe-area-inset-top)+20px)] transition-all duration-500 md:px-12 md:pt-8">
         
-        {/* ULTRA-SMOOTH SCRIM GRADIENT */}
-        <motion.div
-          style={{ opacity: isHomePage ? gradientOpacity : 1 }}
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[140px] md:h-[180px]"
+        {/* Scrim: opacity przez rAF — mniej janku na mobile niż motion style na każdym pikselu scrollu */}
+        <div
+          ref={scrimRef}
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[max(11.25rem,calc(6.75rem+env(safe-area-inset-top,0)))] transform-gpu md:h-[180px]"
+          style={{
+            background: NAV_SCRIM_GRADIENT,
+            opacity: isHomePage ? 0 : 1,
+          }}
           aria-hidden
-        >
-          <div 
-            className="w-full h-full"
-            style={{
-              background: `linear-gradient(to bottom, 
-                rgba(0, 0, 0, 0.95) 0%, 
-                rgba(0, 0, 0, 0.83) 15%, 
-                rgba(0, 0, 0, 0.64) 30%, 
-                rgba(0, 0, 0, 0.45) 43%, 
-                rgba(0, 0, 0, 0.28) 55%, 
-                rgba(0, 0, 0, 0.15) 67%, 
-                rgba(0, 0, 0, 0.06) 78%, 
-                rgba(0, 0, 0, 0.02) 89%, 
-                rgba(0, 0, 0, 0) 100%)`
-            }}
-          />
-        </motion.div>
+        />
 
         {/* ЛІВА ЧАСТИНА */}
         <div className="flex items-center gap-3 justify-self-start text-white md:gap-6">
@@ -143,7 +174,7 @@ export default function Navbar() {
 
         {/* ЦЕНТРАЛЬНА ЧАСТИНА */}
         <div className="justify-self-center translate-y-1.5 text-white md:translate-y-2">
-          <motion.div style={{ opacity: isHomePage ? logoOpacity : 1 }} className="px-4 py-2">
+          <div ref={logoNavRef} className="px-4 py-2" style={{ opacity: isHomePage ? 0 : 1 }}>
             <Link
               href="/"
               aria-label="Miur — strona główna"
@@ -151,7 +182,7 @@ export default function Navbar() {
             >
               <MiurWordmark decorative className="text-[1.48rem] leading-none md:text-[1.68rem]" />
             </Link>
-          </motion.div>
+          </div>
         </div>
 
         {/* ПРАВА ЧАСТИНА */}
