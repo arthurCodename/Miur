@@ -6,6 +6,7 @@ import { AddToCartButton } from "@/components/ui/AddToCartButton";
 import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { getProductBySlug } from "@/lib/api/products";
 import { findMockProductBySlug } from "@/lib/catalog/find-mock-product";
+import { productBreadcrumbTrail } from "@/lib/navigation/product-breadcrumb-trail";
 
 type ProductPageProps = {
   params: Promise<{ slug: string }>;
@@ -42,6 +43,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         title={product.name}
         eyebrow={product.category}
         titleClassName="line-clamp-3 text-3xl md:text-6xl lg:text-[7.5rem]"
+        breadcrumbTrail={productBreadcrumbTrail(product)}
       />
       <div className="px-6 py-12 md:px-12 md:py-16">
       <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-2 md:gap-14 lg:gap-16">

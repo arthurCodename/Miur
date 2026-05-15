@@ -64,7 +64,7 @@ export function CategoryGrid() {
         ref={scrollerRef}
         role="region"
         aria-label="Kategorie produktów"
-        className="flex gap-4 md:gap-6 overflow-x-auto overscroll-x-contain snap-x snap-mandatory snap-always touch-pan-x pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
+        className="flex gap-4 md:gap-6 overflow-x-auto overscroll-x-contain snap-x snap-mandatory snap-always pb-2 [touch-action:pan-x_pan-y] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
       >
         {categories.map((category, index) => (
           <Link

@@ -76,7 +76,7 @@ export function BestSellers({
         ref={scrollerRef}
         role="region"
         aria-label="Bestsellery, przewijana lista produktów"
-        className="flex gap-4 md:gap-8 overflow-x-auto overscroll-x-contain snap-x snap-mandatory snap-always touch-pan-x pb-2 md:pb-24 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
+        className="flex gap-4 md:gap-8 overflow-x-auto overscroll-x-contain snap-x snap-mandatory snap-always pb-2 md:pb-24 [touch-action:pan-x_pan-y] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
       >
         {products.map((product, index) => (
           <ProductCard

@@ -135,7 +135,33 @@ export default function Navbar() {
               </SheetTrigger>
               <SheetContent side="left" className="w-[85%] bg-zinc-950 border-none text-white p-0 flex flex-col" showCloseButton={false}>
                 <SheetTitle className="sr-only">Menu nawigacyjne</SheetTitle>
-                <div className="flex items-center justify-end px-6 pt-[calc(env(safe-area-inset-top)+20px)] pb-2">
+                <nav
+                  aria-label="Skróty"
+                  className="grid gap-1 border-b border-white/10 px-6 pb-4 pt-[calc(env(safe-area-inset-top)+12px)]"
+                >
+                  {isHomePage ? (
+                    <span className="py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500" aria-current="page">
+                      Strona główna
+                    </span>
+                  ) : (
+                    <SheetClose asChild>
+                      <Link href="/" className="py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-white hover:text-zinc-300">
+                        Strona główna
+                      </Link>
+                    </SheetClose>
+                  )}
+                  <SheetClose asChild>
+                    <Link href="/o-nas" className="py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-white hover:text-zinc-300">
+                      O nas
+                    </Link>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Link href="/kontakt" className="py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-white hover:text-zinc-300">
+                      Kontakt
+                    </Link>
+                  </SheetClose>
+                </nav>
+                <div className="flex items-center justify-end px-6 pb-2 pt-2">
                    <SheetClose
                      className="p-2 -mr-2 hover:bg-white/10 rounded-full transition-colors"
                      aria-label="Zamknij menu"
@@ -187,8 +213,22 @@ export default function Navbar() {
 
         {/* ПРАВА ЧАСТИНА */}
         <div className="flex items-center gap-6 justify-self-end text-white">
-          <nav aria-label="Linki dodatkowe" className="hidden lg:flex gap-8 text-[9px] font-bold uppercase tracking-[0.3em]">
-            <Link href="/kontakt" className="hover:opacity-50">Kontakt</Link>
+          <nav aria-label="Linki dodatkowe" className="hidden min-w-0 flex-wrap justify-end gap-x-6 gap-y-2 md:flex md:text-[9px] md:font-bold md:uppercase md:tracking-[0.28em]">
+            {isHomePage ? (
+              <span className="shrink-0 opacity-45" aria-current="page">
+                Strona główna
+              </span>
+            ) : (
+              <Link href="/" className="shrink-0 hover:opacity-50">
+                Strona główna
+              </Link>
+            )}
+            <Link href="/o-nas" className="shrink-0 hover:opacity-50">
+              O nas
+            </Link>
+            <Link href="/kontakt" className="shrink-0 hover:opacity-50">
+              Kontakt
+            </Link>
           </nav>
           <AuthNavLink />
           <CartSheet>

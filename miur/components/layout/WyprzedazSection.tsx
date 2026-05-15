@@ -125,7 +125,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
               ref={tilesScrollRef}
               role="region"
               aria-label="Kafelki wyprzedaży"
-              className="flex gap-5 overflow-x-auto overscroll-x-contain pb-2 snap-x snap-mandatory scroll-smooth touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              className="flex gap-5 overflow-x-auto overscroll-x-contain pb-2 snap-x snap-mandatory scroll-smooth [touch-action:pan-x_pan-y] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
               {tiles.map((tile, index) => (
                 <Link
@@ -200,7 +200,7 @@ export function WyprzedazSection({ tiles, products }: Props) {
               ref={productsScrollRef}
               role="region"
               aria-label="Karuzela produktów wyprzedażowych"
-              className={`flex gap-4 overflow-x-auto overscroll-x-contain pb-2 md:pb-24 snap-x snap-mandatory snap-always touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:gap-8 ${prodScrollClass}`}
+              className={`flex gap-4 overflow-x-auto overscroll-x-contain pb-2 md:pb-24 snap-x snap-mandatory snap-always [touch-action:pan-x_pan-y] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:gap-8 ${prodScrollClass}`}
             >
               {products.map((product, index) => (
                 <article

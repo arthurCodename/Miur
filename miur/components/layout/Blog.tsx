@@ -86,7 +86,7 @@ export function Blog({ posts }: BlogProps) {
           ref={scrollerRef}
           role="region"
           aria-label="Najnowsze wpisy z bloga, przewijana lista. Do przewijania użyj strzałek lub gestów na urządzeniu dotykowym."
-          className="flex gap-5 md:gap-8 overflow-x-auto overscroll-x-contain snap-x snap-mandatory snap-always scroll-smooth touch-pan-x pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="flex gap-5 md:gap-8 overflow-x-auto overscroll-x-contain snap-x snap-mandatory snap-always scroll-smooth pb-2 [touch-action:pan-x_pan-y] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           {posts.map((post, index) => (
             <article

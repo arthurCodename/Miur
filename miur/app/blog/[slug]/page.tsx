@@ -44,7 +44,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   return (
     <main className="bg-white">
-      <PageGradientHero title={post.title} eyebrow={post.category} titleClassName="max-w-[min(90vw,48rem)] text-3xl md:text-6xl lg:text-[7.5rem]" />
+      <PageGradientHero
+        title={post.title}
+        eyebrow={post.category}
+        titleClassName="max-w-[min(90vw,48rem)] text-3xl md:text-6xl lg:text-[7.5rem]"
+        breadcrumbTrail={[
+          { label: "Strona główna", href: "/" },
+          { label: "Blog", href: "/blog" },
+          { label: post.title },
+        ]}
+      />
       <article className="mx-auto max-w-3xl px-6 py-12 md:px-12 md:py-16">
         <Link
           href="/blog"

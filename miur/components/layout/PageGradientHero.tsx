@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   PAGE_GRADIENT_PALETTES,
   type PageGradientPalette,
 } from "@/lib/ui/page-gradient-palettes";
+import type { SiteBreadcrumbItem } from "@/lib/navigation/breadcrumb-types";
+import { inferBreadcrumbTrailFromPathname } from "@/lib/navigation/infer-breadcrumb-trail";
+import { SiteBreadcrumbBar } from "@/components/layout/SiteBreadcrumbBar";
 import { cn } from "@/lib/utils";
 
 export type PageGradientHeroProps = {
@@ -14,6 +18,11 @@ export type PageGradientHeroProps = {
   eyebrow?: string;
   className?: string;
   titleClassName?: string;
+  /**
+   * Okruszki: jawna ścieżka albo wyłączenie (`null`).
+   * Gdy `undefined`, próba heurystyki z URL (bez `/produkt/[slug]` i `/blog/[slug]` — tam podaj jawnie).
+   */
+  breadcrumbTrail?: SiteBreadcrumbItem[] | null;
 };
 
 /**
@@ -26,13 +35,21 @@ export function PageGradientHero({
   eyebrow,
   className,
   titleClassName,
+  breadcrumbTrail,
 }: PageGradientHeroProps) {
+  const pathname = usePathname();
   const [palette, setPalette] = useState<PageGradientPalette>(PAGE_GRADIENT_PALETTES[0]);
 
   useEffect(() => {
     const list = PAGE_GRADIENT_PALETTES;
     setPalette(list[Math.floor(Math.random() * list.length)] ?? list[0]);
   }, []);
+
+  const resolvedBreadcrumbs = useMemo(() => {
+    if (breadcrumbTrail === null) return null;
+    if (breadcrumbTrail && breadcrumbTrail.length > 0) return breadcrumbTrail;
+    return inferBreadcrumbTrailFromPathname(pathname);
+  }, [breadcrumbTrail, pathname]);
 
   return (
     <section
@@ -85,22 +102,29 @@ export function PageGradientHero({
             "radial-gradient(ellipse 75% 55% at 85% 88%, rgba(255,255,255,0.42), rgba(255,255,255,0) 58%)",
         }}
       />
-      <div className="relative z-10 flex min-h-[inherit] flex-col justify-end px-6 pb-8 pt-10 md:px-12 md:pb-12 md:pt-14">
-        {eyebrow ? (
-          <p className="mb-2 max-w-3xl text-[10px] font-bold uppercase tracking-[0.28em] text-zinc-600 md:text-[11px]">
-            {eyebrow}
-          </p>
+      <div className="relative z-10 flex min-h-[inherit] flex-col px-6 pb-8 pt-10 md:px-12 md:pb-12 md:pt-14">
+        {resolvedBreadcrumbs && resolvedBreadcrumbs.length > 0 ? (
+          <div className="mb-8 shrink-0 md:mb-10">
+            <SiteBreadcrumbBar items={resolvedBreadcrumbs} />
+          </div>
         ) : null}
-        <h1
-          id="page-gradient-hero-title"
-          className={cn(
-            "max-w-[min(92vw,56rem)] text-balance text-4xl font-bold uppercase leading-[0.95] tracking-tighter text-zinc-900",
-            "md:text-7xl lg:text-[9rem]",
-            titleClassName,
-          )}
-        >
-          {title}
-        </h1>
+        <div className="mt-auto">
+          {eyebrow ? (
+            <p className="mb-2 max-w-3xl text-[10px] font-bold uppercase tracking-[0.28em] text-zinc-600 md:text-[11px]">
+              {eyebrow}
+            </p>
+          ) : null}
+          <h1
+            id="page-gradient-hero-title"
+            className={cn(
+              "max-w-[min(92vw,56rem)] text-balance text-4xl font-bold uppercase leading-[0.95] tracking-tighter text-zinc-900",
+              "md:text-7xl lg:text-[9rem]",
+              titleClassName,
+            )}
+          >
+            {title}
+          </h1>
+        </div>
       </div>
     </section>
   );
