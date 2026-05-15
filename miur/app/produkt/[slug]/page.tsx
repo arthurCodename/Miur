@@ -41,7 +41,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <PageGradientHero
         title={product.name}
         eyebrow={product.category}
-        titleClassName="line-clamp-3 text-3xl md:text-5xl lg:text-6xl"
+        titleClassName="line-clamp-3 text-3xl md:text-6xl lg:text-[7.5rem]"
       />
       <div className="px-6 py-12 md:px-12 md:py-16">
       <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-2 md:gap-14 lg:gap-16">
