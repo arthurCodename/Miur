@@ -10,13 +10,16 @@ type SiteBreadcrumbBarProps = {
 };
 
 /**
- * Minimalistyczna ścieżka jak na referencyjnym sklepie: uppercase, cienka linia pod całością.
+ * Minimalistyczna ścieżka: uppercase, linia pod tekstem dopasowana do szerokości okruszków.
  */
 export function SiteBreadcrumbBar({ items, className }: SiteBreadcrumbBarProps) {
   if (items.length === 0) return null;
 
   return (
-    <nav aria-label="Ścieżka nawigacji" className={cn("min-w-0 max-w-full border-b border-zinc-900 pb-2.5", className)}>
+    <nav
+      aria-label="Ścieżka nawigacji"
+      className={cn("w-fit max-w-full min-w-0 border-b border-zinc-900 pb-2.5", className)}
+    >
       <ol className="flex min-w-0 max-w-full flex-wrap items-baseline gap-x-1.5 gap-y-1 text-[10px] font-bold uppercase leading-snug tracking-[0.2em] text-zinc-900 md:text-[11px] md:tracking-[0.22em]">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;

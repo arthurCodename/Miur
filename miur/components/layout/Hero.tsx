@@ -1,10 +1,79 @@
 // Miur/miur/components/layout/Hero.tsx
 "use client";
-import { useRef, useState, useEffect } from "react";
-import { useScroll, useTransform, motion, MotionConfig } from "framer-motion";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useScroll,
+  useTransform,
+  useSpring,
+  motion,
+  MotionConfig,
+  type MotionValue,
+} from "framer-motion";
 import { ArrowDown, Play, Pause } from "lucide-react";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { MiurWordmark } from "@/components/brand/MiurWordmark";
+
+function easeOutCubic(t: number): number {
+  return 1 - (1 - t) ** 3;
+}
+
+function useViewportMetrics() {
+  const [metrics, setMetrics] = useState({
+    isMobileOrTablet: false,
+    vhUnitPx: 0,
+    scrollRunwayVh: 106,
+  });
+
+  const sync = useCallback(() => {
+    const width = window.innerWidth;
+    const height = window.visualViewport?.height ?? window.innerHeight;
+    const isMobileOrTablet = width < 1024;
+    const vhUnitPx = height * 0.01;
+
+    document.documentElement.style.setProperty("--app-vh", `${vhUnitPx}px`);
+
+    setMetrics((prev) => {
+      const scrollRunwayVh = isMobileOrTablet ? 152 : 108;
+      const heightDelta = Math.abs(prev.vhUnitPx - vhUnitPx);
+      if (
+        prev.isMobileOrTablet === isMobileOrTablet &&
+        prev.scrollRunwayVh === scrollRunwayVh &&
+        heightDelta < 4
+      ) {
+        return prev;
+      }
+      return { isMobileOrTablet, vhUnitPx, scrollRunwayVh };
+    });
+  }, []);
+
+  useEffect(() => {
+    sync();
+    window.addEventListener("resize", sync);
+    const viewport = window.visualViewport;
+    viewport?.addEventListener("resize", sync);
+
+    return () => {
+      window.removeEventListener("resize", sync);
+      viewport?.removeEventListener("resize", sync);
+    };
+  }, [sync]);
+
+  return metrics;
+}
+
+function useSmoothScrollProgress(
+  scrollYProgress: MotionValue<number>,
+  reducedMotion: boolean,
+): MotionValue<number> {
+  return useSpring(scrollYProgress, {
+    stiffness: reducedMotion ? 1000 : 72,
+    damping: reducedMotion ? 100 : 26,
+    mass: 0.35,
+    restDelta: 0.0008,
+  });
+}
+
 export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -13,18 +82,7 @@ export function Hero() {
   const [userPaused, setUserPaused] = useState(false);
   const isPlaying = !userPaused && !reducedMotion;
 
-  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
-
-  useEffect(() => {
-    const checkScreen = () => {
-      setIsMobileOrTablet(window.innerWidth < 1024);
-      document.documentElement.style.setProperty("--app-vh", `${window.innerHeight * 0.01}px`);
-    };
-
-    checkScreen();
-    window.addEventListener("resize", checkScreen);
-    return () => window.removeEventListener("resize", checkScreen);
-  }, []);
+  const { isMobileOrTablet, scrollRunwayVh } = useViewportMetrics();
 
   useEffect(() => {
     const v = videoRef.current;
@@ -43,22 +101,41 @@ export function Hero() {
     offset: ["start start", "end start"],
   });
 
+  const smoothProgress = useSmoothScrollProgress(scrollYProgress, reducedMotion);
+  const progress = reducedMotion ? scrollYProgress : smoothProgress;
+
+  const easedProgress = useTransform(progress, (value) => easeOutCubic(Math.min(1, Math.max(0, value))));
+
+  const finalScale = isMobileOrTablet ? 0.32 : 0.18;
+  const scale = useTransform(easedProgress, (t) => 1 - t * (1 - finalScale));
+
+  const finalXPercent = isMobileOrTablet ? 0 : -38.5;
+  const x = useTransform(easedProgress, (t) => `${t * finalXPercent}vw`);
+
+  const finalYPercent = isMobileOrTablet ? -22 : -34;
+  const y = useTransform(easedProgress, (t) => `${t * finalYPercent}%`);
+
+  const logoOpacity = useTransform(easedProgress, (t) => {
+    if (t <= 0.62) return 1;
+    if (t >= 0.88) return 0;
+    return 1 - (t - 0.62) / 0.26;
+  });
+
+  const taglineOpacity = useTransform(easedProgress, (t) => {
+    if (t <= 0.12) return 1;
+    if (t >= 0.28) return 0;
+    return 1 - (t - 0.12) / 0.16;
+  });
+
+  const scrolujOpacity = useTransform(easedProgress, (t) => {
+    if (t <= 0.06) return 1;
+    if (t >= 0.14) return 0;
+    return 1 - (t - 0.06) / 0.08;
+  });
+
   const toggleVideo = () => {
     setUserPaused((prev) => !prev);
   };
-
-  const finalScale = isMobileOrTablet ? 0.25 : 0.18;
-  const scale = useTransform(scrollYProgress, [0, 0.6, 1], [1, finalScale, finalScale]);
-
-  const finalX = isMobileOrTablet ? "0%" : "-38.5vw";
-  const x = useTransform(scrollYProgress, [0, 0.6, 1], ["0%", finalX, finalX]);
-
-  const finalY = isMobileOrTablet ? "-36vh" : "-38vh";
-  const y = useTransform(scrollYProgress, [0, 0.6, 1], ["0vh", finalY, finalY]);
-
-  const logoOpacity = useTransform(scrollYProgress, [0.58, 0.65], [1, 0]);
-
-  const heroScrollHeightVh = isMobileOrTablet ? 155 : 106;
 
   const videoToggleLabel = isPlaying
     ? "Zatrzymaj odtwarzanie filmu w tle"
@@ -69,10 +146,10 @@ export function Hero() {
       <section
         ref={containerRef}
         className="relative flex w-full max-w-full flex-col overflow-x-clip overflow-y-visible bg-white font-sans"
-        style={{ height: `calc(var(--app-vh, 1vh) * ${heroScrollHeightVh})` }}
+        style={{ height: `calc(var(--app-vh, 1vh) * ${scrollRunwayVh})` }}
       >
         <div
-          className="sticky top-0 z-10 w-full max-w-full shrink-0 overflow-x-clip overflow-y-visible bg-black"
+          className="sticky top-0 z-10 w-full max-w-full shrink-0 overflow-x-clip overflow-y-visible bg-black transform-gpu"
           style={{ height: "calc(var(--app-vh, 1vh) * 100)" }}
         >
           <video
@@ -97,11 +174,10 @@ export function Hero() {
                 x,
                 y,
                 opacity: logoOpacity,
-                transformOrigin: isMobileOrTablet
-                  ? "center center"
-                  : "right center",
+                transformOrigin: isMobileOrTablet ? "center center" : "right center",
+                willChange: "transform, opacity",
               }}
-              className="isolate flex max-w-full flex-col items-center lg:items-end"
+              className="isolate flex max-w-full flex-col items-center [backface-visibility:hidden] lg:items-end"
             >
               <h1 className="px-1 py-2 leading-[1.05] text-white drop-shadow-2xl md:px-2 md:py-3">
                 <MiurWordmark
@@ -114,9 +190,7 @@ export function Hero() {
 
           <div className="absolute bottom-28 left-6 z-20 max-w-[250px] md:bottom-20 md:left-10 md:max-w-[300px]">
             <motion.p
-              style={{
-                opacity: useTransform(scrollYProgress, [0, 0.2], [1, 0]),
-              }}
+              style={{ opacity: taglineOpacity }}
               className="text-[9px] font-medium uppercase leading-relaxed tracking-[0.25em] text-white/50 md:text-[10px]"
             >
               Twoja chwila wellness <br />
@@ -147,7 +221,7 @@ export function Hero() {
           </div>
 
           <motion.div
-            style={{ opacity: useTransform(scrollYProgress, [0, 0.05], [1, 0]) }}
+            style={{ opacity: scrolujOpacity }}
             className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-2 opacity-30"
           >
             <span className="text-[8px] uppercase tracking-[0.5em] text-white/40">
@@ -160,7 +234,6 @@ export function Hero() {
           </motion.div>
         </div>
 
-        {/* Biały tor scroll pod animacją logo. */}
         <div className="min-h-0 flex-1 bg-white" aria-hidden />
       </section>
     </MotionConfig>
