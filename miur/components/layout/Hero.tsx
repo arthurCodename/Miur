@@ -5,8 +5,6 @@ import { useScroll, useTransform, motion, MotionConfig } from "framer-motion";
 import { ArrowDown, Play, Pause } from "lucide-react";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { MiurWordmark } from "@/components/brand/MiurWordmark";
-import { TrustBar } from "@/components/ui/TrustBar";
-
 export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -60,6 +58,8 @@ export function Hero() {
 
   const logoOpacity = useTransform(scrollYProgress, [0.58, 0.65], [1, 0]);
 
+  const heroScrollHeightVh = isMobileOrTablet ? 155 : 106;
+
   const videoToggleLabel = isPlaying
     ? "Zatrzymaj odtwarzanie filmu w tle"
     : "Odtwórz film w tle";
@@ -68,11 +68,11 @@ export function Hero() {
     <MotionConfig reducedMotion="user">
       <section
         ref={containerRef}
-        className="relative flex w-full max-w-full flex-col overflow-x-hidden bg-white font-sans"
-        style={{ height: "calc(var(--app-vh, 1vh) * 106)" }}
+        className="relative flex w-full max-w-full flex-col overflow-x-clip overflow-y-visible bg-white font-sans"
+        style={{ height: `calc(var(--app-vh, 1vh) * ${heroScrollHeightVh})` }}
       >
         <div
-          className="sticky top-0 z-10 w-full max-w-full shrink-0 overflow-x-hidden bg-black"
+          className="sticky top-0 z-10 w-full max-w-full shrink-0 overflow-x-clip overflow-y-visible bg-black"
           style={{ height: "calc(var(--app-vh, 1vh) * 100)" }}
         >
           <video
@@ -84,13 +84,13 @@ export function Hero() {
             poster="/hero-poster.jpg"
             preload="metadata"
             aria-hidden="true"
-            className="absolute inset-0 z-0 h-full w-full object-cover opacity-50"
+            className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover opacity-50"
           >
             <source src="/hero.webm" type="video/webm" />
             <source src="/hero.mp4" type="video/mp4" />
           </video>
 
-          <div className="pointer-events-none absolute inset-0 z-50 flex max-w-full items-center justify-center overflow-x-hidden px-6 py-8 lg:justify-end lg:px-24 lg:py-10">
+          <div className="pointer-events-none absolute inset-0 z-50 flex max-w-full items-center justify-center overflow-x-clip px-6 py-8 lg:justify-end lg:px-24 lg:py-10">
             <motion.div
               style={{
                 scale,
@@ -160,11 +160,7 @@ export function Hero() {
           </motion.div>
         </div>
 
-        <div className="relative z-20 w-full shrink-0">
-          <TrustBar />
-        </div>
-
-        {/* Biały „tor” pod TrustBar — tylko tyle wysokości ile zostaje z sekcji (bez zmian w navbarze). */}
+        {/* Biały tor scroll pod animacją logo. */}
         <div className="min-h-0 flex-1 bg-white" aria-hidden />
       </section>
     </MotionConfig>

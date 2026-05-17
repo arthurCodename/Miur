@@ -103,12 +103,12 @@ export function PageGradientHero({
         }}
       />
       <div className="relative z-10 flex min-h-[inherit] flex-col px-6 pb-8 pt-10 md:px-12 md:pb-12 md:pt-14">
-        {resolvedBreadcrumbs && resolvedBreadcrumbs.length > 0 ? (
-          <div className="mb-8 shrink-0 md:mb-10">
-            <SiteBreadcrumbBar items={resolvedBreadcrumbs} />
-          </div>
-        ) : null}
         <div className="mt-auto">
+          {resolvedBreadcrumbs && resolvedBreadcrumbs.length > 0 ? (
+            <div className="mb-4 shrink-0 md:mb-5">
+              <SiteBreadcrumbBar items={resolvedBreadcrumbs} />
+            </div>
+          ) : null}
           {eyebrow ? (
             <p className="mb-2 max-w-3xl text-[10px] font-bold uppercase tracking-[0.28em] text-zinc-600 md:text-[11px]">
               {eyebrow}
@@ -118,7 +118,7 @@ export function PageGradientHero({
             id="page-gradient-hero-title"
             className={cn(
               "max-w-[min(92vw,56rem)] text-balance text-4xl font-bold uppercase leading-[0.95] tracking-tighter text-zinc-900",
-              "md:text-7xl lg:text-[9rem]",
+              "md:text-5xl md:leading-[0.98] lg:text-6xl",
               titleClassName,
             )}
           >

@@ -105,10 +105,10 @@ export default function Navbar() {
 
   return (
     <div
-      className="fixed top-0 left-0 z-100 max-w-full min-w-0 overflow-x-clip w-full"
+      className="pointer-events-none fixed top-0 left-0 z-100 max-w-full min-w-0 overflow-x-clip w-full"
       onMouseLeave={() => setIsMegaMenuOpen(false)}
     >
-      <header className="relative isolate z-50 grid grid-cols-3 items-center px-6 pb-8 pt-[calc(env(safe-area-inset-top)+20px)] transition-all duration-500 md:px-12 md:pt-8">
+      <header className="pointer-events-auto relative isolate z-50 grid grid-cols-3 items-center px-6 pb-8 pt-[calc(env(safe-area-inset-top)+20px)] transition-all duration-500 md:px-12 md:pt-8">
         
         {/* Scrim: opacity przez rAF — mniej janku na mobile niż motion style na każdym pikselu scrollu */}
         <div
@@ -135,33 +135,7 @@ export default function Navbar() {
               </SheetTrigger>
               <SheetContent side="left" className="w-[85%] bg-zinc-950 border-none text-white p-0 flex flex-col" showCloseButton={false}>
                 <SheetTitle className="sr-only">Menu nawigacyjne</SheetTitle>
-                <nav
-                  aria-label="Skróty"
-                  className="grid gap-1 border-b border-white/10 px-6 pb-4 pt-[calc(env(safe-area-inset-top)+12px)]"
-                >
-                  {isHomePage ? (
-                    <span className="py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-500" aria-current="page">
-                      Strona główna
-                    </span>
-                  ) : (
-                    <SheetClose asChild>
-                      <Link href="/" className="py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-white hover:text-zinc-300">
-                        Strona główna
-                      </Link>
-                    </SheetClose>
-                  )}
-                  <SheetClose asChild>
-                    <Link href="/o-nas" className="py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-white hover:text-zinc-300">
-                      O nas
-                    </Link>
-                  </SheetClose>
-                  <SheetClose asChild>
-                    <Link href="/kontakt" className="py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-white hover:text-zinc-300">
-                      Kontakt
-                    </Link>
-                  </SheetClose>
-                </nav>
-                <div className="flex items-center justify-end px-6 pb-2 pt-2">
+                <div className="flex items-center justify-end px-6 pb-2 pt-[calc(env(safe-area-inset-top)+12px)]">
                    <SheetClose
                      className="p-2 -mr-2 hover:bg-white/10 rounded-full transition-colors"
                      aria-label="Zamknij menu"
@@ -170,19 +144,79 @@ export default function Navbar() {
                    </SheetClose>
                 </div>
                 <nav
-                  aria-label="Główne kategorie"
-                  className="flex-1 px-6 pt-2 flex flex-col overflow-y-auto overflow-x-hidden no-scrollbar"
+                  aria-label="Menu nawigacyjne"
+                  className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden px-6 pt-2 pb-6 no-scrollbar"
                 >
+                  {isHomePage ? (
+                    <span
+                      className="flex items-center justify-between border-b border-white/5 py-3.5"
+                      aria-current="page"
+                    >
+                      <span className="text-[13px] font-bold uppercase tracking-[0.15em] text-zinc-500">
+                        Strona główna
+                      </span>
+                    </span>
+                  ) : (
+                    <SheetClose asChild>
+                      <Link
+                        href="/"
+                        className="group flex items-center justify-between border-b border-white/5 py-3.5"
+                      >
+                        <span className="text-[13px] font-bold uppercase tracking-[0.15em]">Strona główna</span>
+                        <ChevronRight className="h-4 w-4 text-zinc-600" aria-hidden="true" />
+                      </Link>
+                    </SheetClose>
+                  )}
+
                   {menuData.map((cat, idx) => (
-                    <motion.div key={cat.title} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.03 }}>
+                    <motion.div
+                      key={cat.title}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: (idx + 1) * 0.03 }}
+                    >
                       <SheetClose asChild>
-                        <Link href={cat.href} className="group flex items-center justify-between py-3.5 border-b border-white/5">
+                        <Link
+                          href={cat.href}
+                          className="group flex items-center justify-between border-b border-white/5 py-3.5"
+                        >
                           <span className="text-[13px] font-bold uppercase tracking-[0.15em]">{cat.title}</span>
-                          <ChevronRight className="w-4 h-4 text-zinc-600" aria-hidden="true" />
+                          <ChevronRight className="h-4 w-4 text-zinc-600" aria-hidden="true" />
                         </Link>
                       </SheetClose>
                     </motion.div>
                   ))}
+
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: (menuData.length + 1) * 0.03 }}
+                  >
+                    <SheetClose asChild>
+                      <Link
+                        href="/o-nas"
+                        className="group flex items-center justify-between border-b border-white/5 py-3.5"
+                      >
+                        <span className="text-[13px] font-bold uppercase tracking-[0.15em]">O nas</span>
+                        <ChevronRight className="h-4 w-4 text-zinc-600" aria-hidden="true" />
+                      </Link>
+                    </SheetClose>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: (menuData.length + 2) * 0.03 }}
+                  >
+                    <SheetClose asChild>
+                      <Link
+                        href="/kontakt"
+                        className="group flex items-center justify-between border-b border-white/5 py-3.5"
+                      >
+                        <span className="text-[13px] font-bold uppercase tracking-[0.15em]">Kontakt</span>
+                        <ChevronRight className="h-4 w-4 text-zinc-600" aria-hidden="true" />
+                      </Link>
+                    </SheetClose>
+                  </motion.div>
                 </nav>
               </SheetContent>
             </Sheet>
@@ -243,7 +277,7 @@ export default function Navbar() {
           <motion.nav
             aria-label="Kategorie produktów"
             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            className="hidden md:flex absolute top-0 left-0 w-full max-w-full min-w-0 flex-row overflow-x-clip bg-zinc-950 text-white pt-32 pb-16 px-12 border-b border-zinc-800/50 h-[80vh] z-40"
+            className="pointer-events-auto hidden md:flex absolute top-0 left-0 w-full max-w-full min-w-0 flex-row overflow-x-clip bg-zinc-950 text-white pt-32 pb-16 px-12 border-b border-zinc-800/50 h-[80vh] z-40"
           >
             <ul className="w-1/4 min-w-0 shrink-0 border-r border-zinc-800 flex flex-col gap-6 overflow-y-auto overflow-x-hidden no-scrollbar">
               {menuData.map((cat) => (
@@ -253,7 +287,7 @@ export default function Navbar() {
                     onClick={() => setIsMegaMenuOpen(false)}
                     onMouseEnter={() => setActiveTab(cat.title)}
                     onFocus={() => setActiveTab(cat.title)}
-                    className={`block text-left text-[11px] font-bold uppercase tracking-[0.2em] transition-all outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-sm ${
+                    className={`block text-left text-[10px] font-bold uppercase tracking-[0.18em] transition-all outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-sm ${
                       activeTab === cat.title ? "text-white translate-x-2" : "text-zinc-500 hover:text-zinc-300"
                     }`}
                   >
@@ -265,7 +299,7 @@ export default function Navbar() {
             <div className="min-w-0 flex-1 pl-16 grid grid-cols-3 gap-12 overflow-y-auto overflow-x-hidden no-scrollbar">
                {menuData.find(c => c.title === activeTab)?.sections?.map((s, i) => (
                  <div key={i} className="flex flex-col gap-4">
-                   <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-100">{s.heading}</h4>
+                   <h4 className="text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-100">{s.heading}</h4>
                    <ul className="flex flex-col gap-2">
                      {s.items.map((item, j) => (
                        <li key={j}>
