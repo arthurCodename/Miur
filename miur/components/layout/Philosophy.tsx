@@ -1,5 +1,6 @@
 // Miur/miur/components/layout/Philosophy.tsx
 import Link from 'next/link';
+import Image from "next/image";
 
 export function Philosophy() {
   return (
@@ -7,7 +8,7 @@ export function Philosophy() {
       
       {/* ТЕКСТОВА ЧАСТИНА */}
       <div className="flex flex-col justify-center p-10 py-24 md:p-24 lg:p-32 order-2 lg:order-1">
-        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mb-8">
+        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 mb-8">
           Nasza Filozofia
         </span>
         
@@ -36,9 +37,12 @@ export function Philosophy() {
 
       {/* ФОТОГРАФІЯ */}
       <div className="relative h-[60vh] lg:h-auto order-1 lg:order-2 overflow-hidden group">
-        <img 
+        <Image 
           src="https://images.unsplash.com/photo-1616012480717-fd9867059ca2?q=80&w=1600&auto=format&fit=crop" 
           alt="Miur Philosophy"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2s] ease-out group-hover:scale-105"
         />
       </div>

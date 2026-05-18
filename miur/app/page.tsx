@@ -1,16 +1,39 @@
-import { Hero } from "../components/layout/Hero";
-import { TrustBar } from "../components/ui/TrustBar";
-import { CategoryGrid } from "../components/layout/CategoryGrid";
-import { BestSellers } from "../components/layout/BestSellers";
-import { Philosophy } from "../components/layout/Philosophy";
+import dynamic from "next/dynamic";
+import { Hero } from "@/components/layout/Hero";
+import { TrustBar } from "@/components/ui/TrustBar";
+import { CategoryGrid } from "@/components/layout/CategoryGrid";
+import { getBestsellers } from "@/lib/catalog/bestsellers";
+import { getWyprzedazProducts, getWyprzedazTiles } from "@/lib/catalog/wyprzedaz";
+import { getBlogPosts } from "@/lib/blog/posts";
 
-export default function Home() {
+const BestSellers = dynamic(() =>
+  import("@/components/layout/BestSellers").then((mod) => mod.BestSellers),
+);
+const WyprzedazSection = dynamic(() =>
+  import("@/components/layout/WyprzedazSection").then((mod) => mod.WyprzedazSection),
+);
+const Blog = dynamic(() => import("@/components/layout/Blog").then((mod) => mod.Blog));
+const Philosophy = dynamic(() =>
+  import("@/components/layout/Philosophy").then((mod) => mod.Philosophy),
+);
+
+export default async function Home() {
+  const [bestsellers, wyprzedazTiles, wyprzedazProducts, blogPosts] =
+    await Promise.all([
+      getBestsellers(),
+      getWyprzedazTiles(),
+      getWyprzedazProducts(),
+      getBlogPosts(),
+    ]);
+
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex w-full flex-col">
       <Hero />
       <TrustBar />
       <CategoryGrid />
-      <BestSellers />
+      <BestSellers products={bestsellers} />
+      <WyprzedazSection tiles={wyprzedazTiles} products={wyprzedazProducts} />
+      <Blog posts={blogPosts} />
       <Philosophy />
     </div>
   );

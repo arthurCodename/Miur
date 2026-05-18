@@ -30,7 +30,7 @@ export function TrustBar() {
         <div className="flex gap-8 md:gap-16 px-4 md:px-8 items-center">
           {trustItems.map((item, idx) => (
             <div key={`first-${idx}`} className="flex items-center gap-8 md:gap-16">
-              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-700">
                 {item}
               </span>
               <span className="text-[10px] text-zinc-300">✦</span>
@@ -42,7 +42,7 @@ export function TrustBar() {
         <div className="flex gap-8 md:gap-16 px-4 md:px-8 items-center">
           {trustItems.map((item, idx) => (
             <div key={`second-${idx}`} className="flex items-center gap-8 md:gap-16">
-              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-700">
                 {item}
               </span>
               <span className="text-[10px] text-zinc-300">✦</span>

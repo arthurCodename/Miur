@@ -2,7 +2,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Accessibility, Type, Contrast, Link2, X, TextSelect, Palette, MousePointer2, Volume2, Focus } from 'lucide-react';
+import { Accessibility, Type, Link2, X, TextSelect, Palette, MousePointer2, Volume2, Focus } from 'lucide-react';
 
 export function AccessibilityWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,58 +19,66 @@ export function AccessibilityWidget() {
     adhdProfile: false,  // Маска фокусування
   });
 
-  // 1. Керування CSS класами (Збільшення, Контраст тощо)
+  // 1. Toggle a11y classes on <body> based on the user's preferences.
   useEffect(() => {
     const body = document.body;
-    settings.largeText ? body.classList.add('a11y-large-text') : body.classList.remove('a11y-large-text');
-    settings.readableFont ? body.classList.add('a11y-readable-font') : body.classList.remove('a11y-readable-font');
-    settings.highContrast ? body.classList.add('a11y-high-contrast') : body.classList.remove('a11y-high-contrast');
-    settings.grayscale ? body.classList.add('a11y-grayscale') : body.classList.remove('a11y-grayscale');
-    settings.highlightLinks ? body.classList.add('a11y-highlight-links') : body.classList.remove('a11y-highlight-links');
-    settings.bigCursor ? body.classList.add('a11y-big-cursor') : body.classList.remove('a11y-big-cursor');
+    body.classList.toggle("a11y-large-text", settings.largeText);
+    body.classList.toggle("a11y-readable-font", settings.readableFont);
+    body.classList.toggle("a11y-high-contrast", settings.highContrast);
+    body.classList.toggle("a11y-grayscale", settings.grayscale);
+    body.classList.toggle("a11y-highlight-links", settings.highlightLinks);
+    body.classList.toggle("a11y-big-cursor", settings.bigCursor);
   }, [settings]);
 
-  // 2. Логіка для "Text-to-Speech" (Читання екрана)
-  useEffect(() => {
-    const handleMouseOver = (e: MouseEvent) => {
-      if (!settings.screenReader) return;
-      
-      const target = e.target as HTMLElement;
-      // Отримуємо текст елемента, на який навели (або його aria-label/alt)
-      const text = target.innerText || target.getAttribute('aria-label') || target.getAttribute('alt');
-
-      // Читаємо тільки якщо є текст і ми навели на конкретний елемент (а не на весь блок)
-      if (text && target.children.length === 0) {
-        window.speechSynthesis.cancel(); // Зупиняємо попереднє читання
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'pl-PL'; // Читаємо польською
-        window.speechSynthesis.speak(utterance);
-      }
-    };
-
-    if (settings.screenReader) {
-      document.addEventListener('mouseover', handleMouseOver);
-    } else {
-      window.speechSynthesis.cancel(); // Вимикаємо диктора, якщо опцію знято
-    }
-
-    return () => {
-      document.removeEventListener('mouseover', handleMouseOver);
-      window.speechSynthesis.cancel();
-    };
-  }, [settings.screenReader]);
-
-  // 3. Логіка для "ADHD Profile" (Відслідковування миші для маски)
+  // 3. ADHD reading mask — keep a 120px window around the cursor visible.
   useEffect(() => {
     if (!settings.adhdProfile) return;
-    
+
     const handleMouseMove = (e: MouseEvent) => {
-      setMouseY(e.clientY); // Записуємо висоту курсора
+      setMouseY(e.clientY);
     };
-    
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [settings.adhdProfile]);
+
+  // 4. Screen reader (Web Speech API): when active, click any element with text
+  //    to have it spoken in Polish. Cancels any pending utterance on click.
+  useEffect(() => {
+    if (!settings.screenReader) return;
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      // Find the closest element that carries a meaningful text label.
+      const speakable = target.closest<HTMLElement>(
+        "p, h1, h2, h3, h4, h5, h6, li, button, a, label, span, [data-speakable]",
+      );
+      if (!speakable) return;
+
+      const text =
+        speakable.getAttribute("aria-label") ||
+        speakable.textContent?.trim() ||
+        "";
+      if (!text) return;
+
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "pl-PL";
+      utterance.rate = 0.95;
+      window.speechSynthesis.speak(utterance);
+    };
+
+    document.body.classList.add("a11y-screen-reader-active");
+    document.addEventListener("click", handleClick);
+    return () => {
+      window.speechSynthesis.cancel();
+      document.body.classList.remove("a11y-screen-reader-active");
+      document.removeEventListener("click", handleClick);
+    };
+  }, [settings.screenReader]);
 
   const toggleSetting = (key: keyof typeof settings) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }));
@@ -145,13 +153,7 @@ export function AccessibilityWidget() {
                   title="Czytelna czcionka" 
                   isActive={settings.readableFont} 
                   onClick={() => toggleSetting('readableFont')} 
-                />
-                <SettingButton 
-                  icon={<Contrast className="w-4 h-4" />} 
-                  title="Wysoki kontrast" 
-                  isActive={settings.highContrast} 
-                  onClick={() => toggleSetting('highContrast')} 
-                />
+                />              
                 <SettingButton 
                   icon={<Palette className="w-4 h-4" />} 
                   title="Skala szarości" 
