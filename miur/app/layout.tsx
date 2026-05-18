@@ -96,15 +96,20 @@ export default async function RootLayout({
               >
                 Przejdź do treści głównej
               </a>
-              <Navbar />
+              <div
+                id="a11y-site-content"
+                className="flex min-h-0 min-w-0 flex-1 flex-col w-full max-w-full overflow-x-clip"
+              >
+                <Navbar />
+                {!visualOnlyMode && <CookieBanner />}
+                {!visualOnlyMode && <AgeGate />}
+                <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
+                  <div className="min-w-0 w-full max-w-full overflow-x-clip">{children}</div>
+                </main>
+                <Footer />
+                {!visualOnlyMode && <Toaster richColors position="top-center" />}
+              </div>
               {!visualOnlyMode && <AccessibilityWidget />}
-              {!visualOnlyMode && <CookieBanner />}
-              {!visualOnlyMode && <AgeGate />}
-              <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
-                <div className="min-w-0 w-full max-w-full overflow-x-clip">{children}</div>
-              </main>
-              <Footer />
-              {!visualOnlyMode && <Toaster richColors position="top-center" />}
             </div>
           </ThemeProvider>
         </CookieConsentProvider>

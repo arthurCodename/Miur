@@ -19,15 +19,17 @@ export function AccessibilityWidget() {
     adhdProfile: false,  // Маска фокусування
   });
 
-  // 1. Toggle a11y classes on <body> based on the user's preferences.
+  // Efekty (filter/zoom) na #a11y-site-content — nie na body, żeby fixed widget nie „jechał” przy scrollu.
   useEffect(() => {
-    const body = document.body;
-    body.classList.toggle("a11y-large-text", settings.largeText);
-    body.classList.toggle("a11y-readable-font", settings.readableFont);
-    body.classList.toggle("a11y-high-contrast", settings.highContrast);
-    body.classList.toggle("a11y-grayscale", settings.grayscale);
-    body.classList.toggle("a11y-highlight-links", settings.highlightLinks);
-    body.classList.toggle("a11y-big-cursor", settings.bigCursor);
+    const siteContent =
+      document.getElementById("a11y-site-content") ?? document.body;
+
+    siteContent.classList.toggle("a11y-large-text", settings.largeText);
+    siteContent.classList.toggle("a11y-readable-font", settings.readableFont);
+    siteContent.classList.toggle("a11y-high-contrast", settings.highContrast);
+    siteContent.classList.toggle("a11y-grayscale", settings.grayscale);
+    siteContent.classList.toggle("a11y-highlight-links", settings.highlightLinks);
+    siteContent.classList.toggle("a11y-big-cursor", settings.bigCursor);
   }, [settings]);
 
   // 3. ADHD reading mask — keep a 120px window around the cursor visible.
@@ -98,7 +100,7 @@ export function AccessibilityWidget() {
       )}
 
       {/* ВІДЖЕТ */}
-      <div className="fixed bottom-6 left-6 z-[200] font-sans">
+      <div className="fixed bottom-6 left-6 z-[200] isolate font-sans">
         {/* Кнопка відкриття */}
         <button 
           onClick={() => setIsOpen(!isOpen)}
@@ -139,9 +141,6 @@ export function AccessibilityWidget() {
                   onClick={() => toggleSetting('adhdProfile')} 
                 />
                 
-                <div className="h-px w-full bg-zinc-800 my-2" /> {/* Розділювач */}
-
-                {/* --- СТАРІ ФУНКЦІЇ --- */}
                 <SettingButton 
                   icon={<Type className="w-4 h-4" />} 
                   title="Większy tekst" 

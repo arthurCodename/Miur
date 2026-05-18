@@ -2,14 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  useScroll,
-  useTransform,
-  useSpring,
-  motion,
-  MotionConfig,
-  type MotionValue,
-} from "framer-motion";
+import { useScroll, useTransform, motion, MotionConfig } from "framer-motion";
 import { ArrowDown, Play, Pause } from "lucide-react";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { MiurWordmark } from "@/components/brand/MiurWordmark";
@@ -19,11 +12,12 @@ function easeOutCubic(t: number): number {
 }
 
 function useViewportMetrics() {
-  const [metrics, setMetrics] = useState({
-    isMobileOrTablet: false,
+  const [metrics, setMetrics] = useState(() => ({
+    isMobileOrTablet: typeof window !== "undefined" && window.innerWidth < 1024,
     vhUnitPx: 0,
-    scrollRunwayVh: 106,
-  });
+    scrollRunwayVh:
+      typeof window !== "undefined" && window.innerWidth < 1024 ? 152 : 108,
+  }));
 
   const sync = useCallback(() => {
     const width = window.innerWidth;
@@ -62,18 +56,6 @@ function useViewportMetrics() {
   return metrics;
 }
 
-function useSmoothScrollProgress(
-  scrollYProgress: MotionValue<number>,
-  reducedMotion: boolean,
-): MotionValue<number> {
-  return useSpring(scrollYProgress, {
-    stiffness: reducedMotion ? 1000 : 72,
-    damping: reducedMotion ? 100 : 26,
-    mass: 0.35,
-    restDelta: 0.0008,
-  });
-}
-
 export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -101,10 +83,12 @@ export function Hero() {
     offset: ["start start", "end start"],
   });
 
-  const smoothProgress = useSmoothScrollProgress(scrollYProgress, reducedMotion);
-  const progress = reducedMotion ? scrollYProgress : smoothProgress;
-
-  const easedProgress = useTransform(progress, (value) => easeOutCubic(Math.min(1, Math.max(0, value))));
+  /** Mobile: 1:1 ze scrollem (bez spring/ease). Desktop: łagodniejsza krzywa. */
+  const easedProgress = useTransform(scrollYProgress, (value) => {
+    const v = Math.min(1, Math.max(0, value));
+    if (isMobileOrTablet) return v;
+    return easeOutCubic(v);
+  });
 
   const finalScale = isMobileOrTablet ? 0.32 : 0.18;
   const scale = useTransform(easedProgress, (t) => 1 - t * (1 - finalScale));
