@@ -54,8 +54,8 @@ export function PageGradientHero({
   return (
     <section
       className={cn(
-        "relative w-full max-w-full overflow-hidden border-b border-black pt-24 md:pt-28",
-        "min-h-[min(42vh,20rem)] md:min-h-[min(44vh,28rem)]",
+        "relative w-full max-w-full overflow-hidden border-b border-black pt-20 md:pt-24",
+        "min-h-[min(30vh,14rem)] md:min-h-[min(32vh,18rem)]",
         className,
       )}
       aria-labelledby="page-gradient-hero-title"
@@ -102,10 +102,10 @@ export function PageGradientHero({
             "radial-gradient(ellipse 75% 55% at 85% 88%, rgba(255,255,255,0.42), rgba(255,255,255,0) 58%)",
         }}
       />
-      <div className="relative z-10 flex min-h-[inherit] flex-col px-6 pb-8 pt-10 md:px-12 md:pb-12 md:pt-14">
+      <div className="relative z-10 flex min-h-[inherit] flex-col px-6 pb-5 pt-5 md:px-12 md:pb-7 md:pt-7">
         <div className="mt-auto">
           {resolvedBreadcrumbs && resolvedBreadcrumbs.length > 0 ? (
-            <div className="mb-4 shrink-0 md:mb-5">
+            <div className="mb-3 shrink-0 md:mb-4">
               <SiteBreadcrumbBar items={resolvedBreadcrumbs} />
             </div>
           ) : null}
@@ -117,8 +117,8 @@ export function PageGradientHero({
           <h1
             id="page-gradient-hero-title"
             className={cn(
-              "max-w-[min(92vw,56rem)] text-balance text-4xl font-bold uppercase leading-[0.95] tracking-tighter text-zinc-900",
-              "md:text-5xl md:leading-[0.98] lg:text-6xl",
+              "max-w-[min(92vw,56rem)] text-balance text-3xl font-bold uppercase leading-[0.95] tracking-tighter text-zinc-900",
+              "md:text-4xl md:leading-[0.98] lg:text-5xl",
               titleClassName,
             )}
           >

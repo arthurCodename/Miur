@@ -31,7 +31,12 @@ export default function robots(): MetadataRoute.Robots {
     "/lista-zyczen/",
     "/login",
     "/logowanie",
+    "/register",
     "/rejestracja",
+    "/forgot-password",
+    "/forgot-password/",
+    "/odzyskaj-haslo",
+    "/odzyskaj-haslo/",
     "/search",
     "/api/",
   ];

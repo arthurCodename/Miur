@@ -90,15 +90,10 @@ export function Hero() {
     return easeOutCubic(v);
   });
 
-  const finalScale = isMobileOrTablet ? 0.32 : 0.18;
-  const scale = useTransform(easedProgress, (t) => 1 - t * (1 - finalScale));
-
-  const finalXPercent = isMobileOrTablet ? 0 : -38.5;
-  const x = useTransform(easedProgress, (t) => `${t * finalXPercent}vw`);
-
-  const finalYPercent = isMobileOrTablet ? -22 : -34;
-  const y = useTransform(easedProgress, (t) => `${t * finalYPercent}%`);
-
+  /** Desktop (lg+): logo jedzie w stronę navbara. Mobile: bez transformacji. */
+  const scale = useTransform(easedProgress, (t) => 1 - t * (1 - 0.18));
+  const x = useTransform(easedProgress, (t) => `${t * -38.5}vw`);
+  const y = useTransform(easedProgress, (t) => `${t * -34}%`);
   const logoOpacity = useTransform(easedProgress, (t) => {
     if (t <= 0.62) return 1;
     if (t >= 0.88) return 0;
@@ -152,21 +147,31 @@ export function Hero() {
           </video>
 
           <div className="pointer-events-none absolute inset-0 z-50 flex max-w-full items-center justify-center overflow-x-clip px-6 py-8 lg:justify-end lg:px-24 lg:py-10">
+            {/* Mobile / tablet: logo nieruchome */}
+            <div className="isolate flex max-w-full flex-col items-center lg:hidden">
+              <h1 className="px-1 py-2 leading-[1.05] text-white drop-shadow-2xl md:px-2 md:py-3">
+                <MiurWordmark
+                  title="Miur"
+                  className="mx-auto text-[min(20.7vw,30.75rem)] leading-[inherit]"
+                />
+              </h1>
+            </div>
+            {/* Desktop: animacja scroll → navbar */}
             <motion.div
               style={{
                 scale,
                 x,
                 y,
                 opacity: logoOpacity,
-                transformOrigin: isMobileOrTablet ? "center center" : "right center",
+                transformOrigin: "right center",
                 willChange: "transform, opacity",
               }}
-              className="isolate flex max-w-full flex-col items-center [backface-visibility:hidden] lg:items-end"
+              className="isolate hidden max-w-full flex-col items-end backface-hidden lg:flex"
             >
-              <h1 className="px-1 py-2 leading-[1.05] text-white drop-shadow-2xl md:px-2 md:py-3">
+              <h1 className="px-2 py-3 leading-[1.05] text-white drop-shadow-2xl">
                 <MiurWordmark
                   title="Miur"
-                  className="mx-auto text-[min(20.7vw,30.75rem)] leading-[inherit] lg:mx-0 lg:text-[min(14vw,22rem)]"
+                  className="text-[min(14vw,22rem)] leading-[inherit]"
                 />
               </h1>
             </motion.div>

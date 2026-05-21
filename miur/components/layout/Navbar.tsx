@@ -10,6 +10,7 @@ import { CartSheet } from "@/components/checkout/CartSheet";
 import { AuthNavLink } from "@/components/layout/AuthNavLink";
 import { CartIcon } from "@/components/layout/CartIcon";
 import { MiurWordmark } from "@/components/brand/MiurWordmark";
+import { cn } from "@/lib/utils";
 import { 
   Sheet, 
   SheetContent, 
@@ -105,10 +106,15 @@ export default function Navbar() {
 
   return (
     <div
-      className="pointer-events-none fixed top-0 left-0 z-100 max-w-full min-w-0 overflow-x-clip w-full"
+      className="pointer-events-none fixed top-0 left-0 z-100 max-w-full min-w-0 w-full"
       onMouseLeave={() => setIsMegaMenuOpen(false)}
     >
-      <header className="pointer-events-auto relative isolate z-50 grid grid-cols-3 items-center px-6 pb-8 pt-[calc(env(safe-area-inset-top)+20px)] transition-all duration-500 md:px-12 md:pt-8">
+      <header
+        className={cn(
+          "pointer-events-auto relative isolate z-50 grid grid-cols-3 items-center px-6 pb-8 pt-[calc(env(safe-area-inset-top)+20px)] transition-[background-color] duration-300 md:px-12 md:pt-8",
+          isMegaMenuOpen && "bg-zinc-950",
+        )}
+      >
         
         {/* Scrim: opacity przez rAF — mniej janku na mobile niż motion style na każdym pikselu scrollu */}
         <div
@@ -222,25 +228,34 @@ export default function Navbar() {
             </Sheet>
           </div>
 
-          <div className="hidden md:flex h-8 items-center gap-6 cursor-pointer group" onMouseEnter={() => setIsMegaMenuOpen(true)}>
-            <div className="flex h-full items-center gap-3">
-              <Menu className="w-5 h-5 group-hover:opacity-50 transition-opacity" strokeWidth={1.2} />
-              <span className="text-[9px] font-bold uppercase leading-none tracking-[0.3em]">Menu</span>
-            </div>
-          </div>
+          <button
+            type="button"
+            className="hidden min-h-8 items-center gap-3 border-0 bg-transparent p-0 text-white shadow-none outline-none transition-opacity hover:opacity-60 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 md:inline-flex"
+            aria-expanded={isMegaMenuOpen}
+            aria-haspopup="true"
+            aria-controls="mega-menu-panel"
+            onMouseEnter={() => setIsMegaMenuOpen(true)}
+            onFocus={() => setIsMegaMenuOpen(true)}
+          >
+            <Menu className="h-5 w-5 shrink-0" strokeWidth={1.2} aria-hidden />
+            <span className="text-[9px] font-bold uppercase leading-none tracking-[0.3em]">Menu</span>
+          </button>
           
           <SearchConsole className="flex min-w-0 max-w-[min(100%,9rem)] sm:max-w-48 md:h-8 md:max-w-none" />
         </div>
 
-        {/* ЦЕНТРАЛЬНА ЧАСТИНА */}
-        <div className="justify-self-center translate-y-1.5 text-white md:translate-y-2">
-          <div ref={logoNavRef} className="px-4 py-2" style={{ opacity: isHomePage ? 0 : 1 }}>
+        {/* ЦЕНТРАЛЬНА ЧАСТИНА — overflow-visible + luźniejszy leading: Safari obcina wysokie litery przy overflow-x-clip na rodzicu */}
+        <div className="justify-self-center overflow-visible translate-y-1.5 text-white md:translate-y-2">
+          <div ref={logoNavRef} className="overflow-visible px-4 py-2 pt-2.5" style={{ opacity: isHomePage ? 0 : 1 }}>
             <Link
               href="/"
               aria-label="Miur — strona główna"
-              className="inline-flex items-center text-white outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
+              className="inline-flex items-center overflow-visible text-white outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
             >
-              <MiurWordmark decorative className="text-[1.48rem] leading-none md:text-[1.68rem]" />
+              <MiurWordmark
+                decorative
+                className="text-[1.48rem] leading-[1.08] md:text-[1.68rem] md:leading-[1.06]"
+              />
             </Link>
           </div>
         </div>
@@ -275,8 +290,12 @@ export default function Navbar() {
       <AnimatePresence>
         {isMegaMenuOpen && (
           <motion.nav
+            id="mega-menu-panel"
             aria-label="Kategorie produktów"
-            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+            initial={false}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
             className="pointer-events-auto hidden md:flex absolute top-0 left-0 w-full max-w-full min-w-0 flex-row overflow-x-clip bg-zinc-950 text-white pt-32 pb-16 px-12 border-b border-zinc-800/50 h-[80vh] z-40"
           >
             <ul className="w-1/4 min-w-0 shrink-0 border-r border-zinc-800 flex flex-col gap-6 overflow-y-auto overflow-x-hidden no-scrollbar">

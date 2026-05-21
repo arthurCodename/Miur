@@ -23,7 +23,7 @@ export function MiurWordmark({
     <span
       className={cn(
         wildloopsWordmark.className,
-        "brand-logo-wordmark inline-block shrink-0 font-bold leading-none tracking-normal text-current",
+        "brand-logo-wordmark inline-block shrink-0 overflow-visible font-bold leading-[1.08] tracking-normal text-current",
         className,
       )}
       role={decorative ? undefined : "img"}

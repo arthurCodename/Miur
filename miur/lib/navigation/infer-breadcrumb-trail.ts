@@ -8,6 +8,8 @@ const TOP_LEVEL_LABELS: Record<string, string> = {
   bestsellery: "Bestsellery",
   kontakt: "Kontakt",
   login: "Logowanie",
+  register: "Rejestracja",
+  "forgot-password": "Odzyskaj hasło",
   "lista-zyczen": "Lista życzeń",
   masturbatory: "Masturbatory",
   "moje-zamowienia": "Moje zamówienia",

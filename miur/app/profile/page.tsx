@@ -1,28 +1,12 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PageGradientHero } from "@/components/layout/PageGradientHero";
+import { useAuthHydrated } from "@/lib/hooks/useAuthHydrated";
 import { useIsMounted } from "@/lib/hooks/useIsMounted";
 import { useAuthStore } from "@/lib/store/useAuthStore";
-
-/**
- * Subscribe to Zustand persist hydration via `useSyncExternalStore`.
- *
- * Why not `useEffect(setHydrated)`?
- *   - React 19 lints synchronous setState inside useEffect
- *     (rule: react-hooks/set-state-in-effect).
- *   - useSyncExternalStore is the canonical way to mirror an external
- *     async state into React (here: localStorage hydration).
- */
-function useAuthHydrated(): boolean {
-  return useSyncExternalStore(
-    (cb) => useAuthStore.persist.onFinishHydration(cb),
-    () => useAuthStore.persist.hasHydrated(),
-    () => false,
-  );
-}
 
 export default function ProfilePage() {
   const router = useRouter();

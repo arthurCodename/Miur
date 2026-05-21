@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { LoginResult } from "@/lib/auth/types";
+import { useAccountsStore } from "@/lib/store/useAccountsStore";
 
 export interface User {
   email: string;
@@ -8,7 +10,7 @@ export interface User {
 
 export interface AuthState {
   user: User | null;
-  login: (email: string) => void;
+  login: (email: string, password: string) => LoginResult;
   logout: () => void;
 }
 
@@ -24,13 +26,18 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
 
-      login: (email) => {
+      login: (email, password) => {
+        const result = useAccountsStore.getState().verifyLogin(email, password);
+        if (!result.ok) {
+          return result;
+        }
         set({
           user: {
-            email,
+            email: email.trim().toLowerCase(),
             name: displayNameFromEmail(email),
           },
         });
+        return { ok: true };
       },
 
       logout: () => set({ user: null }),
