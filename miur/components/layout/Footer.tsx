@@ -148,7 +148,7 @@ export function Footer() {
 
       <div className="flex w-full max-w-full flex-col items-center overflow-x-clip px-2 py-12 md:py-20">
         <span className="inline-flex max-w-full select-none px-4 text-zinc-900 md:px-10">
-          <MiurWordmark title="Miur" className="text-[min(8.6vw,11.8rem)] leading-none md:text-[min(5.25vw,7.9rem)]" />
+          <MiurWordmark title="Miur" className="text-[min(8.6vw,11.8rem)] md:text-[min(5.25vw,7.9rem)]" />
         </span>
       </div>
 

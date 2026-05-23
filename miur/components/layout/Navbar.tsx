@@ -247,9 +247,11 @@ export default function Navbar() {
           <SearchConsole className="flex min-w-0 max-w-[min(100%,9rem)] sm:max-w-48 md:h-8 md:max-w-none" />
         </div>
 
-        {/* ЦЕНТРАЛЬНА ЧАСТИНА — overflow-visible + luźniejszy leading: Safari obcina wysokie litery przy overflow-x-clip na rodzicu */}
-        <div className="justify-self-center overflow-visible translate-y-1.5 text-white md:translate-y-2">
-          <div ref={logoNavRef} className="overflow-visible px-4 py-2 pt-2.5" style={{ opacity: isHomePage ? 0 : 1 }}>
+        {/* ЦЕНТРАЛЬНА ЧАСТИНА — ascendery Wild Loops mają miejsce dzięki
+            leading-[1.25] w MiurWordmark; brak ręcznych translate-y / pt
+            offsetów = logo wyśrodkowane pionowo we wszystkich przeglądarkach. */}
+        <div className="justify-self-center overflow-visible text-white">
+          <div ref={logoNavRef} className="overflow-visible px-4 py-2" style={{ opacity: isHomePage ? 0 : 1 }}>
             <Link
               href="/"
               aria-label="Miur — strona główna"
@@ -257,7 +259,7 @@ export default function Navbar() {
             >
               <MiurWordmark
                 decorative
-                className="text-[1.48rem] leading-[1.08] md:text-[1.68rem] md:leading-[1.06]"
+                className="text-[1.48rem] md:text-[1.68rem]"
               />
             </Link>
           </div>

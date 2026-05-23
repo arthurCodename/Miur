@@ -22,7 +22,17 @@
     monospace;
 }
 
-/* Wordmark Wild Loops — wspólne strojenie (.cursorrules). */
+/* Wordmark Wild Loops — wspólne strojenie (.cursorrules).
+ *
+ * Wild Loops ma bardzo wysokie ascendery (pętle nad „M", „i", „u").
+ * Safari (WebKit) traktuje line-height jako twardy box dla glifów —
+ * gdy leading jest mniejszy niż wysokość ascendera, wierzchołki literek
+ * są przycinane (Chrome/Firefox renderują je poza line-boxem, Safari nie).
+ *
+ * Bazowy line-height jest ustawiany w komponencie `MiurWordmark`
+ * (leading-[1.25]) — wystarcza dla pełnej wysokości glifów we wszystkich
+ * przeglądarkach. Nie ustawiaj mniejszego leading w miejscach użycia.
+ */
 .brand-logo-wordmark {
   text-rendering: geometricPrecision;
 }

@@ -161,10 +161,10 @@ export function Hero() {
             */}
             <h1 className="contents" aria-label="Miur">
               {/* Mobile / tablet: static */}
-              <span className="isolate flex max-w-full flex-col items-center px-1 py-2 leading-[1.05] text-white drop-shadow-2xl lg:hidden md:px-2 md:py-3">
+              <span className="isolate flex max-w-full flex-col items-center px-1 py-2 text-white drop-shadow-2xl lg:hidden md:px-2 md:py-3">
                 <MiurWordmark
                   decorative
-                  className="mx-auto text-[min(20.7vw,30.75rem)] leading-[inherit]"
+                  className="mx-auto text-[min(20.7vw,30.75rem)]"
                 />
               </span>
               {/* Desktop: scroll animation */}
@@ -177,11 +177,11 @@ export function Hero() {
                   transformOrigin: "right center",
                   willChange: "transform, opacity",
                 }}
-                className="isolate hidden max-w-full flex-col items-end backface-hidden px-2 py-3 leading-[1.05] text-white drop-shadow-2xl lg:flex"
+                className="isolate hidden max-w-full flex-col items-end backface-hidden px-2 py-3 text-white drop-shadow-2xl lg:flex"
               >
                 <MiurWordmark
                   decorative
-                  className="text-[min(14vw,22rem)] leading-[inherit]"
+                  className="text-[min(14vw,22rem)]"
                 />
               </motion.span>
             </h1>

@@ -23,7 +23,11 @@ export function MiurWordmark({
     <span
       className={cn(
         wildloopsWordmark.className,
-        "brand-logo-wordmark inline-block shrink-0 overflow-visible font-bold leading-[1.08] tracking-normal text-current",
+        // leading-[1.25] zapewnia miejsce na wysokie ascendery Wild Loops
+        // (pętle nad „M", „i", „u"). Safari obcina glify gdy leading < ~1.2;
+        // Chrome/Firefox renderują je poza line-boxem, ale jednolity leading
+        // = identyczny układ we wszystkich przeglądarkach.
+        "brand-logo-wordmark inline-block shrink-0 overflow-visible font-bold leading-[1.25] tracking-normal text-current",
         className,
       )}
       role={decorative ? undefined : "img"}
