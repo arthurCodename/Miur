@@ -22,19 +22,32 @@
     monospace;
 }
 
-/* Wordmark Wild Loops — wspólne strojenie (.cursorrules).
- *
- * Wild Loops ma bardzo wysokie ascendery (pętle nad „M", „i", „u").
- * Safari (WebKit) traktuje line-height jako twardy box dla glifów —
- * gdy leading jest mniejszy niż wysokość ascendera, wierzchołki literek
- * są przycinane (Chrome/Firefox renderują je poza line-boxem, Safari nie).
- *
- * Bazowy line-height jest ustawiany w komponencie `MiurWordmark`
- * (leading-[1.25]) — wystarcza dla pełnej wysokości glifów we wszystkich
- * przeglądarkach. Nie ustawiaj mniejszego leading w miejscach użycia.
- */
+/* Wordmark Wild Loops — wspólne strojenie typograficzne. */
 .brand-logo-wordmark {
-  text-rendering: geometricPrecision;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Safari-only line-height bump (desktop + iOS) dla wordmarka.
+ *
+ * Wild Loops ma bardzo wysokie pętle nad „M/i/u/r" wykraczające poza
+ * typoAscender fontu. WebKit klipuje glify do line-boxu (=font-size×line-height)
+ * niezależnie od overflow-visible / padding-top trików. Chrome i Firefox
+ * renderują takie glify poza line-boxem bez problemu.
+ *
+ * Rozwiązanie: tylko w Safari podbijamy line-height na 1.3 — to
+ * powiększa line-box akurat na tyle, żeby pętle się zmieściły. Pozostałe
+ * przeglądarki dostają kompaktowy leading 1.08 (z komponentu) i Navbar/Hero
+ * zachowują dotychczasową wysokość na mobile (Android Chrome, etc.).
+ *
+ * `@supports (-webkit-hyphens: none)` to canonical Safari-only feature query
+ * (działa zarówno macOS, jak i iOS Safari, nie aktywuje się w Chrome/Firefox).
+ */
+@supports (-webkit-hyphens: none) {
+  .brand-logo-wordmark {
+    line-height: 1.3;
+  }
 }
 
 :root {

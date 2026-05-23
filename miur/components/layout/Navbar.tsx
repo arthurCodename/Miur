@@ -244,12 +244,15 @@ export default function Navbar() {
             <span className="text-[9px] font-bold uppercase leading-none tracking-[0.3em]">Menu</span>
           </button>
           
-          <SearchConsole className="flex min-w-0 max-w-[min(100%,10.5rem)] sm:max-w-52 md:h-8 md:max-w-none" />
+          {/*
+            Mobile: SearchConsole renderuje tylko ikonę (≈40×40), więc na
+            wąskich ekranach (iPhone 13 mini 375px) nic nie konkuruje o miejsce
+            z gamburgerem / logo / koszykiem. md+: rozwija się do pełnego pola.
+          */}
+          <SearchConsole className="md:h-8" />
         </div>
 
-        {/* ЦЕНТРАЛЬНА ЧАСТИНА — ascendery Wild Loops mają miejsce dzięki
-            leading-[1.25] w MiurWordmark; brak ręcznych translate-y / pt
-            offsetów = logo wyśrodkowane pionowo we wszystkich przeglądarkach. */}
+        {/* ЦЕНТРАЛЬНА ЧАСТИНА */}
         <div className="justify-self-center overflow-visible text-white">
           <div ref={logoNavRef} className="overflow-visible px-4 py-2" style={{ opacity: isHomePage ? 0 : 1 }}>
             <Link

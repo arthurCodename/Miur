@@ -23,11 +23,13 @@ export function MiurWordmark({
     <span
       className={cn(
         wildloopsWordmark.className,
-        // leading-[1.25] zapewnia miejsce na wysokie ascendery Wild Loops
-        // (pętle nad „M", „i", „u"). Safari obcina glify gdy leading < ~1.2;
-        // Chrome/Firefox renderują je poza line-boxem, ale jednolity leading
-        // = identyczny układ we wszystkich przeglądarkach.
-        "brand-logo-wordmark inline-block shrink-0 overflow-visible font-bold leading-[1.25] tracking-normal text-current",
+        // Kompaktowy leading dla zwykłych przeglądarek; w Safari (WebKit)
+        // jest podbijany do 1.3 przez @supports w app/globals.css.
+        // Powód: Wild Loops ma bardzo wysokie pętle wykraczające poza
+        // typoAscender, a WebKit klipuje glify do line-boxu. Bumpujemy
+        // line-height tylko w Safari, żeby nie roznosić navbara/hero
+        // na mobile w Chrome/Firefox/Androidzie.
+        "brand-logo-wordmark inline-block shrink-0 overflow-visible font-bold leading-[1.08] tracking-normal text-current",
         className,
       )}
       role={decorative ? undefined : "img"}
