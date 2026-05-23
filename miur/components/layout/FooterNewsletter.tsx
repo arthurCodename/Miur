@@ -21,7 +21,7 @@ export function FooterNewsletter() {
       return;
     }
     toast.success("Sprawdź skrzynkę — wyślemy link potwierdzający (double opt-in).", {
-      description: email ? `Na adres: ${email}` : undefined,
+      description: `Na adres: ${trimmed}`,
     });
     setEmail("");
     setConsent(false);
