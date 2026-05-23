@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { ProductDetailSection } from "@/components/catalog/ProductDetailSection";
 import { ProductReviews } from "@/components/catalog/ProductReviews";
 import { getProductBySlug } from "@/lib/api/products";
-import { findMockProductBySlug } from "@/lib/catalog/find-mock-product";
 import { productBreadcrumbTrail } from "@/lib/navigation/product-breadcrumb-trail";
 
 type ProductPageProps = {
@@ -12,13 +11,27 @@ type ProductPageProps = {
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = findMockProductBySlug(slug);
+  const product = await getProductBySlug(slug);
   if (!product) {
     return { title: "Produkt — Miur" };
   }
+  const description = `${product.category}: ${product.name}`;
+  const ogImages = product.image ? [{ url: product.image, width: 800, height: 800, alt: product.name }] : [];
   return {
     title: `${product.name} — Miur`,
-    description: `${product.category}: ${product.name}`,
+    description,
+    openGraph: {
+      title: `${product.name} — Miur`,
+      description,
+      images: ogImages,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.name} — Miur`,
+      description,
+      images: ogImages.map((img) => img.url),
+    },
   };
 }
 

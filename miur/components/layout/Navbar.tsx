@@ -72,6 +72,9 @@ export default function Navbar() {
   const [activeTab, setActiveTab] = useState(menuData[0].title);
 
   useEffect(() => {
+    // Closing mega menu on navigation is a reaction to an external state change (URL).
+    // This IS the intended side-effect pattern; setState inside the callback is correct here.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMegaMenuOpen(false);
   }, [pathname]);
 
@@ -133,7 +136,7 @@ export default function Navbar() {
             <Sheet>
               <SheetTrigger asChild>
                 <button
-                  className="p-2 -ml-2 outline-none active:scale-95"
+                  className="p-2 -ml-2 outline-none active:scale-95 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-1 focus-visible:ring-offset-black/40 rounded-sm"
                   aria-label="Otwórz menu"
                 >
                   <Menu className="w-6 h-6" strokeWidth={1.5} aria-hidden="true" />

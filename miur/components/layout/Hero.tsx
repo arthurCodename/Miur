@@ -1,7 +1,7 @@
 // Miur/miur/components/layout/Hero.tsx
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useScroll, useTransform, motion, MotionConfig } from "framer-motion";
 import { ArrowDown, Play, Pause } from "lucide-react";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
@@ -14,35 +14,42 @@ function easeOutCubic(t: number): number {
 function useViewportMetrics() {
   const [metrics, setMetrics] = useState(() => ({
     isMobileOrTablet: typeof window !== "undefined" && window.innerWidth < 1024,
-    vhUnitPx: 0,
     scrollRunwayVh:
       typeof window !== "undefined" && window.innerWidth < 1024 ? 152 : 108,
   }));
 
-  const sync = useCallback(() => {
-    const width = window.innerWidth;
-    const height = window.visualViewport?.height ?? window.innerHeight;
-    const isMobileOrTablet = width < 1024;
-    const vhUnitPx = height * 0.01;
-
-    document.documentElement.style.setProperty("--app-vh", `${vhUnitPx}px`);
-
-    setMetrics((prev) => {
-      const scrollRunwayVh = isMobileOrTablet ? 152 : 108;
-      const heightDelta = Math.abs(prev.vhUnitPx - vhUnitPx);
-      if (
-        prev.isMobileOrTablet === isMobileOrTablet &&
-        prev.scrollRunwayVh === scrollRunwayVh &&
-        heightDelta < 4
-      ) {
-        return prev;
-      }
-      return { isMobileOrTablet, vhUnitPx, scrollRunwayVh };
-    });
-  }, []);
+  // Tracks last vhUnitPx for the resize-dedup check without putting it in state.
+  const lastVhRef = useRef(0);
 
   useEffect(() => {
-    sync();
+    function sync() {
+      const width = window.innerWidth;
+      const height = window.visualViewport?.height ?? window.innerHeight;
+      const isMobileOrTablet = width < 1024;
+      const vhUnitPx = height * 0.01;
+
+      document.documentElement.style.setProperty("--app-vh", `${vhUnitPx}px`);
+
+      setMetrics((prev) => {
+        const scrollRunwayVh = isMobileOrTablet ? 152 : 108;
+        const heightDelta = Math.abs(lastVhRef.current - vhUnitPx);
+        if (
+          prev.isMobileOrTablet === isMobileOrTablet &&
+          prev.scrollRunwayVh === scrollRunwayVh &&
+          heightDelta < 4
+        ) {
+          return prev;
+        }
+        lastVhRef.current = vhUnitPx;
+        return { isMobileOrTablet, scrollRunwayVh };
+      });
+    }
+
+    // Set --app-vh on mount without triggering setState (DOM-only write).
+    const initialHeight = window.visualViewport?.height ?? window.innerHeight;
+    document.documentElement.style.setProperty("--app-vh", `${initialHeight * 0.01}px`);
+    lastVhRef.current = initialHeight * 0.01;
+
     window.addEventListener("resize", sync);
     const viewport = window.visualViewport;
     viewport?.addEventListener("resize", sync);
@@ -51,7 +58,7 @@ function useViewportMetrics() {
       window.removeEventListener("resize", sync);
       viewport?.removeEventListener("resize", sync);
     };
-  }, [sync]);
+  }, []);
 
   return metrics;
 }
@@ -147,34 +154,37 @@ export function Hero() {
           </video>
 
           <div className="pointer-events-none absolute inset-0 z-50 flex max-w-full items-center justify-center overflow-x-clip px-6 py-8 lg:justify-end lg:px-24 lg:py-10">
-            {/* Mobile / tablet: logo nieruchome */}
-            <div className="isolate flex max-w-full flex-col items-center lg:hidden">
-              <h1 className="px-1 py-2 leading-[1.05] text-white drop-shadow-2xl md:px-2 md:py-3">
+            {/*
+              Single <h1> rendered once; CSS controls layout per breakpoint.
+              Two wrapper spans handle visual positioning, but only ONE heading
+              element exists in the DOM — avoids duplicate-h1 WCAG issue.
+            */}
+            <h1 className="contents" aria-label="Miur">
+              {/* Mobile / tablet: static */}
+              <span className="isolate flex max-w-full flex-col items-center px-1 py-2 leading-[1.05] text-white drop-shadow-2xl lg:hidden md:px-2 md:py-3">
                 <MiurWordmark
-                  title="Miur"
+                  decorative
                   className="mx-auto text-[min(20.7vw,30.75rem)] leading-[inherit]"
                 />
-              </h1>
-            </div>
-            {/* Desktop: animacja scroll → navbar */}
-            <motion.div
-              style={{
-                scale,
-                x,
-                y,
-                opacity: logoOpacity,
-                transformOrigin: "right center",
-                willChange: "transform, opacity",
-              }}
-              className="isolate hidden max-w-full flex-col items-end backface-hidden lg:flex"
-            >
-              <h1 className="px-2 py-3 leading-[1.05] text-white drop-shadow-2xl">
+              </span>
+              {/* Desktop: scroll animation */}
+              <motion.span
+                style={{
+                  scale,
+                  x,
+                  y,
+                  opacity: logoOpacity,
+                  transformOrigin: "right center",
+                  willChange: "transform, opacity",
+                }}
+                className="isolate hidden max-w-full flex-col items-end backface-hidden px-2 py-3 leading-[1.05] text-white drop-shadow-2xl lg:flex"
+              >
                 <MiurWordmark
-                  title="Miur"
+                  decorative
                   className="text-[min(14vw,22rem)] leading-[inherit]"
                 />
-              </h1>
-            </motion.div>
+              </motion.span>
+            </h1>
           </div>
 
           <div className="absolute bottom-28 left-6 z-20 max-w-[250px] md:bottom-20 md:left-10 md:max-w-[300px]">
@@ -194,7 +204,7 @@ export function Hero() {
               aria-label={videoToggleLabel}
               disabled={reducedMotion}
               title={reducedMotion ? "Wyłączone przez ustawienia ograniczenia ruchu" : undefined}
-              className="group flex items-center gap-3 text-white/30 transition-all duration-300 hover:text-white disabled:pointer-events-none disabled:opacity-40"
+              className="group flex items-center gap-3 text-white/30 transition-all duration-300 hover:text-white disabled:pointer-events-none disabled:opacity-40 outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 rounded-sm"
             >
               <span className="hidden text-[8px] uppercase tracking-[0.3em] opacity-0 transition-opacity duration-500 group-hover:opacity-100 md:block">
                 {isPlaying ? "Zatrzymaj ruch" : "Włącz ruch"}

@@ -11,6 +11,11 @@ export function FooterNewsletter() {
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmed = email.trim();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast.error("Podaj prawidłowy adres e-mail.");
+      return;
+    }
     if (!consent) {
       toast.error("Zaznacz zgodę na newsletter, aby zapisać się na listę.");
       return;

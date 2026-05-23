@@ -89,6 +89,18 @@
     max-width: 100%;
     overflow-x: clip;
   }
+
+  /*
+   * iOS Safari auto-zoom fix: przeglądarka powiększa stronę gdy input ma font-size < 16px.
+   * Wymuszamy min. 1rem na urządzeniach dotykowych — na desktopie klasy Tailwind mają pierwszeństwo.
+   */
+  @media (max-width: 1023px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea {
+      font-size: max(1rem, 1em);
+    }
+  }
 }
 
 body::-webkit-scrollbar {

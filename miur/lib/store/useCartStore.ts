@@ -68,7 +68,8 @@ export const useCartStore = create<CartState>()(
           if (index !== -1) {
             const next = state.items.slice();
             const existing = next[index]!;
-            next[index] = { ...existing, quantity: existing.quantity + 1 };
+            const nextQty = Math.min(existing.quantity + 1, 99);
+            next[index] = { ...existing, quantity: nextQty };
             return { items: next };
           }
           return { items: [...state.items, { ...item, quantity: 1 }] };
@@ -84,8 +85,9 @@ export const useCartStore = create<CartState>()(
           if (quantity <= 0) {
             return { items: state.items.filter((i) => i.id !== id) };
           }
+          const clamped = Math.min(quantity, 99);
           return {
-            items: state.items.map((i) => (i.id === id ? { ...i, quantity } : i)),
+            items: state.items.map((i) => (i.id === id ? { ...i, quantity: clamped } : i)),
           };
         });
       },

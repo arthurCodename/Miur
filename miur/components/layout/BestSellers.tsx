@@ -5,7 +5,6 @@ import { useRef } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { ProductCard } from "@/components/catalog/ProductCard";
-import { MOCK_BESTSELLERS } from "@/lib/catalog/data/mock-products";
 import type { BestsellerProduct } from "@/lib/catalog/types";
 
 const seeAllLinkClass =
@@ -16,9 +15,9 @@ const carouselArrowBtnClass =
   "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-900 transition-all duration-500 hover:border-zinc-900 hover:bg-zinc-900 hover:text-white";
 
 export function BestSellers({
-  products = MOCK_BESTSELLERS,
+  products,
 }: {
-  products?: BestsellerProduct[];
+  products: BestsellerProduct[];
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
 

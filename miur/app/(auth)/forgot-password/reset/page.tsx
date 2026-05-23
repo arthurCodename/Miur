@@ -21,7 +21,8 @@ type ResetFormValues = z.infer<typeof resetPasswordSchema>;
 export default function ResetPasswordPage() {
   const router = useRouter();
   const resetPassword = useAccountsStore((s) => s.resetPassword);
-  const [email, setEmail] = useState<string | null>(null);
+  // Read once from sessionStorage on mount (lazy initializer avoids useEffect for state init).
+  const [email] = useState<string | null>(() => getPendingPasswordResetEmail());
 
   const {
     register,
@@ -33,13 +34,10 @@ export default function ResetPasswordPage() {
   });
 
   useEffect(() => {
-    const pending = getPendingPasswordResetEmail();
-    if (!pending) {
+    if (!email) {
       router.replace("/odzyskaj-haslo");
-      return;
     }
-    setEmail(pending);
-  }, [router]);
+  }, [email, router]);
 
   async function onSubmit(data: ResetFormValues) {
     if (!email) return;

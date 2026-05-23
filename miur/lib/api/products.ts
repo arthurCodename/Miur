@@ -144,6 +144,12 @@ const MOCK_REVIEWS_BY_SLUG: Partial<Record<string, ProductReview[]>> = {
   ],
 };
 
+/** Single entry point — later swap for real API fetch + unstable_cache */
+export async function getAllProducts(): Promise<BestsellerProduct[]> {
+  const merged = dedupeProductsById([...MOCK_BESTSELLERS, ...MOCK_WYPRZEDAZ_PRODUCTS]);
+  return merged;
+}
+
 export async function getProductReviews(productSlug: string): Promise<ProductReview[]> {
   return MOCK_REVIEWS_BY_SLUG[productSlug] ?? MOCK_REVIEWS_DEFAULT;
 }

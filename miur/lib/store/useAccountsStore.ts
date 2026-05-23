@@ -3,6 +3,15 @@ import { persist } from "zustand/middleware";
 import { normalizeEmail } from "@/lib/auth/normalize-email";
 import type { LoginResult, RegisterResult, ResetPasswordResult } from "@/lib/auth/types";
 
+/**
+ * MOCK ONLY — client-side account store for development.
+ *
+ * Passwords are stored in plain text in localStorage.
+ * This entire store MUST be replaced by real backend API calls
+ * before going to production. Do NOT use in any environment
+ * where real user data is present.
+ */
+
 interface StoredAccount {
   password: string;
 }

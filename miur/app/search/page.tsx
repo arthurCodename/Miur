@@ -18,6 +18,7 @@ export async function generateMetadata({ searchParams }: SearchPageProps): Promi
   const phrase = queryFromSearchParams(q).trim();
   return {
     title: phrase ? `Szukaj: ${phrase} — Miur` : "Szukaj — Miur",
+    robots: { index: false, follow: false },
   };
 }
 

@@ -41,7 +41,10 @@ export function PageGradientHero({
   const [palette, setPalette] = useState<PageGradientPalette>(PAGE_GRADIENT_PALETTES[0]);
 
   useEffect(() => {
+    // Random palette must be picked on the client to avoid SSR→client hydration mismatch
+    // (server always renders palette[0]; client randomises after hydration).
     const list = PAGE_GRADIENT_PALETTES;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPalette(list[Math.floor(Math.random() * list.length)] ?? list[0]);
   }, []);
 

@@ -33,6 +33,8 @@ export function CartSheet({ children }: CartSheetProps) {
   const [cartOpen, setCartOpen] = useState(false);
 
   useEffect(() => {
+    // Closing the cart sheet on navigation is a reaction to an external state change (URL).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCartOpen(false);
   }, [pathname]);
 
