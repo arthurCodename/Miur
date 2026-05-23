@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { CookieSettingsLink } from "@/components/legal/CookieSettingsLink";
 import { SellerDataBlock } from "@/components/legal/SellerDataBlock";
 import { sellerLegal } from "@/lib/legal/seller";
@@ -13,10 +14,11 @@ const UPDATED = "2026-05-03";
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16 md:py-24">
+    <div className="bg-white">
+      <PageGradientHero title="Polityka prywatności" eyebrow="RODO" />
+      <div className="mx-auto max-w-3xl px-6 py-16 md:py-24">
       <header className="mb-12 border-b border-zinc-100 pb-8">
-        <h1 className="text-3xl font-bold tracking-tighter text-zinc-900">Polityka prywatności</h1>
-        <p className="mt-2 text-sm text-zinc-600">Ostatnia aktualizacja: {UPDATED}</p>
+        <p className="text-sm text-zinc-600">Ostatnia aktualizacja: {UPDATED}</p>
         <div className="mt-6">
           <CookieSettingsLink />
         </div>
@@ -194,6 +196,7 @@ export default function PrivacyPolicyPage() {
           Strona główna
         </Link>
       </p>
+    </div>
     </div>
   );
 }

@@ -12,7 +12,13 @@ export function OpenCookiePreferencesButton({ className, children }: Props) {
     <button
       type="button"
       className={className}
-      onClick={() => window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT))}
+      onClick={(event) => {
+        // Defensive guard: if this button is ever nested in a clickable wrapper,
+        // we still want only the cookie-preferences event, never navigation.
+        event.preventDefault();
+        event.stopPropagation();
+        window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT));
+      }}
     >
       {children}
     </button>

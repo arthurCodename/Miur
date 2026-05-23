@@ -5,7 +5,6 @@ import { useRef } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { ProductCard } from "@/components/catalog/ProductCard";
-import { MOCK_BESTSELLERS } from "@/lib/catalog/data/mock-products";
 import type { BestsellerProduct } from "@/lib/catalog/types";
 
 const seeAllLinkClass =
@@ -16,9 +15,9 @@ const carouselArrowBtnClass =
   "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-900 transition-all duration-500 hover:border-zinc-900 hover:bg-zinc-900 hover:text-white";
 
 export function BestSellers({
-  products = MOCK_BESTSELLERS,
+  products,
 }: {
-  products?: BestsellerProduct[];
+  products: BestsellerProduct[];
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
 
@@ -76,7 +75,7 @@ export function BestSellers({
         ref={scrollerRef}
         role="region"
         aria-label="Bestsellery, przewijana lista produktów"
-        className="flex gap-4 md:gap-8 overflow-x-auto overscroll-x-contain snap-x snap-mandatory snap-always touch-pan-x pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
+        className="flex gap-4 md:gap-8 overflow-x-auto overscroll-x-contain snap-x snap-mandatory snap-always pb-2 md:pb-24 [touch-action:pan-x_pan-y] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
       >
         {products.map((product, index) => (
           <ProductCard

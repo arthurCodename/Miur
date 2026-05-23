@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 
 export const metadata: Metadata = {
   title: "Opinie o Miur",
@@ -8,9 +9,10 @@ export const metadata: Metadata = {
 
 export default function ReviewsPage() {
   return (
-    <div className="mx-auto max-w-2xl px-6 py-16 md:py-24">
-      <h1 className="text-3xl font-bold tracking-tighter text-zinc-900">Opinie o Miur</h1>
-      <p className="mt-6 text-sm leading-relaxed text-zinc-600">
+    <main className="bg-white">
+      <PageGradientHero title="Opinie o Miur" eyebrow="Transparentność" />
+      <div className="mx-auto max-w-2xl px-6 py-16 md:py-24">
+      <p className="mt-4 text-sm leading-relaxed text-zinc-600">
         Opinie o produktach publikujemy wyłącznie po weryfikacji, że pochodzą od osób, które dokonały
         zakupu w sklepie Miur (np. po powiązaniu opinii z numerem zamówienia). Nie usuwamy opinii negatywnych,
         jeśli są zgodne z prawdą i nie naruszają prawa.
@@ -25,5 +27,6 @@ export default function ReviewsPage() {
         </Link>
       </p>
     </div>
+    </main>
   );
 }

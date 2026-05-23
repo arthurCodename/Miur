@@ -2,17 +2,26 @@
 
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useIsMounted } from "@/lib/hooks/useIsMounted";
+import { MiurWordmark } from "@/components/brand/MiurWordmark";
 
 const STORAGE_KEY = "miur_age_verified";
 
+/** Treści prawne muszą być dostępne bez potwierdzenia wieku (RODO / przejrzystość). */
+const AGE_GATE_EXEMPT_PREFIXES = ["/polityka-prywatnosci", "/regulamin", "/dostepnosc"] as const;
+
+function isAgeGateExemptPath(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return AGE_GATE_EXEMPT_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
 /**
- * Reads the "age verified" flag from localStorage via useSyncExternalStore so
- * we don't need a setState-in-effect pattern.
- *  - Server snapshot: `null` (we don't know the value during SSR)
- *  - Client snapshot: `true` if user previously confirmed, otherwise `false`
- *
- * The `null` value is what lets us hide the gate on first paint instead of
- * flashing it for a frame before the localStorage read completes.
+ * Reads the "age verified" flag from localStorage via useSyncExternalStore.
+ *  - Server snapshot: `null` (SSR — AgeGate i tak nie renderuje warstwy do czasu `useIsMounted`)
+ *  - Client snapshot: `true` tylko po zapisie potwierdzenia 18+ w localStorage, inaczej `false`
  */
 function readVerifiedFromStorage(): boolean {
   try {
@@ -41,10 +50,19 @@ function useAgeVerified(): boolean | null {
 
 export function AgeGate() {
   const verified = useAgeVerified();
+  const pathname = usePathname();
+  const isMounted = useIsMounted();
 
-  // During SSR or first paint: render nothing so the gate never flashes for users
-  // who already confirmed their age.
-  if (verified !== false) return null;
+  // Brak warstwy 18+ w HTML SSR — po hydracji czytamy localStorage i pathname klienta.
+  if (!isMounted) return null;
+
+  // Tylko jawne `true` w localStorage = pełnoletni.
+  if (verified === true) return null;
+
+  // Strony wyłączone z weryfikacji wieku (regulamin, polityka, deklaracja dostępności).
+  if (isAgeGateExemptPath(pathname)) return null;
+
+  // verified === false | null — nawigacja po sklepie (także po wyjściu z /regulamin) wymaga 18+.
 
   const confirm = () => {
     try {
@@ -62,14 +80,14 @@ export function AgeGate() {
 
   return (
     <div
-      className="fixed inset-0 z-[400] flex items-center justify-center bg-zinc-950 px-6"
+      className="fixed inset-0 z-400 flex items-center justify-center bg-zinc-950 px-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="age-gate-title"
     >
       <div className="max-w-md text-center">
-        <h1 id="age-gate-title" className="mb-4 text-2xl font-bold text-white">
-          Miur
+        <h1 id="age-gate-title" className="mb-10 flex justify-center pb-4 text-white">
+          <MiurWordmark title="Miur" className="text-[clamp(1.48rem,5.3vw,2.12rem)]" />
         </h1>
         <p className="mb-8 text-sm leading-relaxed text-zinc-300">
           Sklep jest przeznaczony wyłącznie dla osób pełnoletnich (18+). Korzystając z serwisu potwierdzasz,

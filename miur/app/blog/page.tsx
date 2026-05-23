@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { getBlogPosts } from "@/lib/blog/posts";
+import { cn } from "@/lib/utils";
+import { blogCardPillBase, pillMarkerTypography } from "@/lib/ui/pill-marker-classes";
 
 export const metadata: Metadata = {
   title: "Blog — Miur",
@@ -12,11 +15,11 @@ export default async function BlogPage() {
   const posts = await getBlogPosts();
 
   return (
-    <main className="min-h-[50vh] bg-white px-6 py-12 md:px-12 md:py-16">
+    <main className="min-h-[50vh] bg-white">
+      <PageGradientHero title="Blog" eyebrow="Journal" />
+      <div className="px-6 py-12 md:px-12 md:py-16">
       <header className="mx-auto mb-10 max-w-6xl md:mb-14">
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">Journal</p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tighter text-zinc-900 uppercase md:text-4xl">Blog</h1>
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-700 md:text-base">
+        <p className="max-w-2xl text-sm leading-relaxed text-zinc-700 md:text-base">
           Edukacja i inspiracje od ekspertów. Tematy o wellness intymności, bezpieczeństwie i pielęgnacji.
         </p>
       </header>
@@ -41,11 +44,23 @@ export default async function BlogPage() {
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute top-3 left-3 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-white px-3 py-1 text-[8px] font-bold uppercase tracking-widest text-black shadow-sm">
+                  <span
+                    className={cn(
+                      blogCardPillBase,
+                      pillMarkerTypography,
+                      "bg-white text-black shadow-sm",
+                    )}
+                  >
                     {post.category}
                   </span>
                   {post.sponsored ? (
-                    <span className="rounded-full border border-white/40 bg-black/55 px-3 py-1 text-[8px] font-bold uppercase tracking-widest text-white">
+                    <span
+                      className={cn(
+                        blogCardPillBase,
+                        pillMarkerTypography,
+                        "border border-white/40 bg-black/55 text-white",
+                      )}
+                    >
                       Materiał sponsorowany
                     </span>
                   ) : null}
@@ -65,6 +80,7 @@ export default async function BlogPage() {
           </li>
         ))}
       </ul>
+      </div>
     </main>
   );
 }

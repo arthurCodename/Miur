@@ -19,7 +19,10 @@ export const CartIcon = forwardRef<HTMLButtonElement, React.ComponentPropsWithou
       <button
         ref={ref}
         type="button"
-        className={cn("group flex items-center text-white", className)}
+        className={cn(
+          "group flex items-center text-white outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 rounded-full",
+          className,
+        )}
         aria-label="Otwórz koszyk"
         {...props}
       >

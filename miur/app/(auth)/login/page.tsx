@@ -1,26 +1,25 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { z } from "zod";
+import { AuthFormField } from "@/components/auth/AuthFormField";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
+import { LOGIN_ERROR_MESSAGES } from "@/lib/auth/messages";
+import { loginSchema } from "@/lib/auth/schemas";
+import type { LoginFailureReason } from "@/lib/auth/types";
 import { useAuthStore } from "@/lib/store/useAuthStore";
-
-const loginSchema = z.object({
-  email: z
-    .string({ error: "Email jest wymagany" })
-    .min(1, "Email jest wymagany")
-    .email("Podaj prawidłowy adres email"),
-  password: z.string().min(6, "Hasło musi mieć co najmniej 6 znaków"),
-});
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
+  const [authError, setAuthError] = useState<LoginFailureReason | null>(null);
 
   const {
     register,
@@ -32,76 +31,85 @@ export default function LoginPage() {
   });
 
   async function onSubmit(data: LoginFormValues) {
+    setAuthError(null);
     if (process.env.NODE_ENV !== "production") {
       await new Promise<void>((resolve) => {
-        setTimeout(resolve, 1000);
+        setTimeout(resolve, 600);
       });
     }
-    login(data.email);
+    const result = login(data.email, data.password);
+    if (!result.ok) {
+      setAuthError(result.reason);
+      return;
+    }
     toast.success("Zalogowano pomyślnie");
     router.push("/profile");
   }
 
   return (
-    <main className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-6 py-16">
-      <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm md:p-10">
-        <h1 className="text-center text-2xl font-bold tracking-tight text-zinc-900">Logowanie</h1>
-        <p className="mt-2 text-center text-sm text-zinc-600">Zaloguj się, aby zobaczyć swoje zamówienia.</p>
+    <div className="bg-white">
+      <PageGradientHero title="Logowanie" eyebrow="Konto" />
+      <main className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-6 py-16">
+        <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm md:p-10">
+          <p className="text-center text-sm text-zinc-600">Zaloguj się, aby zobaczyć swoje zamówienia.</p>
 
-        <form className="mt-8 flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="login-email" className="text-xs font-semibold uppercase tracking-wide text-zinc-700">
-              E-mail
-            </label>
-            <input
+          <form className="mt-6 flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
+            {authError ? (
+              <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700" role="alert">
+                {LOGIN_ERROR_MESSAGES[authError]}
+              </p>
+            ) : null}
+
+            <AuthFormField
               id="login-email"
+              label="E-mail"
               type="email"
               autoComplete="email"
-              className="rounded-lg border border-zinc-200 px-3 py-2.5 text-sm text-zinc-900 outline-none ring-zinc-900/10 focus:border-zinc-400 focus:ring-2"
-              aria-invalid={errors.email ? true : undefined}
-              {...register("email")}
+              error={errors.email}
+              registration={register("email")}
             />
-            {errors.email ? (
-              <p className="text-sm text-red-600" role="alert">
-                {errors.email.message}
-              </p>
-            ) : null}
-          </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="login-password" className="text-xs font-semibold uppercase tracking-wide text-zinc-700">
-              Hasło
-            </label>
-            <input
+            <AuthFormField
               id="login-password"
+              label="Hasło"
               type="password"
               autoComplete="current-password"
-              className="rounded-lg border border-zinc-200 px-3 py-2.5 text-sm text-zinc-900 outline-none ring-zinc-900/10 focus:border-zinc-400 focus:ring-2"
-              aria-invalid={errors.password ? true : undefined}
-              {...register("password")}
+              error={errors.password}
+              registration={register("password")}
             />
-            {errors.password ? (
-              <p className="text-sm text-red-600" role="alert">
-                {errors.password.message}
-              </p>
-            ) : null}
-          </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="mt-2 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-zinc-900 px-6 text-[11px] font-bold uppercase tracking-[0.2em] text-white transition-opacity hover:bg-black disabled:opacity-60"
-          >
-            {isSubmitting ? "Logowanie…" : "Zaloguj się"}
-          </button>
-        </form>
+            <div className="flex justify-end">
+              <Link
+                href="/odzyskaj-haslo"
+                className="text-xs font-medium text-zinc-700 underline-offset-2 hover:text-black hover:underline"
+              >
+                Nie pamiętasz hasła?
+              </Link>
+            </div>
 
-        <p className="mt-8 text-center text-sm text-zinc-600">
-          <Link href="/" className="font-medium text-zinc-900 underline-offset-2 hover:underline">
-            Wróć do sklepu
-          </Link>
-        </p>
-      </div>
-    </main>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="mt-2 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-zinc-900 px-6 text-[11px] font-bold uppercase tracking-[0.2em] text-white transition-opacity hover:bg-black disabled:opacity-60"
+            >
+              {isSubmitting ? "Logowanie…" : "Zaloguj się"}
+            </button>
+          </form>
+
+          <p className="mt-8 text-center text-sm text-zinc-600">
+            Nie masz konta?{" "}
+            <Link href="/rejestracja" className="font-medium text-zinc-900 underline-offset-2 hover:underline">
+              Zarejestruj się
+            </Link>
+          </p>
+
+          <p className="mt-4 text-center text-sm text-zinc-600">
+            <Link href="/" className="font-medium text-zinc-900 underline-offset-2 hover:underline">
+              Wróć do sklepu
+            </Link>
+          </p>
+        </div>
+      </main>
+    </div>
   );
 }

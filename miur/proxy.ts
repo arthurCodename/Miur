@@ -3,11 +3,15 @@ import { NextResponse, type NextRequest } from "next/server";
 /**
  * Per-request CSP nonce + strict-dynamic policy.
  *
- * Why a middleware (instead of next.config `headers()`):
+ * Why a proxy (instead of next.config `headers()`):
  *   - We need a fresh, cryptographically-random nonce per request so we can
  *     drop `'unsafe-inline'` from script-src in production.
  *   - Pages read this nonce from the `x-nonce` request header and pass it to
  *     every `<Script>` they render.
+ *
+ * Note: this file was previously named `middleware.ts`. In Next.js 16 the
+ * `middleware` file convention was deprecated and renamed to `proxy`.
+ * See: https://nextjs.org/docs/messages/middleware-to-proxy
  *
  * Cookie/tracker policy:
  *   - GA / GTM / Meta Pixel scripts are loaded ONLY after the user grants
@@ -97,7 +101,7 @@ function buildCsp(nonce: string): string {
     .join("; ");
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Use Web Crypto (Edge-compatible). 16 bytes is plenty.
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);

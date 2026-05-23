@@ -4,6 +4,11 @@ import Link from "next/link";
 import type { BestsellerProduct } from "@/lib/catalog/types";
 import { cn } from "@/lib/utils";
 import { ProductCardCartButton } from "@/components/catalog/ProductCardCartButton";
+import {
+  pillMarkerTypography,
+  productImageTagLight,
+  productImageTagShell,
+} from "@/lib/ui/pill-marker-classes";
 
 type ProductCardProps = Omit<ComponentPropsWithoutRef<"article">, "children"> & {
   product: BestsellerProduct;
@@ -24,11 +29,17 @@ export function ProductCard({ product, className, priority = false, ...props }: 
   const productHref = `/produkt/${product.slug}`;
 
   return (
-    <article className={cn("group flex flex-col", className)} {...props}>
+    <article
+      className={cn(
+        "group relative flex flex-col md:hover:z-30 md:focus-within:z-30",
+        className,
+      )}
+      {...props}
+    >
       <div className="relative mb-6 aspect-3/4 overflow-hidden bg-zinc-50">
         {product.tag ? (
-          <div className="absolute top-4 left-4 z-10 rounded-full bg-white px-3 py-1 shadow-sm">
-            <span className="text-[8px] font-bold uppercase tracking-widest text-black">{product.tag}</span>
+          <div className={cn(productImageTagShell, productImageTagLight)}>
+            <span className={cn(pillMarkerTypography, "min-w-0 truncate")}>{product.tag}</span>
           </div>
         ) : null}
 
@@ -67,7 +78,7 @@ export function ProductCard({ product, className, priority = false, ...props }: 
         />
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div className="relative flex flex-col gap-1">
         <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-700">{product.category}</span>
         <h3 className="mb-1 text-sm font-bold tracking-tight text-zinc-900">
           <Link
@@ -94,7 +105,18 @@ export function ProductCard({ product, className, priority = false, ...props }: 
           </span>
         ) : null}
         {product.hygieneReturnExcluded !== false ? (
-          <p className="mt-2 rounded-sm border border-amber-200/80 bg-amber-50/90 p-2 text-[8px] leading-snug font-medium text-amber-950">
+          <p
+            className={cn(
+              "mt-2 rounded-sm border border-amber-200/80 bg-amber-50/90 p-2 text-[8px] font-medium leading-snug text-amber-950",
+              "transition-opacity duration-200",
+              /* md+: out of document flow so hover does not shift sibling tiles */
+              /* Below title/price — not upward over them (was bottom-0 on whole card) */
+              "md:absolute md:left-0 md:right-0 md:top-full md:z-20 md:mt-1.5 md:shadow-md",
+              "md:opacity-0 md:invisible md:pointer-events-none",
+              "md:group-hover:visible md:group-hover:opacity-100 md:group-hover:pointer-events-auto",
+              "md:group-focus-within:visible md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto",
+            )}
+          >
             Po otwarciu opakowania zwrot może być wykluczony ze względów higienicznych (art. 38 pkt 5 ustawy o
             prawach konsumenta). Szczegóły:{" "}
             <Link className="underline underline-offset-1" href="/zwroty-reklamacje">

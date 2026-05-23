@@ -30,9 +30,11 @@ const nextConfig: NextConfig = {
   // Permanent redirects for legacy / Polonised paths so that no internal link 404s.
   async redirects() {
     return [
-      // Polish-language aliases for /login (some footer links use Polish names)
+      // Polish-language aliases (footer links)
       { source: "/logowanie", destination: "/login", permanent: true },
-      { source: "/rejestracja", destination: "/login", permanent: true },
+      { source: "/rejestracja", destination: "/register", permanent: true },
+      { source: "/odzyskaj-haslo", destination: "/forgot-password", permanent: true },
+      { source: "/odzyskaj-haslo/ustaw", destination: "/forgot-password/reset", permanent: true },
       // Account routes consolidated into /profile until full account flow ships
       { source: "/moje-konto", destination: "/profile", permanent: true },
       { source: "/moje-konto/edycja", destination: "/profile", permanent: true },

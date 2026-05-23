@@ -2,7 +2,6 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Inter } from "next/font/google";
-import localFont from "next/font/local";
 import "./globals.css";
 
 import Navbar from "../components/layout/Navbar";
@@ -17,11 +16,10 @@ import { ThemeProvider } from "../components/theme-provider";
 import { OrganizationJsonLd } from "../components/seo/JsonLd";
 import { getSiteUrl } from "@/lib/site-url";
 
-const inter = Inter({ subsets: ["latin", "latin-ext"] });
-
-const logoFont = localFont({
-  src: "../public/fonts/wildloops-bold_w.ttf",
-  variable: "--font-logo",
+const inter = Inter({
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+  variable: "--font-inter",
 });
 
 const siteUrl = getSiteUrl();
@@ -62,17 +60,25 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const visualOnlyMode = process.env.NEXT_PUBLIC_VISUAL_ONLY === "1";
+
   // CSP nonce is set per-request in middleware.ts; falls back to "" when middleware
   // didn't run (static prerender / non-matching path) so React stays happy.
   const nonce = (await headers()).get("x-nonce") ?? "";
 
   return (
-    <html lang="pl" className={logoFont.variable} suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen flex flex-col antialiased bg-white`}>
+    <html
+      lang="pl"
+      className={`max-w-full overflow-x-clip ${inter.variable}`}
+      suppressHydrationWarning
+    >
+      <body
+        className={`${inter.className} min-h-screen min-w-0 max-w-full overflow-x-clip flex flex-col bg-white ${visualOnlyMode ? "visual-only" : ""}`}
+      >
         <OrganizationJsonLd
           name={siteTitle}
           url={siteUrl}
-          logo={`${siteUrl}/next.svg`}
+          logo={`${siteUrl}/brand/miur-wordmark.svg`}
           nonce={nonce}
         />
         <CookieConsentProvider>
@@ -82,23 +88,28 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <ConsentScripts nonce={nonce} />
-            <div className="flex min-h-screen flex-col">
+            {!visualOnlyMode && <ConsentScripts nonce={nonce} />}
+            <div className="flex min-h-screen min-w-0 w-full max-w-full flex-col overflow-x-clip">
               <a
                 href="#main-content"
                 className="sr-only left-4 top-4 z-500 rounded-sm bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-lg outline-none ring-2 ring-zinc-900 transition-none focus:not-sr-only focus:absolute focus:inline-block"
               >
                 Przejdź do treści głównej
               </a>
-              <Navbar />
-              <AccessibilityWidget />
-              <CookieBanner />
-              <AgeGate />
-              <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
-                {children}
-              </main>
-              <Footer />
-              <Toaster richColors position="top-center" />
+              <div
+                id="a11y-site-content"
+                className="flex min-h-0 min-w-0 flex-1 flex-col w-full max-w-full overflow-x-clip"
+              >
+                <Navbar />
+                {!visualOnlyMode && <CookieBanner />}
+                {!visualOnlyMode && <AgeGate />}
+                <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
+                  <div className="min-w-0 w-full max-w-full overflow-x-clip">{children}</div>
+                </main>
+                <Footer />
+                {!visualOnlyMode && <Toaster richColors position="top-center" />}
+              </div>
+              {!visualOnlyMode && <AccessibilityWidget />}
             </div>
           </ThemeProvider>
         </CookieConsentProvider>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { SellerDataBlock } from "@/components/legal/SellerDataBlock";
 import { ODR_URL, sellerLegal } from "@/lib/legal/seller";
 
@@ -10,9 +11,10 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16 md:py-24">
-      <h1 className="text-3xl font-bold tracking-tighter text-zinc-900">Kontakt</h1>
-      <p className="mt-3 text-sm text-zinc-600">
+    <main className="bg-white">
+      <PageGradientHero title="Kontakt" eyebrow="Obsługa klienta" />
+      <div className="mx-auto max-w-3xl px-6 py-16 md:py-24">
+      <p className="mt-4 text-sm text-zinc-600">
         Godziny pracy obsługi: poniedziałek–piątek, 8:00–16:00 (czas polski).
       </p>
 
@@ -33,8 +35,8 @@ export default function ContactPage() {
         ) : null}
       </div>
 
-      <div className="mt-10">
-        <h2 className="text-lg font-bold text-zinc-900">Dane sprzedawcy</h2>
+      <div id="dane-sprzedawcy" className="mt-10 scroll-mt-28">
+        <h2 className="text-lg font-bold text-zinc-900">Dane sprzedawcy (UŚUDE art. 5)</h2>
         <div className="mt-4">
           <SellerDataBlock />
         </div>
@@ -58,5 +60,6 @@ export default function ContactPage() {
         </Link>
       </p>
     </div>
+    </main>
   );
 }

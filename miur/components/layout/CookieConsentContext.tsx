@@ -46,9 +46,25 @@ function subscribeToConsent(callback: () => void): () => void {
   };
 }
 
+/**
+ * React requires `getSnapshot` for useSyncExternalStore to return a **stable**
+ * reference when the underlying store value has not changed (Object.is).
+ * `JSON.parse` always yields a new object, so without caching we trigger an
+ * infinite re-render loop as soon as consent exists in localStorage.
+ */
+let cachedConsentRaw: string | null | undefined;
+let cachedConsentPayload: CookieConsentPayload | null | undefined;
+
 function getConsentSnapshot(): CookieConsentPayload | null {
+  if (typeof window === "undefined") return null;
   try {
-    return parseStoredCookieConsent(localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY));
+    const raw = localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY);
+    if (raw === cachedConsentRaw && cachedConsentPayload !== undefined) {
+      return cachedConsentPayload;
+    }
+    cachedConsentRaw = raw;
+    cachedConsentPayload = parseStoredCookieConsent(raw);
+    return cachedConsentPayload;
   } catch {
     return null;
   }

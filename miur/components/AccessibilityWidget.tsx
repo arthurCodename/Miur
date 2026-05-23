@@ -4,10 +4,18 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Accessibility, Type, Link2, X, TextSelect, Palette, MousePointer2, Volume2, Focus } from 'lucide-react';
 
+/** Funkcje sensowne głównie na desktopie (mysz, zoom całej strony). */
+const MOBILE_MAX_WIDTH_PX = 1023;
+
 export function AccessibilityWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [mouseY, setMouseY] = useState(0); // Для профілю ADHD
-  
+  const [isMobile, setIsMobile] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH_PX}px)`).matches,
+  );
+
   const [settings, setSettings] = useState({
     largeText: false,
     readableFont: false,
@@ -19,16 +27,27 @@ export function AccessibilityWidget() {
     adhdProfile: false,  // Маска фокусування
   });
 
-  // 1. Toggle a11y classes on <body> based on the user's preferences.
   useEffect(() => {
-    const body = document.body;
-    body.classList.toggle("a11y-large-text", settings.largeText);
-    body.classList.toggle("a11y-readable-font", settings.readableFont);
-    body.classList.toggle("a11y-high-contrast", settings.highContrast);
-    body.classList.toggle("a11y-grayscale", settings.grayscale);
-    body.classList.toggle("a11y-highlight-links", settings.highlightLinks);
-    body.classList.toggle("a11y-big-cursor", settings.bigCursor);
-  }, [settings]);
+    const mq = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH_PX}px)`);
+    const sync = () => setIsMobile(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  // Efekty (filter/zoom) na #a11y-site-content — nie na body, żeby fixed widget nie „jechał” przy scrollu.
+  useEffect(() => {
+    const siteContent =
+      document.getElementById("a11y-site-content") ?? document.body;
+
+    const allowDesktopOnly = !isMobile;
+    siteContent.classList.toggle("a11y-large-text", allowDesktopOnly && settings.largeText);
+    siteContent.classList.toggle("a11y-readable-font", settings.readableFont);
+    siteContent.classList.toggle("a11y-high-contrast", settings.highContrast);
+    siteContent.classList.toggle("a11y-grayscale", settings.grayscale);
+    siteContent.classList.toggle("a11y-highlight-links", settings.highlightLinks);
+    siteContent.classList.toggle("a11y-big-cursor", allowDesktopOnly && settings.bigCursor);
+  }, [settings, isMobile]);
 
   // 3. ADHD reading mask — keep a 120px window around the cursor visible.
   useEffect(() => {
@@ -98,7 +117,7 @@ export function AccessibilityWidget() {
       )}
 
       {/* ВІДЖЕТ */}
-      <div className="fixed bottom-6 left-6 z-[200] font-sans">
+      <div className="fixed bottom-6 left-6 z-[200] isolate font-sans">
         {/* Кнопка відкриття */}
         <button 
           onClick={() => setIsOpen(!isOpen)}
@@ -139,15 +158,14 @@ export function AccessibilityWidget() {
                   onClick={() => toggleSetting('adhdProfile')} 
                 />
                 
-                <div className="h-px w-full bg-zinc-800 my-2" /> {/* Розділювач */}
-
-                {/* --- СТАРІ ФУНКЦІЇ --- */}
-                <SettingButton 
-                  icon={<Type className="w-4 h-4" />} 
-                  title="Większy tekst" 
-                  isActive={settings.largeText} 
-                  onClick={() => toggleSetting('largeText')} 
-                />
+                {!isMobile ? (
+                  <SettingButton
+                    icon={<Type className="w-4 h-4" />}
+                    title="Większy tekst"
+                    isActive={settings.largeText}
+                    onClick={() => toggleSetting("largeText")}
+                  />
+                ) : null}
                 <SettingButton 
                   icon={<TextSelect className="w-4 h-4" />} 
                   title="Czytelna czcionka" 
@@ -166,12 +184,14 @@ export function AccessibilityWidget() {
                   isActive={settings.highlightLinks} 
                   onClick={() => toggleSetting('highlightLinks')} 
                 />
-                <SettingButton 
-                  icon={<MousePointer2 className="w-4 h-4" />} 
-                  title="Duży kursor" 
-                  isActive={settings.bigCursor} 
-                  onClick={() => toggleSetting('bigCursor')} 
-                />
+                {!isMobile ? (
+                  <SettingButton
+                    icon={<MousePointer2 className="w-4 h-4" />}
+                    title="Duży kursor"
+                    isActive={settings.bigCursor}
+                    onClick={() => toggleSetting("bigCursor")}
+                  />
+                ) : null}
               </div>
             </motion.div>
           )}
