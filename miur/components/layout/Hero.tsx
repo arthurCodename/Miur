@@ -131,11 +131,11 @@ export function Hero() {
     <MotionConfig reducedMotion="user">
       <section
         ref={containerRef}
-        className="relative flex w-full max-w-full flex-col overflow-x-clip overflow-y-visible bg-white font-sans"
+        className="relative flex w-full max-w-full flex-col overflow-x-visible overflow-y-visible bg-white font-sans"
         style={{ height: `calc(var(--app-vh, 1vh) * ${scrollRunwayVh})` }}
       >
         <div
-          className="sticky top-0 z-10 w-full max-w-full shrink-0 overflow-x-clip overflow-y-visible bg-black transform-gpu"
+          className="sticky top-0 z-10 w-full max-w-full shrink-0 overflow-x-visible overflow-y-visible bg-black transform-gpu"
           style={{ height: "calc(var(--app-vh, 1vh) * 100)" }}
         >
           <video
@@ -153,7 +153,7 @@ export function Hero() {
             <source src="/hero.mp4" type="video/mp4" />
           </video>
 
-          <div className="pointer-events-none absolute inset-0 z-50 flex max-w-full items-center justify-center overflow-x-clip px-6 py-8 lg:justify-end lg:px-24 lg:py-10">
+          <div className="pointer-events-none absolute inset-0 z-50 flex max-w-full items-center justify-center overflow-visible px-6 py-8 lg:justify-end lg:px-24 lg:py-10">
             {/*
               Single <h1> rendered once; CSS controls layout per breakpoint.
               Two wrapper spans handle visual positioning, but only ONE heading
@@ -161,10 +161,10 @@ export function Hero() {
             */}
             <h1 className="contents" aria-label="Miur">
               {/* Mobile / tablet: static */}
-              <span className="isolate flex max-w-full flex-col items-center px-1 py-2 text-white drop-shadow-2xl lg:hidden md:px-2 md:py-3">
+              <span className="isolate flex w-max max-w-full flex-col items-center px-1 py-2 text-white lg:hidden md:px-2 md:py-3">
                 <MiurWordmark
                   decorative
-                  className="mx-auto text-[min(20.7vw,30.75rem)]"
+                  className="mx-auto text-[min(20.7vw,30.75rem)] drop-shadow-2xl"
                 />
               </span>
               {/* Desktop: scroll animation */}
@@ -177,11 +177,11 @@ export function Hero() {
                   transformOrigin: "right center",
                   willChange: "transform, opacity",
                 }}
-                className="isolate hidden max-w-full flex-col items-end backface-hidden px-2 py-3 text-white drop-shadow-2xl lg:flex"
+                className="isolate hidden w-max max-w-full shrink-0 flex-col items-end backface-hidden px-2 py-3 text-white lg:flex"
               >
                 <MiurWordmark
                   decorative
-                  className="text-[min(14vw,22rem)]"
+                  className="text-[min(14vw,22rem)] drop-shadow-2xl"
                 />
               </motion.span>
             </h1>

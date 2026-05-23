@@ -26,6 +26,16 @@
 .brand-logo-wordmark {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  /*
+   * Lewa pętla „M” (i inne swasze) malują się poza metrykami layoutu tekstu.
+   * Rodzice z overflow-x-clip / filter:drop-shadow obcinają te piksele —
+   * wygląda jak „ucięte z lewej”. Padding rozszerza box glifu; ujemny margin
+   * nie przesuwa sąsiadów (Navbar/Hero zachowują dotychczasowy układ).
+   */
+  padding-left: 0.2em;
+  padding-right: 0.08em;
+  margin-left: -0.2em;
+  margin-right: -0.08em;
 }
 
 /*
