@@ -244,7 +244,7 @@ export default function Navbar() {
             <span className="text-[9px] font-bold uppercase leading-none tracking-[0.3em]">Menu</span>
           </button>
           
-          <SearchConsole className="flex min-w-0 max-w-[min(100%,9rem)] sm:max-w-48 md:h-8 md:max-w-none" />
+          <SearchConsole className="flex min-w-0 max-w-[min(100%,10.5rem)] sm:max-w-52 md:h-8 md:max-w-none" />
         </div>
 
         {/* ЦЕНТРАЛЬНА ЧАСТИНА — ascendery Wild Loops mają miejsce dzięki

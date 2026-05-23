@@ -45,12 +45,13 @@ export function SearchConsole({ className }: SearchConsoleProps) {
           placeholder={isCompactMobile ? "SZUKAJ" : "SZUKAJ..."}
           autoComplete="off"
           aria-label="Szukaj produktów"
-          className="min-w-0 flex-1 bg-transparent text-[10px] font-bold uppercase leading-none tracking-widest text-white outline-none placeholder:text-white/50"
+          inputMode="search"
+          className="min-w-0 flex-1 bg-transparent text-base font-bold uppercase leading-none tracking-[0.2em] text-white outline-none placeholder:text-white/50 md:text-[10px] md:tracking-widest"
           enterKeyHint="search"
         />
         <button
           type="submit"
-          className="hidden shrink-0 rounded-full p-1.5 text-white/70 outline-none transition-[opacity,color,background-color] duration-200 hover:bg-white/10 hover:text-white focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-white/60 md:flex md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto"
+          className="flex shrink-0 rounded-full p-1.5 text-white/70 outline-none transition-[opacity,color,background-color] duration-200 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/60 md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto md:group-focus-within:opacity-100 md:group-focus-within:pointer-events-auto"
           aria-label="Szukaj"
         >
           <Search className="h-5 w-5" strokeWidth={1.2} aria-hidden />

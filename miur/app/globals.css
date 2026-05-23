@@ -102,13 +102,14 @@
 
   /*
    * iOS Safari auto-zoom fix: przeglądarka powiększa stronę gdy input ma font-size < 16px.
-   * Wymuszamy min. 1rem na urządzeniach dotykowych — na desktopie klasy Tailwind mają pierwszeństwo.
+   * !important — klasy Tailwind (np. text-[10px]) są w warstwie utilities i inaczej
+   * nadpisują to regułę. Opt-out: .js-allow-small-input na polu, które musi być < 16px.
    */
   @media (max-width: 1023px) {
-    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-    select,
-    textarea {
-      font-size: max(1rem, 1em);
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.js-allow-small-input),
+    select:not(.js-allow-small-input),
+    textarea:not(.js-allow-small-input) {
+      font-size: max(1rem, 1em) !important;
     }
   }
 }
