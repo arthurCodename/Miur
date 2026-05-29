@@ -69,15 +69,19 @@ function buildCsp(nonce: string): string {
     .filter(Boolean)
     .join(" ");
 
-  // Tailwind v4 + framer-motion still emit inline <style> blocks at runtime.
-  // Switching to nonce-only for style would require re-architecting motion.
-  // Industry practice (incl. nextjs.org) keeps `'unsafe-inline'` for styles.
-  const styleSrc = ["'self'", "'unsafe-inline'", ...STYLE_HOSTS].join(" ");
+  // style-src needs the nonce because Next.js auto-attaches it to every
+  // <link rel="stylesheet"> it renders. Safari blocks the stylesheet if the
+  // nonce attribute can't be matched by a nonce-source — Chrome falls back
+  // to 'self' but WebKit does not. Inline style="…" attrs (framer-motion)
+  // stay allowed via style-src-attr; the directive-level 'unsafe-inline' is
+  // ignored once a nonce-source is present, so it must live on -attr.
+  const styleSrc = ["'self'", `'nonce-${nonce}'`, ...STYLE_HOSTS].join(" ");
 
   const directives: Record<string, string> = {
     "default-src": "'self'",
     "script-src": scriptSrc,
     "style-src": styleSrc,
+    "style-src-attr": "'unsafe-inline'",
     "img-src": ["'self'", "blob:", "data:", ...IMG_HOSTS].join(" "),
     "font-src": "'self' data: https://fonts.gstatic.com",
     "connect-src": ["'self'", ...CONNECT_HOSTS].join(" "),
