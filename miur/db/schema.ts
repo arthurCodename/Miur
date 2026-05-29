@@ -1,18 +1,37 @@
 import {sql} from "drizzle-orm";
-import {integer, numeric, pgTable, serial, text, boolean, timestamp, pgEnum, AnyPgColumn, jsonb, index} from "drizzle-orm/pg-core";
+import {integer, numeric, pgTable, serial, text, boolean, timestamp, pgEnum, AnyPgColumn, jsonb, index, primaryKey} from "drizzle-orm/pg-core";
 
 
 export const roleEnum = pgEnum("role", ["user", "admin"]);
 export const orderStatusEnum = pgEnum("order_status", ["pending", "paid", "shipped", "cancelled"]);
 
 export const users = pgTable("users", {
-    id: serial("id").primaryKey(),
+    id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     email: text("email").unique().notNull(),
-    passwordHash: text("password_hash").notNull(),
+    name: text("name"),
+    image: text("image"),
+    emailVerified: timestamp("email_verified", {mode: "date"}), // Store as date-only for easier verification checks
+    passwordHash: text("password_hash"),
     role: roleEnum("role").default("user").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
+
+export const accounts = pgTable("accounts", {
+    userId: text("user_id").references(() => users.id, {onDelete: "cascade"}).notNull(),
+    type: text("type").notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("provider_account_id").notNull(),
+    refreshToken: text("refresh_token"),
+    accessToken: text("access_token"),
+    expiresAt: integer("expires_at"),
+    tokenType: text("token_type"),
+    scope: text("scope"),
+    idToken: text("id_token"),
+    sessionState: text("session_state"),
+}, (account) => [
+    primaryKey({columns: [account.provider, account.providerAccountId]})
+]);
 
 export const products = pgTable("products", {
     //Core Idents
@@ -55,7 +74,7 @@ export const categories = pgTable("categories", {
 
 export const orders = pgTable("orders", {
     id: serial("id").primaryKey(),
-    userId: integer("user_id").references(() => users.id).notNull(),
+    userId: text("user_id").references(() => users.id).notNull(),
     totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
     status: orderStatusEnum("status").default("pending").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -74,7 +93,7 @@ export const orderItems = pgTable("order_items", {
 export const reviews = pgTable("reviews", {
     id: serial("id").primaryKey(),
     productId: integer("product_id").references(() => products.id).notNull(),
-    userId: integer("user_id").references(() => users.id).notNull(),
+    userId: text("user_id").references(() => users.id).notNull(),
     orderItemId: integer("order_item_id").references(() => orderItems.id).notNull(),
     rating: integer("rating").notNull(),
     comment: text("comment"),
@@ -85,7 +104,7 @@ export const reviews = pgTable("reviews", {
 export const carts = pgTable("carts", {
     id: serial("id").primaryKey(),
     sessionId: text("session_id").unique().notNull(),
-    userId: integer("user_id").references(() => users.id),
+    userId: text("user_id").references(() => users.id),
     items: jsonb("items").notNull(), // Store cart items as JSON
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull()
@@ -94,10 +113,7 @@ export const carts = pgTable("carts", {
 export const auditLogs = pgTable("audit_logs", {
     id: serial("id").primaryKey(),
     action: text("action").notNull(),
-    userId: integer("user_id").references(() => users.id),
+    userId: text("user_id").references(() => users.id),
     entity: text("entity").notNull(),
     timestamp: timestamp("timestamp").defaultNow().notNull(),
 });
-
-
-
