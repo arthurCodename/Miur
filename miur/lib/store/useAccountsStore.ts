@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { normalizeEmail } from "@/lib/auth/normalize-email";
-import type { LoginResult, RegisterResult, ResetPasswordResult } from "@/lib/auth/types";
+import type { RegisterResult, ResetPasswordResult } from "@/lib/auth/types";
 
 /**
  * MOCK ONLY — client-side account store for development.
@@ -19,7 +19,6 @@ interface StoredAccount {
 interface AccountsState {
   accounts: Record<string, StoredAccount>;
   register: (email: string, password: string) => RegisterResult;
-  verifyLogin: (email: string, password: string) => LoginResult;
   resetPassword: (email: string, newPassword: string) => ResetPasswordResult;
   hasAccount: (email: string) => boolean;
 }
@@ -42,18 +41,6 @@ export const useAccountsStore = create<AccountsState>()(
         set((state) => ({
           accounts: { ...state.accounts, [key]: { password } },
         }));
-        return { ok: true };
-      },
-
-      verifyLogin: (email, password) => {
-        const key = normalizeEmail(email);
-        const account = get().accounts[key];
-        if (!account) {
-          return { ok: false, reason: "account_not_found" };
-        }
-        if (account.password !== password) {
-          return { ok: false, reason: "wrong_password" };
-        }
         return { ok: true };
       },
 

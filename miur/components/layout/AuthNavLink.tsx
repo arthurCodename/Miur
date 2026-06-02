@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import { User } from "lucide-react";
-import { useIsMounted } from "@/lib/hooks/useIsMounted";
-import { useAuthStore } from "@/lib/store/useAuthStore";
+import { useSession } from "next-auth/react";
 
 export function AuthNavLink() {
-  const user = useAuthStore((s) => s.user);
-  const isMounted = useIsMounted();
+  const { data: session, status } = useSession();
 
-  const href = !isMounted ? "/login" : user ? "/profile" : "/login";
-  const label = !isMounted ? "Logowanie" : user ? "Profil" : "Logowanie";
+  const isAuthed = status === "authenticated" && Boolean(session);
+  const href = isAuthed ? "/profile" : "/login";
+  const label = isAuthed ? "Profil" : "Logowanie";
 
   return (
     <Link

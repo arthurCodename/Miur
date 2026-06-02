@@ -12,13 +12,15 @@ import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { LOGIN_ERROR_MESSAGES } from "@/lib/auth/messages";
 import { loginSchema } from "@/lib/auth/schemas";
 import type { LoginFailureReason } from "@/lib/auth/types";
-import { useAuthStore } from "@/lib/store/useAuthStore";
+import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const login = useAuthStore((s) => s.login);
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/profile";
   const [authError, setAuthError] = useState<LoginFailureReason | null>(null);
 
   const {
@@ -32,18 +34,19 @@ export default function LoginPage() {
 
   async function onSubmit(data: LoginFormValues) {
     setAuthError(null);
-    if (process.env.NODE_ENV !== "production") {
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 600);
-      });
-    }
-    const result = login(data.email, data.password);
-    if (!result.ok) {
-      setAuthError(result.reason);
+
+    const result = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: false,
+    });
+    if (result?.error) {
+      setAuthError("invalid_credentials");
       return;
     }
-    toast.success("Zalogowano pomyślnie");
-    router.push("/profile");
+
+    toast.success("Pomyślnie zalogowano!");
+    router.push(callbackUrl);
   }
 
   return (
@@ -51,11 +54,20 @@ export default function LoginPage() {
       <PageGradientHero title="Logowanie" eyebrow="Konto" />
       <main className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-6 py-16">
         <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm md:p-10">
-          <p className="text-center text-sm text-zinc-600">Zaloguj się, aby zobaczyć swoje zamówienia.</p>
+          <p className="text-center text-sm text-zinc-600">
+            Zaloguj się, aby zobaczyć swoje zamówienia.
+          </p>
 
-          <form className="mt-6 flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <form
+            className="mt-6 flex flex-col gap-5"
+            onSubmit={handleSubmit(onSubmit)}
+            noValidate
+          >
             {authError ? (
-              <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700" role="alert">
+              <p
+                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700"
+                role="alert"
+              >
                 {LOGIN_ERROR_MESSAGES[authError]}
               </p>
             ) : null}
@@ -98,13 +110,19 @@ export default function LoginPage() {
 
           <p className="mt-8 text-center text-sm text-zinc-600">
             Nie masz konta?{" "}
-            <Link href="/rejestracja" className="font-medium text-zinc-900 underline-offset-2 hover:underline">
+            <Link
+              href="/rejestracja"
+              className="font-medium text-zinc-900 underline-offset-2 hover:underline"
+            >
               Zarejestruj się
             </Link>
           </p>
 
           <p className="mt-4 text-center text-sm text-zinc-600">
-            <Link href="/" className="font-medium text-zinc-900 underline-offset-2 hover:underline">
+            <Link
+              href="/"
+              className="font-medium text-zinc-900 underline-offset-2 hover:underline"
+            >
               Wróć do sklepu
             </Link>
           </p>

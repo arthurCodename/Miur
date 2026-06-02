@@ -1,25 +1,22 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { useAuthHydrated } from "@/lib/hooks/useAuthHydrated";
-import { useAuthStore } from "@/lib/store/useAuthStore";
 
 /** Wylogowanie w stopce — widoczne tylko dla zalogowanego klienta. */
 export function FooterLogoutButton() {
-  const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
-  const router = useRouter();
-  const authHydrated = useAuthHydrated();
+  const { data: session, status } = useSession();
 
-  if (!authHydrated || !user) {
+  if (status !== "authenticated" || !session) {
     return null;
   }
 
-  const handleClick = () => {
-    logout();
+  const handleClick = async () => {
+    await signOut({ redirect: false });
     toast.success("Wylogowano pomyślnie");
-    router.push("/");
+    // SessionProvider auto-refreshes; the page will reflect logged-out state.
+    // If you'd rather force-navigate, replace the line above with:
+    //   await signOut({ callbackUrl: "/" });
   };
 
   return (

@@ -15,6 +15,7 @@ import { Toaster } from "../components/ui/sonner";
 import { ThemeProvider } from "../components/theme-provider";
 import { OrganizationJsonLd } from "../components/seo/JsonLd";
 import { getSiteUrl } from "@/lib/site-url";
+import { SessionProvider } from "@/components/providers/SessionProvider";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -81,38 +82,48 @@ export default async function RootLayout({
           logo={`${siteUrl}/brand/miur-wordmark.svg`}
           nonce={nonce}
         />
-        <CookieConsentProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {!visualOnlyMode && <ConsentScripts nonce={nonce} />}
-            <div className="flex min-h-screen min-w-0 w-full max-w-full flex-col overflow-x-clip">
-              <a
-                href="#main-content"
-                className="sr-only left-4 top-4 z-500 rounded-sm bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-lg outline-none ring-2 ring-zinc-900 transition-none focus:not-sr-only focus:absolute focus:inline-block"
-              >
-                Przejdź do treści głównej
-              </a>
-              <div
-                id="a11y-site-content"
-                className="flex min-h-0 min-w-0 flex-1 flex-col w-full max-w-full overflow-x-clip"
-              >
-                <Navbar />
-                {!visualOnlyMode && <CookieBanner />}
-                {!visualOnlyMode && <AgeGate />}
-                <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
-                  <div className="min-w-0 w-full max-w-full overflow-x-clip">{children}</div>
-                </main>
-                <Footer />
-                {!visualOnlyMode && <Toaster richColors position="top-center" />}
+        <SessionProvider>
+          <CookieConsentProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {!visualOnlyMode && <ConsentScripts nonce={nonce} />}
+              <div className="flex min-h-screen min-w-0 w-full max-w-full flex-col overflow-x-clip">
+                <a
+                  href="#main-content"
+                  className="sr-only left-4 top-4 z-500 rounded-sm bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-lg outline-none ring-2 ring-zinc-900 transition-none focus:not-sr-only focus:absolute focus:inline-block"
+                >
+                  Przejdź do treści głównej
+                </a>
+                <div
+                  id="a11y-site-content"
+                  className="flex min-h-0 min-w-0 flex-1 flex-col w-full max-w-full overflow-x-clip"
+                >
+                  <Navbar />
+                  {!visualOnlyMode && <CookieBanner />}
+                  {!visualOnlyMode && <AgeGate />}
+                  <main
+                    id="main-content"
+                    tabIndex={-1}
+                    className="flex-1 outline-none"
+                  >
+                    <div className="min-w-0 w-full max-w-full overflow-x-clip">
+                      {children}
+                    </div>
+                  </main>
+                  <Footer />
+                  {!visualOnlyMode && (
+                    <Toaster richColors position="top-center" />
+                  )}
+                </div>
+                {!visualOnlyMode && <AccessibilityWidget />}
               </div>
-              {!visualOnlyMode && <AccessibilityWidget />}
-            </div>
-          </ThemeProvider>
-        </CookieConsentProvider>
+            </ThemeProvider>
+          </CookieConsentProvider>
+        </SessionProvider>
       </body>
     </html>
   );

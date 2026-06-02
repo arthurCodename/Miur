@@ -11,15 +11,12 @@ import { AuthFormField } from "@/components/auth/AuthFormField";
 import { PageGradientHero } from "@/components/layout/PageGradientHero";
 import { REGISTER_ERROR_MESSAGES } from "@/lib/auth/messages";
 import { registerSchema } from "@/lib/auth/schemas";
-import { useAccountsStore } from "@/lib/store/useAccountsStore";
-import { useAuthStore } from "@/lib/store/useAuthStore";
+import { signIn } from "next-auth/react";
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
-  const registerAccount = useAccountsStore((s) => s.register);
-  const login = useAuthStore((s) => s.login);
   const [registerError, setRegisterError] = useState<string | null>(null);
 
   const {
@@ -33,22 +30,37 @@ export default function RegisterPage() {
 
   async function onSubmit(data: RegisterFormValues) {
     setRegisterError(null);
-    if (process.env.NODE_ENV !== "production") {
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 600);
-      });
-    }
-    const result = registerAccount(data.email, data.password);
-    if (!result.ok) {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: data.email, password: data.password }),
+    });
+
+    if (res.status === 409) {
       setRegisterError(REGISTER_ERROR_MESSAGES.email_taken);
       return;
     }
-    const loginResult = login(data.email, data.password);
-    if (!loginResult.ok) {
-      setRegisterError("Nie udało się zalogować po rejestracji. Spróbuj się zalogować.");
-      router.push("/logowanie");
+
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      setRegisterError(body.error ?? "Coś poszło nie tak. Spróbuj ponownie.");
       return;
     }
+
+    const loginResult = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: false,
+    });
+
+    if (loginResult?.error) {
+      toast.error(
+        "Rejestracja zakończona sukcesem, możesz teraz zalogować się ręcznie.",
+      );
+      router.push("/login");
+      return;
+    }
+
     toast.success("Konto zostało utworzone");
     router.push("/profile");
   }
@@ -58,11 +70,20 @@ export default function RegisterPage() {
       <PageGradientHero title="Rejestracja" eyebrow="Konto" />
       <main className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-6 py-16">
         <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm md:p-10">
-          <p className="text-center text-sm text-zinc-600">Załóż konto, aby śledzić zamówienia i listę życzeń.</p>
+          <p className="text-center text-sm text-zinc-600">
+            Załóż konto, aby śledzić zamówienia i listę życzeń.
+          </p>
 
-          <form className="mt-6 flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <form
+            className="mt-6 flex flex-col gap-5"
+            onSubmit={handleSubmit(onSubmit)}
+            noValidate
+          >
             {registerError ? (
-              <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700" role="alert">
+              <p
+                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700"
+                role="alert"
+              >
                 {registerError}
               </p>
             ) : null}
@@ -105,13 +126,19 @@ export default function RegisterPage() {
 
           <p className="mt-8 text-center text-sm text-zinc-600">
             Masz już konto?{" "}
-            <Link href="/logowanie" className="font-medium text-zinc-900 underline-offset-2 hover:underline">
+            <Link
+              href="/logowanie"
+              className="font-medium text-zinc-900 underline-offset-2 hover:underline"
+            >
               Zaloguj się
             </Link>
           </p>
 
           <p className="mt-4 text-center text-sm text-zinc-600">
-            <Link href="/" className="font-medium text-zinc-900 underline-offset-2 hover:underline">
+            <Link
+              href="/"
+              className="font-medium text-zinc-900 underline-offset-2 hover:underline"
+            >
               Wróć do sklepu
             </Link>
           </p>

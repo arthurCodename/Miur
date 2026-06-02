@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { StubPage } from "@/components/layout/StubPage";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Moje zamówienia — Miur",
@@ -7,7 +9,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function MojeZamowieniaPage() {
+export default async function MojeZamowieniaPage() {
+  const session = await auth();
+  if (!session?.user) {
+    redirect("/login?callbackUrl=/moje-zamowienia");
+  }
+
   return (
     <StubPage
       eyebrow="Twoje konto"

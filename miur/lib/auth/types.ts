@@ -1,8 +1,4 @@
-export type LoginFailureReason = "account_not_found" | "wrong_password";
-
-export type LoginResult =
-  | { ok: true }
-  | { ok: false; reason: LoginFailureReason };
+export type LoginFailureReason = "invalid_credentials";
 
 export type RegisterResult = { ok: true } | { ok: false; reason: "email_taken" };
 
