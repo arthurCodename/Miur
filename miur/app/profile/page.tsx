@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PageGradientHero } from "@/components/layout/PageGradientHero";
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
+import { ProfileLogoutButton } from "@/components/auth/ProfileLogoutButton";
 
 function displayNameFromEmail(email: string): string {
   const local = email.split("@")[0]?.trim();
@@ -42,19 +43,7 @@ export default async function ProfilePage() {
         </section>
 
         <div className="mt-10 flex flex-wrap gap-4">
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/" });
-            }}
-          >
-            <button
-              type="submit"
-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-300 bg-white px-8 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-900 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
-            >
-              Wyloguj się
-            </button>
-          </form>
+          <ProfileLogoutButton />
           <Link
             href="/"
             className="inline-flex min-h-11 items-center justify-center rounded-full bg-zinc-900 px-8 text-[11px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
