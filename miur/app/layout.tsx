@@ -16,6 +16,7 @@ import { ThemeProvider } from "../components/theme-provider";
 import { OrganizationJsonLd } from "../components/seo/JsonLd";
 import { getSiteUrl } from "@/lib/site-url";
 import { SessionProvider } from "@/components/providers/SessionProvider";
+import { CartSync } from "@/components/cart/CartSync";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -83,6 +84,7 @@ export default async function RootLayout({
           nonce={nonce}
         />
         <SessionProvider>
+          <CartSync />
           <CookieConsentProvider>
             <ThemeProvider
               attribute="class"

@@ -8,6 +8,7 @@ import { z } from "zod";
 import { authConfig } from "./auth.config";
 import { db } from "./db";
 import { users } from "./db/schema";
+import { mergeAnonymousCartIntoUserCart } from "./lib/cart/merge-on-signin";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -18,6 +19,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
 
   adapter: DrizzleAdapter(db),
+
+  // Wrap the shared callbacks from auth.config.ts and add cart-merge logic
+  // on successful sign-in. Returning `true` lets the sign-in proceed; the
+  // merge itself swallows its own errors so it never blocks login.
+  callbacks: {
+    ...authConfig.callbacks,
+    async signIn({ user }) {
+      if (user?.id) {
+        await mergeAnonymousCartIntoUserCart(user.id);
+      }
+      return true;
+    },
+  },
 
   providers: [
     ...authConfig.providers,
