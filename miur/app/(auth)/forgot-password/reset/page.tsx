@@ -1,28 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AuthFormField } from "@/components/auth/AuthFormField";
 import { PageGradientHero } from "@/components/layout/PageGradientHero";
-import {
-  clearPendingPasswordResetEmail,
-  getPendingPasswordResetEmail,
-} from "@/lib/auth/password-reset-session";
+
 import { resetPasswordSchema } from "@/lib/auth/schemas";
-import { useAccountsStore } from "@/lib/store/useAccountsStore";
 
 type ResetFormValues = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const resetPassword = useAccountsStore((s) => s.resetPassword);
-  // Read once from sessionStorage on mount (lazy initializer avoids useEffect for state init).
-  const [email] = useState<string | null>(() => getPendingPasswordResetEmail());
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+
+  const [resetError, setResetError] = useState<string | null>(null);
 
   const {
     register,
@@ -33,40 +30,37 @@ export default function ResetPasswordPage() {
     defaultValues: { password: "", confirmPassword: "" },
   });
 
-  useEffect(() => {
-    if (!email) {
-      router.replace("/odzyskaj-haslo");
-    }
-  }, [email, router]);
-
   async function onSubmit(data: ResetFormValues) {
-    if (!email) return;
-    if (process.env.NODE_ENV !== "production") {
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 600);
-      });
-    }
-    const result = resetPassword(email, data.password);
-    if (!result.ok) {
-      clearPendingPasswordResetEmail();
-      router.replace("/odzyskaj-haslo");
+    setResetError(null);
+
+    if (!token) {
+      setResetError(
+        "Brak tokenu w linku. Otwórz link z wiadomości e-mail jeszcze raz.",
+      );
       return;
     }
-    clearPendingPasswordResetEmail();
+
+    const res = await fetch("/api/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, password: data.password }),
+    });
+
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      setResetError(
+        body.error ?? "Nie udało się ustawić nowego hasła. Spróbuj ponownie.",
+      );
+      return;
+    }
+
     toast.success("Hasło zostało zmienione. Możesz się zalogować.");
     router.push("/logowanie");
   }
 
-  if (!email) {
-    return (
-      <div className="bg-white">
-        <PageGradientHero title="Nowe hasło" eyebrow="Konto" />
-        <main className="flex min-h-[40vh] items-center justify-center px-6 py-16">
-          <p className="text-sm text-zinc-600">Ładowanie…</p>
-        </main>
-      </div>
-    );
-  }
+  // No token in URL → render the form anyway but block submission. The error
+  // message appears the moment they hit submit. (We avoid a "wrong page!"
+  // server-side check so a stale link still has a clear UX path.)
 
   return (
     <div className="bg-white">
@@ -74,11 +68,23 @@ export default function ResetPasswordPage() {
       <main className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-6 py-16">
         <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm md:p-10">
           <p className="text-center text-sm text-zinc-600">
-            Ustaw nowe hasło dla konta{" "}
-            <span className="font-medium text-zinc-900">{email}</span>.
+            Ustaw nowe hasło dla swojego konta.
           </p>
 
-          <form className="mt-6 flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <form
+            className="mt-6 flex flex-col gap-5"
+            onSubmit={handleSubmit(onSubmit)}
+            noValidate
+          >
+            {resetError ? (
+              <p
+                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700"
+                role="alert"
+              >
+                {resetError}
+              </p>
+            ) : null}
+
             <AuthFormField
               id="reset-password"
               label="Nowe hasło"
@@ -107,7 +113,10 @@ export default function ResetPasswordPage() {
           </form>
 
           <p className="mt-8 text-center text-sm text-zinc-600">
-            <Link href="/logowanie" className="font-medium text-zinc-900 underline-offset-2 hover:underline">
+            <Link
+              href="/logowanie"
+              className="font-medium text-zinc-900 underline-offset-2 hover:underline"
+            >
               Wróć do logowania
             </Link>
           </p>

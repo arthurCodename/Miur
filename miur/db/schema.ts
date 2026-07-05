@@ -33,6 +33,16 @@ export const accounts = pgTable("accounts", {
     primaryKey({columns: [account.provider, account.providerAccountId]})
 ]);
 
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+    id: serial("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id, {onDelete: "cascade"}),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: timestamp("expires_at").notNull(),
+    consumedAt: timestamp("consumed_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+
 export const products = pgTable("products", {
     //Core Idents
     id: serial("id").primaryKey(),
@@ -52,6 +62,11 @@ export const products = pgTable("products", {
     //Inventory/Status
     stock: integer("stock").default(0).notNull(),
     isActive: boolean("is_active").default(true),
+
+    // Soft delete: never hard-delete products that have linked orders, so
+    // order history + price_history stay intact and queries can filter on
+    // `deletedAt IS NULL` to hide products from the storefront.
+    deletedAt: timestamp("deleted_at"),
 }, (table) => [
   index("name_search_idx").using("gin", sql`${table.name} gin_trgm_ops`),
   index("desc_search_idx").using("gin", sql`${table.description} gin_trgm_ops`),
@@ -74,7 +89,13 @@ export const categories = pgTable("categories", {
 
 export const orders = pgTable("orders", {
     id: serial("id").primaryKey(),
-    userId: text("user_id").references(() => users.id).notNull(),
+    // Nullable so guest checkout works. Either userId OR guestEmail is set
+    // for every order — enforced at the application layer (no DB CHECK because
+    // it makes future migrations harder than the validation buys us).
+    userId: text("user_id").references(() => users.id),
+    guestEmail: text("guest_email"),
+    shippingAddress: jsonb("shipping_address"),
+    billingAddress: jsonb("billing_address"),
     totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
     status: orderStatusEnum("status").default("pending").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -103,9 +124,13 @@ export const reviews = pgTable("reviews", {
 
 export const carts = pgTable("carts", {
     id: serial("id").primaryKey(),
-    sessionId: text("session_id").unique().notNull(),
-    userId: text("user_id").references(() => users.id),
-    items: jsonb("items").notNull(), // Store cart items as JSON
+    // Anonymous carts are keyed by sessionId (browser cookie). User carts are
+    // keyed by userId (sessionId is null). Postgres allows multiple NULLs in
+    // a UNIQUE column, so each user has at most one cart row and anonymous
+    // visitors don't collide either.
+    sessionId: text("session_id").unique(),
+    userId: text("user_id").references(() => users.id, {onDelete: "cascade"}).unique(),
+    items: jsonb("items").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
