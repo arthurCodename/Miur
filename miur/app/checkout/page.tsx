@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
@@ -116,6 +116,10 @@ export default function CheckoutPage() {
     address: string;
   } | null>(null);
 
+  /** SDK lifecycle — the button reflects this instead of failing on click. */
+  const [inpostStatus, setInpostStatus] = useState<"loading" | "ready" | "error">("loading");
+  const inpostInitialized = useRef(false);
+
   const {
     register,
     handleSubmit,
@@ -167,16 +171,23 @@ export default function CheckoutPage() {
     };
   }, []);
 
-  const openInPostWidget = useCallback(() => {
-    if (typeof window === "undefined") return;
+  /**
+   * Initialise the easyPack SDK exactly once, as soon as its script is ready.
+   *
+   * Why once and not per click: `init()` called with a single argument resets
+   * `easyPack.pointsToSearch` to `[]` and re-runs the full bootstrap (including
+   * re-downloading web fonts). Verified in the browser — a warm SDK holding 534
+   * locker points drops to 0 the moment `init()` runs again. The points are
+   * re-fetched asynchronously, but `modalMap()` used to be called synchronously
+   * on the very next line, so the modal could open before they arrived. On a
+   * fast connection the re-fetch wins and everything looks fine; on a slow one
+   * the map opens with no lockers and search returns nothing. That race is why
+   * the widget failed only "sometimes".
+   */
+  const initInPostSdk = useCallback(() => {
     const ep = window.easyPack;
-    if (!ep) {
-      toast.info("Mapa Paczkomatów wczytuje się — spróbuj za chwilę.");
-      return;
-    }
-    // v4 SDK requires init before any map/modal call. Idempotent — safe to
-    // call every time. Without this, modalMap throws
-    // "Cannot read properties of undefined (reading 'points')".
+    if (!ep || inpostInitialized.current) return;
+    inpostInitialized.current = true;
     ep.init({
       defaultLocale: "pl",
       mapType: "osm",
@@ -189,6 +200,12 @@ export default function CheckoutPage() {
         initialTypes: ["parcel_locker"],
       },
     });
+    setInpostStatus("ready");
+  }, []);
+
+  const openInPostWidget = useCallback(() => {
+    const ep = window.easyPack;
+    if (!ep || inpostStatus !== "ready") return;
     ep.modalMap(
       (point: InPostPoint, modal: InPostModal) => {
         const next = { name: point.name, address: point.address.line1 };
@@ -199,7 +216,7 @@ export default function CheckoutPage() {
       },
       { language: "pl" },
     );
-  }, [setValue]);
+  }, [inpostStatus, setValue]);
 
   async function onSubmit(data: CheckoutFormValues) {
     // Transform the flat form shape into the nested payload the server expects.
@@ -262,9 +279,18 @@ export default function CheckoutPage() {
 
   return (
     <>
+      {/*
+        `afterInteractive` (not `lazyOnload`): lazyOnload waits for window
+        `load`, so on a media-heavy page the SDK often wasn't ready by the time
+        the user reached the delivery step — the button then just told them to
+        try again. Loading it right after hydration makes it ready before the
+        click in practice, and `onReady` below gates the button regardless.
+      */}
       <Script
         src="https://geowidget.easypack24.net/js/sdk-for-javascript.js"
-        strategy="lazyOnload"
+        strategy="afterInteractive"
+        onReady={initInPostSdk}
+        onError={() => setInpostStatus("error")}
       />
 
       <div className="bg-white">
@@ -402,12 +428,24 @@ export default function CheckoutPage() {
                       <button
                         type="button"
                         onClick={openInPostWidget}
-                        className="inline-flex min-h-11 max-w-md items-center justify-center rounded-full border border-zinc-900 bg-white px-6 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-900 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                        disabled={inpostStatus !== "ready"}
+                        aria-busy={inpostStatus === "loading"}
+                        className="inline-flex min-h-11 max-w-md items-center justify-center rounded-full border border-zinc-900 bg-white px-6 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-900 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-not-allowed disabled:border-zinc-300 disabled:text-zinc-400 disabled:hover:bg-white"
                       >
-                        {selectedPaczkomat
-                          ? "Zmień Paczkomat"
-                          : "Wybierz Paczkomat"}
+                        {inpostStatus === "loading"
+                          ? "Ładowanie mapy…"
+                          : inpostStatus === "error"
+                            ? "Mapa niedostępna"
+                            : selectedPaczkomat
+                              ? "Zmień Paczkomat"
+                              : "Wybierz Paczkomat"}
                       </button>
+                      {inpostStatus === "error" ? (
+                        <p className="text-sm text-red-600" role="alert">
+                          Nie udało się wczytać mapy Paczkomatów. Odśwież stronę
+                          lub wybierz dostawę kurierem.
+                        </p>
+                      ) : null}
                       {selectedPaczkomat ? (
                         <p className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-800">
                           <span className="font-semibold text-zinc-900">
