@@ -108,6 +108,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const isMounted = useIsMounted();
   const cartItems = useCartStore((s) => s.items);
+  const clearCart = useCartStore((s) => s.clearCart);
   const { data: session, status: authStatus } = useSession();
 
   const [selectedPaczkomat, setSelectedPaczkomat] = useState<{
@@ -200,14 +201,63 @@ export default function CheckoutPage() {
     );
   }, [setValue]);
 
-  async function onSubmit(_data: CheckoutFormValues) {
-    // Simulate server action latency in dev only. In real flow this would be a
-    // Server Action posting to /api/orders, then redirecting to Przelewy24 / BLIK.
-    if (process.env.NODE_ENV !== "production") {
-      await new Promise<void>((resolve) => setTimeout(resolve, 800));
+  async function onSubmit(data: CheckoutFormValues) {
+    // Transform the flat form shape into the nested payload the server expects.
+    // The zod discriminated union on `shipping.method` mirrors the form's
+    // superRefine — so by the time we're here, the fields we read are populated.
+    const payload = {
+      contact: {
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone,
+      },
+      shipping:
+        data.deliveryMethod === "paczkomat"
+          ? {
+              method: "paczkomat" as const,
+              paczkomatCode: data.paczkomatCode ?? "",
+              paczkomatAddress: data.paczkomatAddress ?? "",
+            }
+          : {
+              method: "courier" as const,
+              addressLine: data.addressLine ?? "",
+              city: data.city ?? "",
+              postalCode: data.postalCode ?? "",
+            },
+      consents: {
+        acceptTerms: data.acceptTerms,
+        acceptPrivacy: data.acceptPrivacy,
+        marketingOptIn: data.marketingOptIn ?? false,
+      },
+    };
+
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const body = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        orderId?: number;
+        error?: string;
+      };
+
+      if (!res.ok || !body.ok || !body.orderId) {
+        toast.error(body.error ?? "Nie udało się złożyć zamówienia.");
+        return;
+      }
+
+      // Server already deleted the cart row; clear local zustand state so the
+      // navbar badge + any re-render on the success page shows 0 immediately.
+      clearCart();
+      toast.success("Zamówienie złożone");
+      router.push(`/checkout/success?orderId=${body.orderId}`);
+    } catch (err) {
+      console.error("[checkout] order submit failed:", err);
+      toast.error("Błąd sieci. Spróbuj ponownie.");
     }
-    toast.success("Zamówienie złożone");
-    router.push("/checkout/success");
   }
 
   return (

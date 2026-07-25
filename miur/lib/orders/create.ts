@@ -18,8 +18,9 @@ export type CreateOrderResult =
  *   1. Resolve the cart row (userId if signed in, else session cookie).
  *   2. Look up authoritative product data for each cart item. Prices come
  *      from the products table — never from the client-supplied cart JSON.
- *      (Mock products not in the DB fall back to the client price with a
- *      log; a TODO once Phase 8.1 XML sync populates real products.)
+ *      Any cart item that doesn't resolve to a DB product is rejected
+ *      (`invalid_product`) — the order_items FK would reject the insert
+ *      anyway, so we fail early with a clean message.
  *   3. Insert `orders` row (userId OR guestEmail depending on session).
  *   4. Insert `order_items` rows, one per cart item, with `productSnapshot`
  *      frozen at order time.
@@ -37,7 +38,7 @@ export async function createOrder(
 
   const productIds = items
     .map((i) => Number.parseInt(i.id, 10))
-    .filter((n) => Number.isFinite(n));
+    .filter((n) => Number.isFinite(n) && n > 0);
 
   const productRows = productIds.length
     ? await db
@@ -65,36 +66,22 @@ export async function createOrder(
     const parsedId = Number.parseInt(item.id, 10);
     const dbProduct = Number.isFinite(parsedId) ? productById.get(parsedId) : undefined;
 
-    // Resolve the authoritative unit price: DB if the product exists there,
-    // client-provided value as a fallback for mock-catalog items. Log the
-    // fallback so it's visible during dev; safe to remove after Phase 8.1.
-    const unitPrice = dbProduct
-      ? Number.parseFloat(dbProduct.price)
-      : (console.warn(`[orders] fallback price for mock product id=${item.id}`), item.price);
-
-    // If a product ID looked like a real DB integer but wasn't found, that
-    // is a real error (tampering, deleted product). Refuse the order rather
-    // than silently pricing off stale client state.
-    if (!dbProduct && Number.isFinite(parsedId) && parsedId > 0 && productRows.length > 0) {
+    if (!dbProduct) {
+      console.warn(`[orders] cart item not found in products table: id=${item.id}`);
       return { ok: false, code: "invalid_product" };
     }
 
+    const unitPrice = Number.parseFloat(dbProduct.price);
     subtotal += unitPrice * item.quantity;
 
-    // DB product ID for row insertion — fall back to a synthetic negative
-    // value for mock products so they don't collide with real ones. This
-    // will fail the FK constraint if the product doesn't exist in DB, which
-    // is a TODO to reconcile in Phase 8.1.
-    const productId = dbProduct?.id ?? parsedId;
-
     orderItemInserts.push({
-      productId,
+      productId: dbProduct.id,
       quantity: item.quantity,
       unitPrice: unitPrice.toFixed(2),
       productSnapshot: {
         id: item.id,
-        slug: dbProduct?.slug ?? item.slug,
-        name: dbProduct?.name ?? item.name,
+        slug: dbProduct.slug,
+        name: dbProduct.name,
         image: item.image,
         category: item.category,
         unitPriceAtOrder: unitPrice,
