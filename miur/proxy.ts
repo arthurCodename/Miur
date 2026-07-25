@@ -43,6 +43,13 @@ const CONNECT_HOSTS = [
   "https://*.googletagmanager.com",
   "https://geowidget.easypack24.net",
   "https://api-shipx-pl.easypack24.net",
+  // The geowidget fetches its actual locker data from a separate endpoint
+  // (api-pl-points), NOT api-shipx-pl. Without it the map loads but stays
+  // greyed out with "Przybliż, aby wyświetlić punkty" and no pins ever appear.
+  "https://api-pl-points.easypack24.net",
+  // InPost geowidget uses OSM Nominatim for address search inside its map.
+  // Without this, the search box in "Wybierz Paczkomat" returns no results.
+  "https://nominatim.openstreetmap.org",
   "https://vitals.vercel-insights.com",
   "https://vercel.live",
 ];
@@ -53,6 +60,17 @@ const IMG_HOSTS = [
   "https://www.googletagmanager.com",
   "https://www.google-analytics.com",
   "https://geowidget.easypack24.net",
+  // InPost proxies OSM tiles through their own domain (osm.inpost.pl) rather
+  // than hitting openstreetmap.org directly. Without this, the map area shows
+  // only pins on a blank background — no roads, buildings, or labels.
+  "https://osm.inpost.pl",
+  // Kept as fallback in case a future widget version reverts to direct OSM.
+  "https://tile.openstreetmap.org",
+  "https://*.tile.openstreetmap.org",
+  // Any InPost sub-CDN — the widget serves pin icons, cluster sprites, and
+  // partner logos from a few subdomains (map, cdn, images, etc.) that vary
+  // by widget version. Wildcard scoped to their apex.
+  "https://*.easypack24.net",
 ];
 
 /** External stylesheets we load via <link>. */
@@ -67,19 +85,33 @@ function buildCsp(nonce: string): string {
     "'self'",
     `'nonce-${nonce}'`,
     "'strict-dynamic'",
+    // Hash of the InPost geowidget SDK's own inline bootstrap script. This is
+    // the one script the SDK injects that we can't nonce (it comes from a
+    // third-party bundle). Everything else it loads is trusted via
+    // strict-dynamic once this bootstrap is trusted. If the InPost widget
+    // updates and this hash changes, the console will show the new hash.
+    "'sha256-rbbnijHn7DZ6ps39myQ3cVQF1H+U/PJfHh5ei/Q2kb8='",
     isProd ? "" : "'unsafe-eval'",
     ...SCRIPT_HOSTS,
   ]
     .filter(Boolean)
     .join(" ");
 
-  // style-src needs the nonce because Next.js auto-attaches it to every
-  // <link rel="stylesheet"> it renders. Safari blocks the stylesheet if the
-  // nonce attribute can't be matched by a nonce-source — Chrome falls back
-  // to 'self' but WebKit does not. Inline style="…" attrs (framer-motion)
-  // stay allowed via style-src-attr; the directive-level 'unsafe-inline' is
-  // ignored once a nonce-source is present, so it must live on -attr.
-  const styleSrc = ["'self'", `'nonce-${nonce}'`, ...STYLE_HOSTS].join(" ");
+  // style-src uses 'unsafe-inline' rather than a nonce-source because the
+  // InPost geowidget SDK injects inline <style> blocks at runtime that we
+  // can't nonce (they come from a third-party script). Per CSP3 spec,
+  // 'unsafe-inline' is ignored whenever a nonce-source is present in the
+  // same directive — so it's one or the other for styles, not both.
+  //
+  // Trade-off: we lose the Safari-specific fix from May where WebKit would
+  // block Next.js's auto-nonced <link rel="stylesheet"> tags without a
+  // matching nonce-source. If that returns in prod, options are:
+  //   - Proxy the InPost widget through our origin (removes the third-party
+  //     inline-style issue but adds latency + maintenance).
+  //   - Serve a stricter CSP only on non-checkout routes.
+  //   - Pin specific hashes for InPost's known inline styles (brittle).
+  // Scripts still use nonce + strict-dynamic — the real XSS attack surface.
+  const styleSrc = ["'self'", "'unsafe-inline'", ...STYLE_HOSTS].join(" ");
 
   const directives: Record<string, string> = {
     "default-src": "'self'",
@@ -87,7 +119,8 @@ function buildCsp(nonce: string): string {
     "style-src": styleSrc,
     "style-src-attr": "'unsafe-inline'",
     "img-src": ["'self'", "blob:", "data:", ...IMG_HOSTS].join(" "),
-    "font-src": "'self' data: https://fonts.gstatic.com",
+    // InPost geowidget loads its own icon font from geowidget.easypack24.net.
+    "font-src": "'self' data: https://fonts.gstatic.com https://geowidget.easypack24.net",
     "connect-src": ["'self'", ...CONNECT_HOSTS].join(" "),
     "frame-src": FRAME_HOSTS.join(" "),
     "frame-ancestors": "'none'",

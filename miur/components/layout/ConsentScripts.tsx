@@ -66,6 +66,9 @@ export function ConsentScripts({ nonce }: ConsentScriptsProps) {
       <script
         id="gtag-consent-default"
         nonce={nonce}
+        // React 19 strips the nonce attribute after hydration (CSS-selector
+        // leak prevention). Same reason as OrganizationJsonLd.
+        suppressHydrationWarning
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];

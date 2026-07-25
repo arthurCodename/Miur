@@ -37,6 +37,11 @@ export function OrganizationJsonLd({ name, url, logo, nonce }: OrganizationJsonL
     <script
       type="application/ld+json"
       nonce={nonce}
+      // React 19 strips the nonce attribute from the DOM after hydration to
+      // prevent CSS attribute-selector nonce leakage. That mismatch triggers
+      // a hydration warning we don't want spamming the console. This is the
+      // React-sanctioned escape hatch for intentionally-different attributes.
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );
@@ -72,6 +77,8 @@ export function ProductJsonLd({
     <script
       type="application/ld+json"
       nonce={nonce}
+      // See OrganizationJsonLd — same nonce-strip hydration issue.
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );

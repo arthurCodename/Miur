@@ -29,7 +29,27 @@ export type EasyPackModalMapOptions = {
   mapType?: "osm" | "google";
 };
 
+/**
+ * SDK init config. v4 requires calling `easyPack.init(...)` before any modal
+ * or map method — without it, internal state is undefined and modalMap throws
+ * "Cannot read properties of undefined (reading 'points')" when it tries to
+ * iterate the (never-set) points config.
+ */
+export type EasyPackInitConfig = {
+  defaultLocale?: "pl" | "en";
+  mapType?: "osm" | "google";
+  searchType?: "osm" | "google";
+  points?: {
+    types?: Array<"parcel_locker" | "parcel_locker_only">;
+    functions?: Array<"parcel_collect" | "parcel_send">;
+  };
+  map?: {
+    initialTypes?: Array<"parcel_locker">;
+  };
+};
+
 export type EasyPackSDK = {
+  init: (config: EasyPackInitConfig) => void;
   modalMap: (
     onSelect: (point: InPostPoint, modal: InPostModal) => void,
     options?: EasyPackModalMapOptions,

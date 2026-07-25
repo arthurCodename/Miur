@@ -49,7 +49,10 @@ const nextConfig: NextConfig = {
       { key: "X-Frame-Options", value: "DENY" },
       { key: "X-Content-Type-Options", value: "nosniff" },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-      { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
+      // geolocation=(self) so the InPost paczkomat picker's "locate me" button
+      // can request the user's position. Not required for the map to work, but
+      // stops a permissions-policy violation from spamming the console.
+      { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self), interest-cohort=()" },
       { key: "X-DNS-Prefetch-Control", value: "on" },
     ];
     if (process.env.VERCEL) {

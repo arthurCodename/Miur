@@ -173,6 +173,21 @@ export default function CheckoutPage() {
       toast.info("Mapa Paczkomatów wczytuje się — spróbuj za chwilę.");
       return;
     }
+    // v4 SDK requires init before any map/modal call. Idempotent — safe to
+    // call every time. Without this, modalMap throws
+    // "Cannot read properties of undefined (reading 'points')".
+    ep.init({
+      defaultLocale: "pl",
+      mapType: "osm",
+      searchType: "osm",
+      points: {
+        types: ["parcel_locker"],
+        functions: ["parcel_collect"],
+      },
+      map: {
+        initialTypes: ["parcel_locker"],
+      },
+    });
     ep.modalMap(
       (point: InPostPoint, modal: InPostModal) => {
         const next = { name: point.name, address: point.address.line1 };
