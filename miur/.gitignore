@@ -62,3 +62,6 @@ obsidian-local-rest-api/
 
 # OS junk
 Thumbs.db
+
+# React Email local previews
+.email-preview/

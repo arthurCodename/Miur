@@ -5,6 +5,7 @@ import { carts, orderItems, orders, products } from "@/db/schema";
 import { readCartSessionCookie } from "@/lib/cart/cookie";
 import { resolveShippingCost, type DeliveryMethod } from "@/lib/checkout/shipping";
 import type { CartItemPayload } from "@/lib/cart/zod";
+import { notifyOrderCreated } from "./notify";
 import type { OrderPayload } from "./zod";
 
 export type CreateOrderResult =
@@ -118,6 +119,21 @@ export async function createOrder(
   );
 
   await db.delete(carts).where(eq(carts.id, cartRow.id));
+
+  // Confirmation mail. Never throws — a mail failure must not undo an order
+  // that is already committed. See lib/orders/notify.ts.
+  await notifyOrderCreated({
+    orderId,
+    payload,
+    lines: orderItemInserts.map((item) => ({
+      name: (item.productSnapshot as { name: string }).name,
+      quantity: item.quantity,
+      unitPrice: Number.parseFloat(item.unitPrice),
+    })),
+    subtotal,
+    shippingCost,
+    total,
+  });
 
   return { ok: true, orderId };
 }
