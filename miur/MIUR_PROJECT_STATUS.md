@@ -1,8 +1,14 @@
 Miur Wellness Store — Project Status & Roadmap
-Last updated: 2026-07-06
-Current phase: End of Phase 7.3 (checkout UI).
-Next up: Phase 7.4 (InPost paczkomaty integration).
+Last updated: 2026-07-26
+Current phase: End of Phase 7.6 (order creation) + 7.7 (transactional emails).
+Next up: Phase 7.4 (InPost ShipX) and Phase 7.5 (payments — SKIPPED so far, see below).
 Branch: integration.
+
+IMPORTANT — 7.5 was deliberately skipped. Orders are created directly on
+checkout submit and stay in `pending`; no money is taken. The confirmation
+email is sent from createOrder(). When payments land, move the
+notifyOrderCreated() call into the payment webhook so confirmations only go
+out for orders that were actually paid.
 
 What's fully done
 Foundation (Stages 1-2 in the original stack doc)
@@ -80,6 +86,24 @@ Empty-cart guard: after hydration, empty cart renders "Twój koszyk jest pusty" 
 Consents: Regulamin (required), Polityka prywatności (required), newsletter opt-in (unchecked by default, RODO).
 Submit button "Przejdź do płatności" — currently simulates and redirects to /checkout/success; will become the order-create + payment redirect in Phase 7.5/7.6.
 Verified end-to-end in browser: empty state, summary math, delivery switch, validation errors, successful submit.
+Order creation (Phase 7.6)
+app/api/orders/route.ts — POST, zod-validated (lib/orders/zod.ts).
+lib/orders/create.ts — resolves the cart server-side, pulls authoritative prices from the products table (never trusts the client cart), snapshots line items, deletes the cart to prevent double-submit.
+/checkout/success is now a server component reading the real order, guarded so authenticated orders are only visible to their owner. Guest orders are viewable by URL — order IDs are serial ints, so swap to an opaque token before this becomes an order-history page.
+scripts/seed-mock-products.ts — local test data.
+Transactional emails (Phase 7.7)
+lib/email/templates/ — React Email templates in Polish:
+  BaseLayout.tsx — shared shell. Sender brand is "Salgo", never "Miur" (discretion). Seller identity lines are omitted rather than rendered empty when NEXT_PUBLIC_SELLER_* is unset.
+  OrderConfirmation.tsx — itemised lines, shipping, total, delivery details, 14-day withdrawal notice. Doubles as the durable-medium confirmation required by ustawa o prawach konsumenta art. 21 — do not strip the legal sections.
+  ShippingNotification.tsx — tracking number + carrier link when available.
+lib/email/send-order-confirmation.ts + send-shipping-notification.ts — Resend wrappers, same shape as send-password-reset.ts.
+lib/orders/notify.ts — notifyOrderCreated() swallows send failures so a Resend outage can't fail a committed order; describeDelivery() is the single source of delivery wording.
+scripts/preview-emails.tsx — renders both templates to .email-preview/ (gitignored) with assertions on money math, legal blocks, and brand discretion. Run: npx tsx scripts/preview-emails.tsx
+NOT yet wired: the shipping notification has no caller — hook it up in the admin "mark as shipped" action (8.2) or the ShipX label callback (7.4).
+Dependency note: @react-email/components@1.0.12 is flagged deprecated on npm despite being the latest published version. Revisit before launch.
+InPost widget fix (side-quest)
+easyPack.init() was being called on every "Wybierz Paczkomat" click. Called with a single argument it resets easyPack.pointsToSearch to [] and re-runs the full bootstrap; modalMap() then ran synchronously on the next line, racing the async re-fetch of ~534 locker points. Fast connection = fine, slow connection = empty map. That was the intermittent "map doesn't render" bug.
+Fix: init() runs exactly once from the Script onReady handler; SDK load moved lazyOnload → afterInteractive; the button now reflects SDK state (loading / ready / error) instead of firing a "try again" toast.
 Side-quest fixes done along the way
 Safari CSP fix — nonce in style-src, unsafe-inline on style-src-attr.
 Node 20 → 22 upgrade (pnpm 11 requires Node 22.13+).
@@ -106,13 +130,6 @@ Phase 7.6 — Order creation
 Function creating orders + order_items from cart + address + paid payment session.
 Status enum: pending → paid → shipped → cancelled (already in schema).
 (Optional) Redis-backed 15-min stock reservation during checkout — skip for v1.
-Estimated: 1-2 days.
-
-Phase 7.7 — Transactional emails (real templates)
-Install React Email — Polish templates instead of raw HTML strings.
-Order confirmation.
-Shipping notification.
-Reuse existing Resend infra from forgot-password.
 Estimated: 1-2 days.
 
 Phase 7 total: ~10-15 days of focused work. After this, you can sell.
