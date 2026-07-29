@@ -1,14 +1,35 @@
 Miur Wellness Store — Project Status & Roadmap
-Last updated: 2026-07-26
+Last updated: 2026-07-30
 Current phase: End of Phase 7.6 (order creation) + 7.7 (transactional emails).
-Next up: Phase 7.4 (InPost ShipX) and Phase 7.5 (payments — SKIPPED so far, see below).
-Branch: integration.
+Next up: Phase 7.5 — payments, now scoped as "The Golden Flow" (see below).
+Branch: integration, in sync with origin.
+
+WHERE WE ARE IN ONE LINE
+The shop can be browsed, filled, and checked out, and it emails a confirmation
+— but it cannot take money. That is the only thing making it unsellable.
 
 IMPORTANT — 7.5 was deliberately skipped. Orders are created directly on
 checkout submit and stay in `pending`; no money is taken. The confirmation
-email is sent from createOrder(). When payments land, move the
-notifyOrderCreated() call into the payment webhook so confirmations only go
+email is sent from createOrder(). When payments land, that call moves to the
+end of the fulfilment flow (see Golden Flow step E) so confirmations only go
 out for orders that were actually paid.
+
+ARCHITECTURE BLUEPRINT (external, 2026-07-30)
+A revised technical blueprint arrived from outside the team and now drives the
+plan for 7.5 and parts of 8. It resolves several decisions that were open in
+this doc — they are marked RESOLVED under "Decisions" below. Its second
+revision dropped the two requirements that conflicted with working code
+(Meilisearch, which would have replaced the pg_trgm search that already
+works), and justified Inngest properly, so the Vercel Cron recommendation in
+this doc is now reversed. Details in the Golden Flow section.
+
+One thing in the blueprint to NOT implement as written: its server-side
+tracking section says to send Purchase events to Google "ignoring browser
+blockers". The technique is right — most buyers here will be in private
+browsing, so browser-side analytics will badly undercount — but sending events
+for a visitor who declined consent in our own cookie banner would bypass our
+own consent mechanism, and for this catalogue the data reveals someone's sex
+life (RODO art. 9). Do server-side tracking, gate it on stored consent.
 
 What's fully done
 Foundation (Stages 1-2 in the original stack doc)
@@ -118,21 +139,65 @@ Function that creates a shipping label when order is paid.
 Bottleneck: InPost ShipX merchant account approval (1-2 business days).
 Estimated: 2-3 days of code once account is live.
 
-Phase 7.5 — Payments — DECISION PENDING: Stripe or Przelewy24?
-Recommendation: Stripe. Better DX, supports BLIK + Przelewy24 as routes under the hood.
-Sandbox account (1-3 business days to verify).
-Payment session creation (redirect flow).
-Payment webhook handler — must be idempotent (Stripe retries).
-Payment state machine: pending → paid → failed.
-Estimated: 3-5 days.
+Phase 7.5 — THE GOLDEN FLOW (payments + fulfilment) — THE ONE BLOCKER
+Provider: Przelewy24 (RESOLVED — blueprint). Online payment only, no COD.
+Background jobs: Inngest (RESOLVED — the grace period below needs a workflow
+that sleeps mid-run and can wake early on an event; Vercel Cron cannot do this).
 
-Phase 7.6 — Order creation
-Function creating orders + order_items from cart + address + paid payment session.
-Status enum: pending → paid → shipped → cancelled (already in schema).
-(Optional) Redis-backed 15-min stock reservation during checkout — skip for v1.
-Estimated: 1-2 days.
+Order of work:
 
-Phase 7 total: ~10-15 days of focused work. After this, you can sell.
+1. Schema first. The current status enum (pending → paid → shipped → cancelled)
+   is too coarse for this flow. Needs at least: PENDING, P24_PAID,
+   WAREHOUSE_RESERVED, INVOICE_GENERATED, COMPLETED, CANCELLED_REFUNDED.
+   Also rename orders.stripeSessionId → p24OrderId (unique — it is the
+   idempotency key), and add the unit-economics columns listed in 7.5b.
+
+2. Checkout: live stock check against the supplier API immediately before the
+   payment redirect, so we don't take money for something already gone.
+
+3. Stock buffer (cheap safeguard, do not skip): if supplier stock < 3 units,
+   the backend reports "Brak w magazynie" to the frontend. Avoids most of the
+   paid-but-unavailable problem without building reservation logic.
+
+4. POST /api/webhooks/p24 — the most important endpoint in the system:
+   Step 0  IDEMPOTENCY, before anything else. Look up p24OrderId. If already
+           paid, return 200 and stop. Payment providers retry webhooks; without
+           this we double-charge, double-ship, or double-invoice.
+   Step A  Verify the P24 CRC signature. Never trust an unverified webhook.
+           Set status P24_PAID.
+   Step B  Grace period — Inngest sleeps 15 min (step.sleep / step.waitForEvent).
+           The customer sees a live "Anuluj zamówienie" button with a timer.
+           Cancel event → P24 refund API → CANCELLED_REFUNDED → end.
+           Rationale: sealed intimate goods are exempt from the 14-day return
+           right once opened, so a pre-shipment exit is how buyer's remorse gets
+           handled without a return we don't have to accept.
+   Step C  After the window: POST to the dropshipper with
+           discreet_packaging: true.
+   Step D  Fail-safe — supplier out of stock → P24 refund → apology email →
+           CANCELLED_REFUNDED. This WILL happen routinely; we don't own stock.
+   Step E  Success → generateInvoice() via the accounting adapter. The invoice
+           must split into two lines: goods, and delivery as a service.
+           Then send OrderConfirmation with the PDF attached — this is where
+           notifyOrderCreated() moves to.
+
+5. Server-side Purchase event via Google Measurement Protocol, fired after the
+   invoice — but gated on the visitor's stored consent (see header note).
+
+Estimated: 5-8 days. Bottleneck: P24 sandbox verification, 1-3 business days —
+start that now, it blocks everything here.
+
+Phase 7.5b — Unit economics columns (small, do with the 7.5 schema change)
+products: wholesale_price, margin_multiplier, calculated_price, vat_rate.
+orders: net_profit.
+Needed for the admin profit dashboard and because margin IS the business in
+dropshipping. Cheap to add now, painful to backfill later.
+
+Phase 7.6 — Order creation — DONE (see "What's fully done").
+Note: createOrder() is currently linear and runs before any payment. The Golden
+Flow restructures it — order row first, payment second, fulfilment after the
+webhook. The server-side price lookup inside it stays as-is; that part is right.
+
+Phase 7 total remaining: ~8-12 days. After 7.4 + 7.5, you can sell.
 
 Phase 8 — Operational readiness
 8.1 — XML catalog sync from erotizo.pl (~3-5 days)
@@ -197,20 +262,48 @@ Loyalty program / promo codes.
 Multi-currency / multi-region.
 Analytics dashboards.
 A/B testing infrastructure.
+Decisions — resolved 2026-07-30
+Payments: RESOLVED — Przelewy24 (blueprint). Supersedes the earlier Stripe
+  recommendation. The Golden Flow depends on P24's CRC signature + refund API.
+Background jobs runner: RESOLVED — Inngest. Reverses the earlier "Vercel Cron
+  for v1" recommendation; the 15-min grace period needs a durable workflow that
+  sleeps and can be woken by an event.
+Product images: RESOLVED — Cloudflare R2. Download from supplier, convert to
+  WebP, store ourselves. Hotlinking the supplier's CDN is forbidden. Sync job
+  compares a photo hash and only re-uploads when it changed.
+Search: RESOLVED — stay on Postgres. GIN + pg_trgm (already built) plus the
+  unaccent extension so "zel" matches "żel". Promoted out of the post-launch
+  backlog; the blueprint asks for it and it is a small job.
+Invoicing: a CRM will handle it (Arthur, 2026-07-29). Still build the
+  AccountingProvider interface so the core doesn't hardwire one vendor. TWO
+  FACTS STILL NEEDED: which CRM, and whether it issues real VAT invoices or
+  only tracks customers. If the latter, invoicing is still unsolved.
+  GDPR note: adding a CRM adds a data processor — it must be listed in
+  polityka-prywatnosci and covered by a processing agreement. Strongly consider
+  sending it only order number, amounts and tax data — NOT product names.
+  Line items reveal sexual preferences; once a year of history sits in someone
+  else's CRM it cannot be undone.
+
 Decisions still open
-Payments: Stripe vs Przelewy24 direct. Recommendation: Stripe.
-Receipts: iFirma, wFirma, or manual PDF. Ask accountant.
-Product images: Uploadthing, S3, or proxy through erotizo's CDN.
-Background jobs runner: Inngest vs Vercel Cron. Recommendation: Vercel Cron for v1.
-Redis (Upstash) — for hot carts + atomic stock reservation. Recommendation: skip for v1.
-Production DB host — CLAUDE.md says DigitalOcean Frankfurt but we're on Neon. Which is prod?
+Sender name on transactional emails: currently "Salgo" (matches the discreet
+  name used on parcels). Arguably should be "Miur", which customers recognise —
+  a mail from an unknown name reads as phishing. One-line change in
+  lib/email/templates/BaseLayout.tsx.
+Redis (Upstash) — for hot carts + atomic stock reservation. Recommendation:
+  still skip for v1; the stock buffer in 7.5 covers the same risk more cheaply.
+Production DB host — CLAUDE.md says DigitalOcean Frankfurt but we're on Neon.
+  Which is prod? NOTE: polityka-prywatnosci currently lists DigitalOcean as the
+  database processor. If Neon is prod, that page is factually wrong about where
+  customer data lives — a real compliance defect, not just a stale doc.
 Session/verification_tokens tables — skipped for now (JWT sessions, no email verify). Add if we ever need database sessions or verification tokens.
 Fork workflow vs direct push — Bogdan uses fork + PR. Arthur has been pushing direct. Decide if Arthur should also open PRs for review consistency.
 External bottlenecks (get started in parallel with dev work)
-erotizo.pl XML feed — call/email now, blocks Phase 8.1.
-Stripe or Przelewy24 sandbox — 1-3 business days to verify.
-InPost ShipX merchant account — 1-2 business days.
-iFirma/wFirma account — 1-2 business days.
+Przelewy24 sandbox — 1-3 business days. BLOCKS 7.5, which is the only thing
+  standing between this and a sellable shop. Start this first, today.
+InPost ShipX merchant account — 1-2 business days. Blocks 7.4.
+erotizo.pl XML feed — call/email now, blocks Phase 8.1. Also blocks the live
+  stock check and stock buffer in 7.5, since both need the supplier's stock API.
+CRM details (name + whether it issues VAT invoices) — blocks Golden Flow step D.
 Google Cloud OAuth credentials — 10 minutes if you have the account.
 Resend domain verification for miur.pl — 10 minutes once DNS is accessible.
 DNS access to miur.pl — needed for Resend verification.
