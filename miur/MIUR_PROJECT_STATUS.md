@@ -1,366 +1,319 @@
-Miur Wellness Store — Project Status & Roadmap
-Last updated: 2026-07-30
-Current phase: End of Phase 7.6 (order creation) + 7.7 (transactional emails).
-Next up: Phase 7.5 — payments, now scoped as "The Golden Flow" (see below).
-Branch: integration, in sync with origin.
+# Miur — Project Status
 
-WHERE WE ARE IN ONE LINE
-The shop can be browsed, filled, and checked out, and it emails a confirmation
-— but it cannot take money. That is the only thing making it unsellable.
+**Updated:** 2026-07-30 · **Branch:** `integration`, in sync with origin · **Typecheck + lint:** clean
 
-IMPORTANT — 7.5 was deliberately skipped. Orders are created directly on
-checkout submit and stay in `pending`; no money is taken. The confirmation
-email is sent from createOrder(). When payments land, that call moves to the
-end of the fulfilment flow (see Golden Flow step E) so confirmations only go
-out for orders that were actually paid.
+---
 
-ARCHITECTURE BLUEPRINT (external, 2026-07-30)
-A revised technical blueprint arrived from outside the team and now drives the
-plan for 7.5 and parts of 8. It resolves several decisions that were open in
-this doc — they are marked RESOLVED under "Decisions" below. Its second
-revision dropped the two requirements that conflicted with working code
-(Meilisearch, which would have replaced the pg_trgm search that already
-works), and justified Inngest properly, so the Vercel Cron recommendation in
-this doc is now reversed. Details in the Golden Flow section.
+## Where we are
 
-One thing in the blueprint to NOT implement as written: its server-side
-tracking section says to send Purchase events to Google "ignoring browser
-blockers". The technique is right — most buyers here will be in private
-browsing, so browser-side analytics will badly undercount — but sending events
-for a visitor who declined consent in our own cookie banner would bypass our
-own consent mechanism, and for this catalogue the data reveals someone's sex
-life (RODO art. 9). Do server-side tracking, gate it on stored consent.
+The shop can be browsed, filled, and checked out, and it emails a confirmation.
+**It cannot take money.** That is the only thing making it unsellable.
 
-What's fully done
-Foundation (Stages 1-2 in the original stack doc)
-Next.js 16 (App Router, Turbopack, TypeScript, Tailwind, ESLint) — from Bogdan's Stage 1.
-shadcn/ui components + design tokens.
-CSP headers with per-request nonces — implemented in proxy.ts (formerly middleware.ts, renamed by Bogdan's Next.js 16 migration).
-Neon Postgres + Drizzle ORM (db/index.ts, db/schema.ts).
-pg_trgm extension + GIN indexes for search.
-Seed script (db/seed.ts).
-Cookie consent + legal footer with BDO/NIP/REGON.
-SEO scaffolding: sitemap.xml, robots.txt, OrganizationJsonLd, OpenGraph images.
-Authentication (Phase 1-2)
-Schema:
+Concretely: if a real customer "bought" something today, you'd get an order row,
+zero money, and no parcel would ever ship. Everything else in Phase 7 is done
+except InPost's label side.
 
-users: text UUID id, nullable password_hash, name, image, email_verified, role.
-accounts table (for OAuth linking — Google OAuth wired in auth.config.ts but no UI button yet).
-password_reset_tokens table.
-Backend:
+---
 
-auth.config.ts — Edge-safe config with Google provider.
-auth.ts — Credentials provider with bcrypt (cost 12), DrizzleAdapter, JWT sessions, cart-merge signIn callback.
-app/api/auth/[...nextauth]/route.ts — Auth.js catch-all handler.
-app/api/auth/register/route.ts — POST endpoint, zod-validated, bcrypt-hashed.
-types/next-auth.d.ts — session.user.id + session.user.role types.
-Frontend wiring (Phase 3-4-5):
+## What works today
 
-SessionProvider at the root of app/layout.tsx.
-Login page uses signIn("credentials", ...).
-Register page POSTs to /api/auth/register then auto-signIn.
-Profile page = server component with auth() guard.
-Protected pages /moje-zamowienia and /lista-zyczen have auth() guards.
-Navbar (AuthNavLink) + Footer (FooterLogoutButton) + Profile (ProfileLogoutButton) all use useSession() / client-side signOut().
-LoginFailureReason collapsed to single "invalid_credentials" (security: no email enumeration).
-Deleted (zustand mocks):
+| Area | State | Notes |
+|---|---|---|
+| Foundation | Done | Next.js 16, Neon Postgres, Drizzle. CSP with per-request nonces (`proxy.ts`), cookie consent, age gate, Polish legal pages, SEO scaffolding. |
+| Search | Done | GIN indexes + `pg_trgm`. Still to add: `unaccent` so "zel" matches "żel". |
+| Accounts | Done | Register, login, password reset with expiring single-use tokens over Resend. Google OAuth is wired but has no UI button. |
+| Cart | Done | Server-backed. Anonymous cart merges into the account on sign-in instead of being lost. |
+| Checkout UI (7.3) | Done | Contact + address form, PL phone/postcode validation, delivery picker, live summary, guest checkout, RODO consents. |
+| InPost locker picker (7.4) | Partial | Map works. Missing: ShipX account and label creation. |
+| Payments (7.5) | **Skipped** | The blocker. See below. |
+| Orders (7.6) | Done | Prices looked up server-side from the products table — a tampered cart can't change what a customer is charged. Line items snapshotted at order time. |
+| Emails (7.7) | Done | Order confirmation + shipping notification, Polish, React Email. Shipping mail has no caller yet. |
+| Operations (8) | Not started | Catalog sync, admin panel, receipts, Omnibus price history. |
+| Hardening (9) | Not started | Rate limiting, Sentry, real migrations, CI, accessibility. |
 
-lib/store/useAuthStore.ts
-lib/hooks/useAuthHydrated.ts
-lib/store/useAccountsStore.ts (after forgot-password real backend replaced its purpose)
-lib/auth/password-reset-session.ts
-Forgot password (real)
-app/api/auth/forgot-password/route.ts — always-200 response, generates 32-byte token, hashes with SHA-256, stores in password_reset_tokens, sends email via Resend.
-app/api/auth/reset-password/route.ts — validates hashed token (not expired, not consumed), bcrypt-hashes new password, invalidates all sibling tokens.
-lib/email/send-password-reset.ts — Resend SDK wrapper, Polish subject + text + HTML.
-RESEND_API_KEY + RESEND_FROM env vars.
-Frontend pages rewired to real endpoints; token now flows via URL search params, not sessionStorage.
-Cart (Phase 7.1 + 7.2)
-Schema changes:
+---
 
-orders.userId nullable + guestEmail, shippingAddress, billingAddress columns (guest checkout ready).
-products.deletedAt — soft delete for products with linked orders.
-carts.sessionId nullable + unique constraint on carts.userId (three states: anon, user, merged).
-Backend:
+## The blocker: Phase 7.5 — "The Golden Flow"
 
-lib/cart/cookie.ts — anonymous session cookie helper (miur-cart-session, HttpOnly, 1-year TTL).
-lib/cart/zod.ts — server-side item validation (don't trust the browser).
-lib/cart/merge.ts — pure merge function (dedup by id, sum quantities, cap at 99).
-lib/cart/merge-on-signin.ts — swallows errors, deletes anon row, clears cookie.
-app/api/cart/route.ts — GET + POST with routing by session.user.id or cookie.
-Frontend:
+Payments and fulfilment in one flow. Provider: **Przelewy24**. Background jobs:
+**Inngest**. Online payment only, no cash on delivery.
 
-components/cart/CartSync.tsx — hydrates from server, debounce-syncs mutations, instant-clears on logout transition.
-Waits for zustand persist rehydration before setState to avoid race.
-Auth.js integration:
+**1. Schema first.** The current status enum (`pending → paid → shipped →
+cancelled`) is too coarse. Needs at least `PENDING`, `P24_PAID`,
+`WAREHOUSE_RESERVED`, `INVOICE_GENERATED`, `COMPLETED`, `CANCELLED_REFUNDED`.
+Rename `orders.stripeSessionId` → `p24OrderId` (unique — it's the idempotency
+key). Add the margin columns from 7.5b at the same time.
 
-signIn callback in auth.ts calls mergeAnonymousCartIntoUserCart(user.id) on every successful login.
-Checkout UI (Phase 7.3)
-app/checkout/page.tsx — full checkout page:
+**2. Live stock check** against the supplier feed immediately before the payment
+redirect, so we don't take money for something already gone.
 
-Contact form (name, e-mail, phone) with zod validation (PL phone + postal-code regexes).
-Delivery method toggle: Paczkomat InPost (geowidget modal picker) or courier (street/city/postal form).
-Order summary panel (components/checkout/OrderSummary.tsx) driven by useCartStore — line items, subtotal, delivery cost reacting to selected method, free-shipping hint, total, "Ceny zawierają podatek VAT" note.
-Shipping rates in lib/checkout/shipping.ts — v1 display values (paczkomat 12,99 zł / kurier 16,99 zł, free ≥ 199 zł). Authoritative pricing must be recomputed server-side in Phase 7.6 — keep in sync.
-Guest checkout: no auth guard; banner offers /login?callbackUrl=/checkout. Logged-in users get name/e-mail prefilled from session (only into empty fields).
-Empty-cart guard: after hydration, empty cart renders "Twój koszyk jest pusty" + link to /produkty instead of the form.
-Consents: Regulamin (required), Polityka prywatności (required), newsletter opt-in (unchecked by default, RODO).
-Submit button "Przejdź do płatności" — currently simulates and redirects to /checkout/success; will become the order-create + payment redirect in Phase 7.5/7.6.
-Verified end-to-end in browser: empty state, summary math, delivery switch, validation errors, successful submit.
-Order creation (Phase 7.6)
-app/api/orders/route.ts — POST, zod-validated (lib/orders/zod.ts).
-lib/orders/create.ts — resolves the cart server-side, pulls authoritative prices from the products table (never trusts the client cart), snapshots line items, deletes the cart to prevent double-submit.
-/checkout/success is now a server component reading the real order, guarded so authenticated orders are only visible to their owner. Guest orders are viewable by URL — order IDs are serial ints, so swap to an opaque token before this becomes an order-history page.
-scripts/seed-mock-products.ts — local test data.
-Transactional emails (Phase 7.7)
-lib/email/templates/ — React Email templates in Polish:
-  BaseLayout.tsx — shared shell. Sender brand is "Salgo", never "Miur" (discretion). Seller identity lines are omitted rather than rendered empty when NEXT_PUBLIC_SELLER_* is unset.
-  OrderConfirmation.tsx — itemised lines, shipping, total, delivery details, 14-day withdrawal notice. Doubles as the durable-medium confirmation required by ustawa o prawach konsumenta art. 21 — do not strip the legal sections.
-  ShippingNotification.tsx — tracking number + carrier link when available.
-lib/email/send-order-confirmation.ts + send-shipping-notification.ts — Resend wrappers, same shape as send-password-reset.ts.
-lib/orders/notify.ts — notifyOrderCreated() swallows send failures so a Resend outage can't fail a committed order; describeDelivery() is the single source of delivery wording.
-scripts/preview-emails.tsx — renders both templates to .email-preview/ (gitignored) with assertions on money math, legal blocks, and brand discretion. Run: npx tsx scripts/preview-emails.tsx
-NOT yet wired: the shipping notification has no caller — hook it up in the admin "mark as shipped" action (8.2) or the ShipX label callback (7.4).
-Dependency note: @react-email/components@1.0.12 is flagged deprecated on npm despite being the latest published version. Revisit before launch.
-InPost widget fix (side-quest)
-easyPack.init() was being called on every "Wybierz Paczkomat" click. Called with a single argument it resets easyPack.pointsToSearch to [] and re-runs the full bootstrap; modalMap() then ran synchronously on the next line, racing the async re-fetch of ~534 locker points. Fast connection = fine, slow connection = empty map. That was the intermittent "map doesn't render" bug.
-Fix: init() runs exactly once from the Script onReady handler; SDK load moved lazyOnload → afterInteractive; the button now reflects SDK state (loading / ready / error) instead of firing a "try again" toast.
-Side-quest fixes done along the way
-Safari CSP fix — nonce in style-src, unsafe-inline on style-src-attr.
-Node 20 → 22 upgrade (pnpm 11 requires Node 22.13+).
-Bogdan's git workflow set up: arthur (team repo) + origin (his fork) with proper fetch-merge-push loop.
-Big merge integrating Bogdan's frontend + our auth backend without losing either side.
-Type collapse LoginFailureReason (security: don't leak email existence).
-Critical path remaining (before a sellable store)
-Phase 7.4 — InPost paczkomaty integration
-Embed InPost geowidget.
-InPost ShipX API account + key.
-Function that creates a shipping label when order is paid.
-Bottleneck: InPost ShipX merchant account approval (1-2 business days).
-Estimated: 2-3 days of code once account is live.
+**3. Stock buffer.** If supplier stock is under 3 units, report "Brak w
+magazynie". Cheap protection against paid-but-unavailable. Costs ~2,134 products
+(see feed section) — worth it.
 
-Phase 7.5 — THE GOLDEN FLOW (payments + fulfilment) — THE ONE BLOCKER
-Provider: Przelewy24 (RESOLVED — blueprint). Online payment only, no COD.
-Background jobs: Inngest (RESOLVED — the grace period below needs a workflow
-that sleeps mid-run and can wake early on an event; Vercel Cron cannot do this).
+**4. `POST /api/webhooks/p24`** — the most important endpoint in the system:
 
-Order of work:
+| Step | What | Why it matters |
+|---|---|---|
+| 0 | **Idempotency check.** Look up `p24OrderId`; if already paid, return 200 and stop. | P24 retries webhooks. Without this we double-ship and double-invoice. Do this before anything else. |
+| A | Verify the P24 CRC signature. Set `P24_PAID`. | The endpoint is public — anyone could POST "order 123 paid" and get free product. |
+| B | **Grace period.** Inngest sleeps 15 min (`step.sleep` / `step.waitForEvent`). Customer sees a live "Anuluj zamówienie" button. Cancel → P24 refund → `CANCELLED_REFUNDED` → end. | Sealed intimate goods lose the 14-day return right once opened, so a pre-shipment exit is how buyer's remorse gets handled without a return we don't have to accept. |
+| C | After the window: POST to the dropshipper, `discreet_packaging: true`. | |
+| D | **Out of stock → P24 refund → apology email → `CANCELLED_REFUNDED`.** | We don't own stock. Half the catalogue is unavailable at any moment. This will happen routinely, not rarely. |
+| E | Success → `generateInvoice()` via the accounting adapter (two lines: goods, and delivery as a service) → send confirmation with PDF attached. | This is where `notifyOrderCreated()` moves to. |
 
-1. Schema first. The current status enum (pending → paid → shipped → cancelled)
-   is too coarse for this flow. Needs at least: PENDING, P24_PAID,
-   WAREHOUSE_RESERVED, INVOICE_GENERATED, COMPLETED, CANCELLED_REFUNDED.
-   Also rename orders.stripeSessionId → p24OrderId (unique — it is the
-   idempotency key), and add the unit-economics columns listed in 7.5b.
+**5. Server-side Purchase event** to Google Measurement Protocol after the
+invoice — **gated on stored consent** (see the warning below).
 
-2. Checkout: live stock check against the supplier API immediately before the
-   payment redirect, so we don't take money for something already gone.
+**Estimate:** 5–8 days. Blocked on the P24 sandbox (1–3 business days) — start
+that first.
 
-3. Stock buffer (cheap safeguard, do not skip): if supplier stock < 3 units,
-   the backend reports "Brak w magazynie" to the frontend. Avoids most of the
-   paid-but-unavailable problem without building reservation logic.
+### 7.5b — Margin columns (small; do with the 7.5 schema change)
 
-4. POST /api/webhooks/p24 — the most important endpoint in the system:
-   Step 0  IDEMPOTENCY, before anything else. Look up p24OrderId. If already
-           paid, return 200 and stop. Payment providers retry webhooks; without
-           this we double-charge, double-ship, or double-invoice.
-   Step A  Verify the P24 CRC signature. Never trust an unverified webhook.
-           Set status P24_PAID.
-   Step B  Grace period — Inngest sleeps 15 min (step.sleep / step.waitForEvent).
-           The customer sees a live "Anuluj zamówienie" button with a timer.
-           Cancel event → P24 refund API → CANCELLED_REFUNDED → end.
-           Rationale: sealed intimate goods are exempt from the 14-day return
-           right once opened, so a pre-shipment exit is how buyer's remorse gets
-           handled without a return we don't have to accept.
-   Step C  After the window: POST to the dropshipper with
-           discreet_packaging: true.
-   Step D  Fail-safe — supplier out of stock → P24 refund → apology email →
-           CANCELLED_REFUNDED. This WILL happen routinely; we don't own stock.
-   Step E  Success → generateInvoice() via the accounting adapter. The invoice
-           must split into two lines: goods, and delivery as a service.
-           Then send OrderConfirmation with the PDF attached — this is where
-           notifyOrderCreated() moves to.
+`products`: `wholesale_price`, `margin_multiplier`, `calculated_price`, `vat_rate`.
+`orders`: `net_profit`.
 
-5. Server-side Purchase event via Google Measurement Protocol, fired after the
-   invoice — but gated on the visitor's stored consent (see header note).
+The database currently records what the customer paid but not what we paid
+erotizo, so "did we make money today" is unanswerable. In dropshipping the
+margin *is* the business. Cheap now, miserable to backfill.
 
-Estimated: 5-8 days. Bottleneck: P24 sandbox verification, 1-3 business days —
-start that now, it blocks everything here.
+---
 
-Phase 7.5b — Unit economics columns (small, do with the 7.5 schema change)
-products: wholesale_price, margin_multiplier, calculated_price, vat_rate.
-orders: net_profit.
-Needed for the admin profit dashboard and because margin IS the business in
-dropshipping. Cheap to add now, painful to backfill later.
+## Supplier feed (erotizo) — verified 2026-07-30
 
-Phase 7.6 — Order creation — DONE (see "What's fully done").
-Note: createOrder() is currently linear and runs before any payment. The Golden
-Flow restructures it — order row first, payment second, fulfilment after the
-webhook. The server-side price lookup inside it stays as-is; that part is right.
+Two feeds. **The URL contains an access token — treat it as a password.** It
+belongs in an env var, never in code or a commit. Anyone holding it can download
+the full catalogue including wholesale prices.
 
-Phase 7 total remaining: ~8-12 days. After 7.4 + 7.5, you can sell.
+| Feed | Size | Regenerated | Contains |
+|---|---|---|---|
+| `products.xml` | 69 MB | Daily | Full catalogue: names, HTML descriptions, images, categories, EAN, weight, brand |
+| `basic.xml` | 5 MB | Hourly | Stock + prices only |
 
-Phase 8 — Operational readiness
-8.1 — XML catalog sync from erotizo.pl (~3-5 days)
+**25,652 products.** Join key is `prod_id` (catalogue) = `id` (stock feed).
 
-Vercel Cron daily job (/api/cron/sync-catalog).
-Download XML, parse with fast-xml-parser.
-Batch upsert (100 at a time) by external_id.
-Mark missing products as deleted_at = now() (soft delete).
-Log every run to audit_logs.
-Bottleneck: getting the feed URL + format docs from erotizo.pl. Call/email them ASAP — this could be a week of negotiation.
-8.2 — Admin panel skeleton (~3-5 days)
+### What the real data changed
 
-Route group app/(admin)/ guarded by session.user.role === "admin" (currently unused — see deferred items).
-Order list + detail + status transitions.
-Product list (read-only, driven by XML sync).
-"Mark as shipped" + refund actions.
-8.3 — Polish VAT receipts (~2-3 days)
+**Descriptions already exist.** `prod_desc` holds full Polish HTML with `<h3>`
+headings and bullet lists — exactly the format the blueprint asked OpenAI to
+produce. So the AI job is **rewriting for uniqueness, not generating**: every
+other erotizo dropshipper publishes these same texts, and Google penalises
+duplicate content. Cheaper and better output, since the model gets real source
+material instead of inventing from a product name.
 
-DECISION PENDING: iFirma, wFirma, or manual PDF for soft launch?
-Ask your accountant what they use.
-8.4 — Recurring jobs (~3-4 days)
+**Sync cadence: hourly and daily, not every 15 minutes.** The blueprint says
+poll every 15 min, but the files only regenerate hourly (stock) and daily
+(catalogue). Polling faster just re-downloads identical bytes.
 
-Omnibus price tracker — daily cron: snapshot prices into price_history, update products.lowest_price_30_days. Polish/EU legal requirement.
-Abandoned cart recovery — find carts inactive >1h, send Resend email.
-RODO anonymization — monthly job hashing old IPs in audit_logs.
-Phase 9 — Pre-launch hardening
-9.1 Rate limiting on auth endpoints (login, register, forgot-password). Upstash Redis + @upstash/ratelimit. (~1 day)
-9.2 Sentry for error tracking. (~half a day)
-9.3 Real DB migrations — switch from drizzle-kit push to drizzle-kit generate + migrate. (~1 day)
-9.4 Code quality hooks — Husky pre-commit, lint-staged, eslint-plugin-jsx-a11y, npm run typecheck script. (~1 day)
-9.5 GitHub Actions CI — lint + typecheck + audit on every PR. (~1 day)
-9.6 Real product images — Uploadthing / S3 / proxy through erotizo's CDN. (~1-2 days)
-9.7 Right-to-be-forgotten (RODO) — admin action anonymizing users while preserving financial records. (~1-2 days)
-9.8 Legal + accessibility final pass — walk EU_PL_Compliance/, screen-reader test, Lighthouse >95. (~3-4 days)
-Deferred items (not obligatory when we found them, but flagged)
-Auth-adjacent (Phase 10)
-Google OAuth UI button — provider is wired, needs Google Cloud credentials + a button calling signIn("google").
-Email verification at signup — copy the forgot-password token pattern.
-Account management on /profile — change email, change password, delete account.
-Admin role enforcement — session.user.role is set but nothing reads it yet. Becomes required for Phase 8.2.
-Storefront polish (Phase 10)
-Wishlist — /lista-zyczen is a stub. Wire to new wishlist_items table.
-Reviews — reviews table exists. Build "leave a review" flow after delivery, with is_verified_purchase badge.
-Server-side catalog filters with searchParams + cursor pagination.
-schema.org/Product JsonLd on product pages.
-Canonical URLs on filter pages (avoid duplicate-content SEO).
-Marketing feeds (Phase 11, after real catalog exists)
-Google Merchant Center feed — XML for Google Shopping ads.
-Ceneo.pl feed — for the biggest PL price comparison site.
-Facebook Catalog feed — for IG/FB dynamic product ads.
-Code hygiene (do whenever)
-Delete feat/auth-phase-1-2 branch — its commits are in integration.
-Create .gitignore at the git root (one level above miur/) with .DS_Store to stop macOS noise in git status.
-Remove pnpm-workspace.yaml if it's still the placeholder ("set this to true or false").
-Old test users in users table — cleanup with DELETE FROM users WHERE email LIKE 'smoke+%' OR email='test@example.com';.
-Old anon cart rows — DELETE FROM carts WHERE user_id IS NULL AND updated_at < NOW() - INTERVAL '1 day'; (will be replaced by Phase 8.4 abandoned-cart cron).
-Redundant PATH line in ~/.zshrc for node@20 (was added during upgrade, now hardcodes to an unlinked version).
-Post-launch backlog
-Search improvements (relevance, filters, unaccent extension for Polish).
-Recommendation engine ("często kupowane razem").
-Loyalty program / promo codes.
-Multi-currency / multi-region.
-Analytics dashboards.
-A/B testing infrastructure.
-Decisions — resolved 2026-07-30
-Payments: RESOLVED — Przelewy24 (blueprint). Supersedes the earlier Stripe
-  recommendation. The Golden Flow depends on P24's CRC signature + refund API.
-Background jobs runner: RESOLVED — Inngest. Reverses the earlier "Vercel Cron
-  for v1" recommendation; the 15-min grace period needs a durable workflow that
-  sleeps and can be woken by an event.
-Product images: RESOLVED — Cloudflare R2. Download from supplier, convert to
-  WebP, store ourselves. Hotlinking the supplier's CDN is forbidden. Sync job
-  compares a photo hash and only re-uploads when it changed.
-Search: RESOLVED — stay on Postgres. GIN + pg_trgm (already built) plus the
-  unaccent extension so "zel" matches "żel". Promoted out of the post-launch
-  backlog; the blueprint asks for it and it is a small job.
-Invoicing: a CRM will handle it (Arthur, 2026-07-29). Still build the
-  AccountingProvider interface so the core doesn't hardwire one vendor. TWO
-  FACTS STILL NEEDED: which CRM, and whether it issues real VAT invoices or
-  only tracks customers. If the latter, invoicing is still unsolved.
-  GDPR note: adding a CRM adds a data processor — it must be listed in
-  polityka-prywatnosci and covered by a processing agreement. Strongly consider
-  sending it only order number, amounts and tax data — NOT product names.
-  Line items reveal sexual preferences; once a year of history sits in someone
-  else's CRM it cannot be undone.
+**69 MB means streaming, in chunks.** You cannot load this into a serverless
+function and upsert 25,652 rows before the timeout. It has to be stream-parsed
+across durable steps — which is what Inngest is for, and Vercel Cron isn't.
 
-Decisions still open
-Sender name on transactional emails: currently "Salgo" (matches the discreet
-  name used on parcels). Arguably should be "Miur", which customers recognise —
-  a mail from an unknown name reads as phishing. One-line change in
-  lib/email/templates/BaseLayout.tsx.
-Redis (Upstash) — for hot carts + atomic stock reservation. Recommendation:
-  still skip for v1; the stock buffer in 7.5 covers the same risk more cheaply.
-Production DB host — CLAUDE.md says DigitalOcean Frankfurt but we're on Neon.
-  Which is prod? NOTE: polityka-prywatnosci currently lists DigitalOcean as the
-  database processor. If Neon is prod, that page is factually wrong about where
-  customer data lives — a real compliance defect, not just a stale doc.
-Session/verification_tokens tables — skipped for now (JWT sessions, no email verify). Add if we ever need database sessions or verification tokens.
-Fork workflow vs direct push — Bogdan uses fork + PR. Arthur has been pushing direct. Decide if Arthur should also open PRs for review consistency.
-External bottlenecks (get started in parallel with dev work)
-Przelewy24 sandbox — 1-3 business days. BLOCKS 7.5, which is the only thing
-  standing between this and a sellable shop. Start this first, today.
-InPost ShipX merchant account — 1-2 business days. Blocks 7.4.
-erotizo.pl XML feed — call/email now, blocks Phase 8.1. Also blocks the live
-  stock check and stock buffer in 7.5, since both need the supplier's stock API.
-CRM details (name + whether it issues VAT invoices) — blocks Golden Flow step D.
-Google Cloud OAuth credentials — 10 minutes if you have the account.
-Resend domain verification for miur.pl — 10 minutes once DNS is accessible.
-DNS access to miur.pl — needed for Resend verification.
-Estimated calendar time to launch
-Depending on mode and time commitment:
+**VAT is not a constant:** 23% on 25,039 products, 8% on 572, 5% on 41 (books —
+we sell education products). Confirms `vat_rate` is required, and invoices need
+per-item VAT.
 
-Scenario Time to launch
-Hybrid mode + near-full-time + external deps resolved early 4-6 weeks
-Realistic (part-time, teach-mode for some) 8-12 weeks
-Sporadic time + erotizo XML access delays 3-5 months
-Key file locations reference
-DB schema: db/schema.ts + db/index.ts + db/seed.ts
-Auth config: auth.config.ts + auth.ts + types/next-auth.d.ts
-Auth API routes: app/api/auth/[...nextauth]/route.ts + app/api/auth/register/route.ts + app/api/auth/forgot-password/route.ts + app/api/auth/reset-password/route.ts
-Cart: app/api/cart/route.ts + lib/cart/ + components/cart/CartSync.tsx + lib/store/useCartStore.ts
-Email: lib/email/send-password-reset.ts
-Security headers / CSP: proxy.ts
-Environment: .env.example + .env.local (never commit real values)
-Env validation (prod): lib/env/server-env.ts
-Required env vars (reference)
-Required in production (from lib/env/server-env.ts):
+**There is no suggested retail price.** `price_net` equals `price_retail_net` on
+all 25,652 rows. Every price is our decision; `margin_multiplier` is the only
+thing determining profit.
 
-NEXT_PUBLIC_SITE_URL
-NEXT_PUBLIC_SELLER_LEGAL_NAME, NEXT_PUBLIC_SELLER_ADDRESS_LINE1, NEXT_PUBLIC_SELLER_NIP, NEXT_PUBLIC_SELLER_REGON, NEXT_PUBLIC_SELLER_EMAIL
-Required for functionality:
+**Half the catalogue is out of stock:** 12,977 in stock, 12,675 at zero. Of the
+14,809 rows under 3 units, 12,675 are already zero — so the stock buffer hides
+**2,134 extra products**, about 16% of what's sellable, leaving 10,843 live.
 
-DATABASE_URL (Neon)
-AUTH_SECRET (Auth.js session signing — generate with openssl rand -base64 32)
-RESEND_API_KEY, RESEND_FROM (transactional email)
-Optional for now:
+### Fields worth knowing about
 
-AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET (Google OAuth — not surfaced in UI yet)
-NEXT_PUBLIC_GTM_ID (Google Tag Manager)
-NEXT_PUBLIC_SELLER_ADDRESS_LINE2, NEXT_PUBLIC_SELLER_KRS, NEXT_PUBLIC_SELLER_PHONE
-Frequently used commands
+- `prod_hidden` / `prod_search_hidden` — **respect these** or we publish products
+  erotizo doesn't want listed.
+- `responsible_id` → the `<responsibles>` block. This is the **GPSR responsible
+  economic operator**, which EU product safety rules require us to show
+  consumers per product. Not in the blueprint, not previously in this doc. The
+  data is there; we need to display it.
+- `prod_weight` — lets us charge real InPost rates instead of the current flat
+  12,99 / 16,99.
+- `prod_ean` — required for the Google Shopping feed, so Phase 11 gets easier.
+- `prod_img` — erotizo URLs. Hotlinking is forbidden, so all 25,652+ images must
+  be downloaded, converted to WebP and stored in R2. **That's its own piece of
+  work, not a small utility.**
 
-# Type-check
+---
 
-npx tsc --noEmit
+## What's ahead, in order
 
-# Push schema changes (dev only — use generate+migrate in prod)
+1. **7.5 Golden Flow** — 5–8 days. The blocker.
+2. **7.5b margin columns** — same schema change.
+3. **7.4 InPost labels** — 2–3 days once the ShipX account is live.
+4. **8.1 Catalog sync** — 3–5 days. No longer blocked; the feed works.
+5. **8.2 Admin panel** — order list, status transitions, "mark as shipped"
+   (which finally gives the shipping email a caller). Needs
+   `session.user.role === "admin"` enforcement, which nothing reads yet.
+6. **8.3 Invoicing** via the CRM adapter.
+7. **8.4 Recurring jobs** — Omnibus price history (legally required), abandoned
+   cart recovery, RODO log anonymisation.
+8. **Phase 9 hardening** — see gaps below.
 
-npx drizzle-kit push
+---
 
-# Inspect DB
+## Decisions
 
-npx drizzle-kit studio
+### Resolved 2026-07-30 (from the external architecture blueprint)
 
-# Dev server
+| Topic | Decision |
+|---|---|
+| Payments | **Przelewy24.** Supersedes the earlier Stripe recommendation; the Golden Flow depends on P24's CRC signature and refund API. |
+| Background jobs | **Inngest.** Reverses the earlier "Vercel Cron for v1" call — the grace period needs a workflow that sleeps and can wake on an event, and the 69 MB feed needs chunked durable steps. |
+| Product images | **Cloudflare R2.** Download, convert to WebP, host ourselves. Sync compares a photo hash and only re-uploads on change. |
+| Search | **Stay on Postgres.** GIN + `pg_trgm` already work; just add `unaccent`. Zero migration. |
+| Invoicing | **A CRM will handle it.** Still build the `AccountingProvider` interface so the core doesn't hardwire a vendor. |
 
-npm run dev
+### Two blueprint items to NOT implement as written
 
-# Sync fork (Bogdan's workflow)
+**Server-side tracking must respect consent.** The blueprint says to send
+Purchase events "ignoring browser blockers". The technique is right — most
+buyers will be in private browsing, so browser analytics will badly undercount
+— but firing events for a visitor who declined in our own cookie banner
+bypasses our own consent mechanism, and this catalogue's data reveals someone's
+sex life (RODO art. 9). Do it server-side, gate it on stored consent.
 
-git fetch arthur && git merge arthur/integration && git push origin main
+**Don't send product names to the CRM.** Order number, amounts, tax data — yes.
+Line items — no. Once a year of purchase history sits in someone else's system
+it can't be undone.
 
-# Type check + build
+### Still open
 
-npm run build
-End of status doc. Save as MIUR_PROJECT_STATUS.md in the repo (or personal notes). Update at end of each phase or when a major decision lands. If handing off to a fresh session, this doc + CLAUDE.md + AGENTS.md is enough context to resume.
+- **CRM: which one, and does it issue real VAT invoices** or only track
+  customers? If the latter, invoicing is still unsolved. Adding it also adds a
+  data processor — must be listed in `polityka-prywatnosci` and covered by a
+  processing agreement.
+- **Email sender name.** Currently "Salgo", matching the discreet name used on
+  parcels. Arguably should be "Miur" — a mail from an unrecognised name reads as
+  phishing. One line in `lib/email/templates/BaseLayout.tsx`.
+- **Redis (Upstash).** Recommendation: still skip for v1; the stock buffer
+  covers the same risk more cheaply.
+- **Production DB host.** CLAUDE.md says DigitalOcean Frankfurt, we run on Neon.
+  Note `polityka-prywatnosci` currently lists DigitalOcean as the database
+  processor — if Neon is prod, that page is **factually wrong about where
+  customer data lives**, which is a compliance defect, not a stale doc.
+
+---
+
+## Known gaps
+
+| Gap | Impact |
+|---|---|
+| No rate limiting anywhere | Login, register and password reset can be hammered without limit; also burns the email quota. |
+| Register reveals whether an email has an account | Normally minor; here it lets someone test an address and learn that person shops here. |
+| No email verification at signup | Anyone can register with someone else's address. |
+| Guest order pages reachable by URL | Order IDs are sequential, so guessable. Fine for a confirmation page, not once it becomes order history — swap to an opaque token first. |
+| No accessibility pass | EAA compliance is legally required. |
+| No CI, no real migrations | Still on `drizzle-kit push`; no lint/typecheck gate on merge. |
+| `@react-email/components@1.0.12` flagged deprecated on npm | Latest published version, but revisit before launch. |
+
+---
+
+## Waiting on other people
+
+Start these now — they're days of someone else's time and they run in parallel
+with development.
+
+| Item | Time | Blocks |
+|---|---|---|
+| **Przelewy24 sandbox** | 1–3 days | 7.5 — i.e. the only thing between us and selling. Do this first. |
+| InPost ShipX merchant account | 1–2 days | 7.4 labels |
+| CRM name + whether it invoices | — | Golden Flow step D |
+| Resend domain verification for miur.pl | 10 min | Needs DNS access. Until then mail sends from a temporary address and some lands in spam. |
+| Google Cloud OAuth credentials | 10 min | Only the "sign in with Google" button. Not critical. |
+
+**erotizo.pl feed — resolved.** Both feeds verified working; this was the
+bottleneck with a week of negotiation risk.
+
+---
+
+## Don't accidentally undo these
+
+Things that look wrong but are deliberate:
+
+- **`easyPack.init()` runs exactly once**, from the `Script onReady` handler in
+  the checkout page. Called with a single argument it wipes
+  `easyPack.pointsToSearch` and restarts the SDK bootstrap; the old code called
+  it on every "Wybierz Paczkomat" click and then ran `modalMap()` synchronously,
+  racing the async re-fetch of ~534 locker points. Fast connection looked fine,
+  slow connection opened an empty map. That was the intermittent "map doesn't
+  render" bug.
+- **Prices in `createOrder()` come from the products table, never the client
+  cart.** This is what stops a tampered cart changing what someone is charged.
+- **The order confirmation email's legal sections** (itemised total, delivery
+  details, 14-day withdrawal notice) satisfy the durable-medium confirmation
+  required by *ustawa o prawach konsumenta* art. 21. Don't strip them for design.
+- **`notifyOrderCreated()` swallows send failures** so a Resend outage can't fail
+  an order that's already committed.
+- **Seller identity lines in emails are omitted, not blank,** when
+  `NEXT_PUBLIC_SELLER_*` is unset — otherwise the footer prints "NIP: · REGON:".
+- **Safari CSP**: nonce in `style-src`, `unsafe-inline` on `style-src-attr`.
+  Safari blocks stylesheets otherwise.
+
+---
+
+## Reference
+
+**Key files**
+
+```
+db/schema.ts, db/index.ts, db/seed.ts     database
+auth.ts, auth.config.ts                    auth (+ types/next-auth.d.ts)
+app/api/auth/*                             register, forgot/reset password
+app/api/cart/route.ts, lib/cart/           cart
+app/api/orders/route.ts, lib/orders/       orders + notify
+lib/email/, lib/email/templates/           transactional mail
+lib/checkout/shipping.ts                   shipping rates (flat, v1)
+proxy.ts                                   CSP + security headers
+lib/env/server-env.ts                      prod env validation
+```
+
+**Env vars**
+
+Required in prod: `NEXT_PUBLIC_SITE_URL`, and the seller block
+(`NEXT_PUBLIC_SELLER_LEGAL_NAME`, `_ADDRESS_LINE1`, `_NIP`, `_REGON`, `_EMAIL`).
+Required to function: `DATABASE_URL`, `AUTH_SECRET`, `RESEND_API_KEY`,
+`RESEND_FROM`.
+Optional: `AUTH_GOOGLE_ID`/`_SECRET`, `NEXT_PUBLIC_GTM_ID`, seller
+`_ADDRESS_LINE2`/`_KRS`/`_PHONE`.
+**To add:** the erotizo feed URL (contains a token — env var only).
+
+**Commands**
+
+```bash
+npx tsc --noEmit              # typecheck
+npx drizzle-kit push          # push schema (dev only)
+npx drizzle-kit studio        # inspect DB
+npm run dev                   # dev server
+npx tsx scripts/preview-emails.tsx   # render emails to .email-preview/
+```
+
+**Housekeeping**
+
+- `pnpm-workspace.yaml` is still the placeholder ("set this to true or false") —
+  delete or fill in.
+- No `.gitignore` at the git root, so `.DS_Store` shows up in every status.
+- Test users to clean: `DELETE FROM users WHERE email LIKE 'smoke+%' OR email='test@example.com';`
+- Old anon carts: `DELETE FROM carts WHERE user_id IS NULL AND updated_at < NOW() - INTERVAL '1 day';`
+- `feat/auth-phase-1-2` branch can be deleted; its commits are in `integration`.
+
+---
+
+## Later
+
+**Phase 10 storefront:** wishlist (stub), reviews (table exists), server-side
+catalog filters with cursor pagination, Product JsonLd, canonical URLs on filter
+pages, Google OAuth button, account management on `/profile`.
+
+**Phase 11 feeds** (needs the real catalogue first): Google Merchant Center,
+Ceneo.pl, Facebook Catalog.
+
+**Post-launch:** search relevance tuning, "często kupowane razem"
+recommendations, promo codes, multi-currency, analytics dashboards.
+
+---
+
+*Update this at the end of each phase or when a decision lands. This file plus
+CLAUDE.md and AGENTS.md should be enough to resume cold.*
