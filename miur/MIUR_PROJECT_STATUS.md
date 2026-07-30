@@ -20,7 +20,8 @@ except InPost's label side.
 | Area | State | Notes |
 |---|---|---|
 | Foundation | Done | Next.js 16, Neon Postgres, Drizzle. CSP with per-request nonces (`proxy.ts`), cookie consent, age gate, Polish legal pages, SEO scaffolding. |
-| Search | Done | GIN indexes + `pg_trgm`. Still to add: `unaccent` so "zel" matches "żel". |
+| Search (database) | Done | Accent- and typo-tolerant query in `lib/catalog/search-products-db.ts`, backed by `db/sql/001_search_unaccent.sql`. |
+| Search (storefront) | **Still mock** | `/search` calls `searchProducts()` in `lib/api/products.ts`, which filters a hard-coded array of 8 mock products in JavaScript and never queries the database. See below. |
 | Accounts | Done | Register, login, password reset with expiring single-use tokens over Resend. Google OAuth is wired but has no UI button. |
 | Cart | Done | Server-backed. Anonymous cart merges into the account on sign-in instead of being lost. |
 | Checkout UI (7.3) | Done | Contact + address form, PL phone/postcode validation, delivery picker, live summary, guest checkout, RODO consents. |
@@ -138,6 +139,45 @@ thing determining profit.
 
 ---
 
+## Search — built 2026-07-31
+
+`lib/catalog/search-products-db.ts` — accent-insensitive, typo-tolerant product
+search. `db/sql/001_search_unaccent.sql` creates what it needs; apply with
+`npx tsx --env-file=.env.local scripts/apply-sql.ts` (idempotent, safe to re-run).
+
+**Not yet wired to the storefront, and can't be.** `/search` renders
+`ProductCard`, which needs `category`, `image`, `hoverImage` and `tag` — none of
+which exist as columns on `products`. They arrive with the 8.1 catalogue sync;
+wire the search in at that point. Until then `lib/api/products.ts` keeps serving
+the 8 mock products.
+
+**Two things worth knowing before touching this:**
+
+*`unaccent()` can't be indexed directly.* Postgres only indexes IMMUTABLE
+expressions, and the one-argument `unaccent()` is merely STABLE because it looks
+the dictionary up at call time. Hence the `immutable_unaccent()` wrapper, which
+passes the dictionary explicitly. Without it, `CREATE INDEX` fails outright.
+
+*Use `word_similarity` (`<%`), not `similarity` (`%`).* `similarity()` compares
+whole strings, so a short query is penalised for every trigram in a long product
+name it doesn't share. Measured on real rows: "matcha" against "Ceremonialny
+Zestaw do Matchy" scores **0.156** on similarity — under the 0.3 cutoff, so zero
+results — but **0.714** on word_similarity. Same for "poszewke" vs "Jedwabna
+Poszewka Aura Silk": 0.233 vs 0.778. Both queries were silently returning
+nothing before the switch.
+
+Known limit: heavier typos still miss. "velvt" finds "Velvet Touch" (0.67) but
+"mtcha" doesn't reach the 0.6 `word_similarity_threshold`. Lowering that
+threshold trades false negatives for false positives — revisit against the real
+25,652-product catalogue, not against 8 mock rows.
+
+Also note the indexes can't yet be proven to be *used*: with 8 rows Postgres
+correctly prefers a sequential scan. The index expression matches the query
+expression exactly, which is the part that has to be right; confirm the plan
+flips once the catalogue lands.
+
+---
+
 ## What's ahead, in order
 
 1. **7.5 Golden Flow** — 5–8 days. The blocker.
@@ -163,7 +203,7 @@ thing determining profit.
 | Payments | **Przelewy24.** Supersedes the earlier Stripe recommendation; the Golden Flow depends on P24's CRC signature and refund API. |
 | Background jobs | **Inngest.** Reverses the earlier "Vercel Cron for v1" call — the grace period needs a workflow that sleeps and can wake on an event, and the 69 MB feed needs chunked durable steps. |
 | Product images | **Cloudflare R2.** Download, convert to WebP, host ourselves. Sync compares a photo hash and only re-uploads on change. |
-| Search | **Stay on Postgres.** GIN + `pg_trgm` already work; just add `unaccent`. Zero migration. |
+| Search | **Stay on Postgres.** Done 2026-07-31 — see the search section below. |
 | Invoicing | **A CRM will handle it.** Still build the `AccountingProvider` interface so the core doesn't hardwire a vendor. |
 
 ### Two blueprint items to NOT implement as written
