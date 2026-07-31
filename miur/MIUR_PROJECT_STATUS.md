@@ -139,6 +139,65 @@ thing determining profit.
 
 ---
 
+## Catalogue sync — built 2026-07-31 (Phase 8.1, partial)
+
+**25,652 real products are now in the database.** 10,843 are buyable; the rest
+are below the stock floor. The 8 mock products are soft-deleted.
+
+```bash
+npx tsx --env-file=.env.local scripts/sync-catalog.ts            # from the feed URL
+npx tsx --env-file=.env.local scripts/sync-catalog.ts --file x.xml  # from a local file
+```
+
+Needs `EROTIZO_PRODUCTS_URL` in `.env.local`. **That URL contains an access
+token** — anyone holding it can pull the whole catalogue with wholesale prices.
+
+| Piece | What it does |
+|---|---|
+| `lib/catalog/sync/parse-feed.ts` | Streaming SAX parsers for both feeds. 69 MB parses in ~3s at a flat 32 MB heap — a DOM parser would need several hundred MB and die in a serverless function. |
+| `lib/catalog/sync/sync-catalog.ts` | Upserts responsibles then products in batches of 500, computes retail price, retires products the supplier dropped. |
+| `scripts/sync-catalog.ts` | CLI. Downloads to a temp file first so a dropped connection can't leave the catalogue half-updated. |
+
+**Pricing is a placeholder.** `DEFAULT_MARGIN_MULTIPLIER = 2.0` applied to net
+wholesale, then VAT. A product costing 22,12 net sells for 54,42 gross. That
+number was chosen to produce sane figures, **not researched** — set it
+deliberately before launch. Per-product overrides in
+`products.marginMultiplier` are never overwritten by the sync.
+
+**Retiring uses a run timestamp**, not a list of ids: every row touched gets the
+same `syncedAt`, then anything still carrying an older stamp is soft-deleted.
+Shipping 25k ids back to Postgres would have meant a ~300 KB statement.
+
+### Two bugs worth remembering
+
+**`drizzle-kit push` drops indexes it doesn't know about.** The unaccent search
+indexes were originally created in `db/sql/001_search_unaccent.sql`. The first
+`push` after that silently deleted them, and search degraded from 4 ms to 359 ms
+with no error anywhere. They now live in `db/schema.ts` so Drizzle manages them.
+Extensions and functions stay in the SQL file — Drizzle doesn't touch those.
+**Run `scripts/apply-sql.ts` before `drizzle-kit push` on a fresh database**, or
+the indexes fail to build for want of `immutable_unaccent()`.
+
+**A JS `Date` serialises differently in raw SQL than through a column type.**
+Drizzle converts to UTC when writing a `timestamp` column, but a Date
+interpolated into a raw ``sql`` `` template is sent as local time. On a
+GMT+0200 machine the two differ by two hours, so the first version of the retire
+step decided every row it had just written was stale and soft-deleted the entire
+catalogue. Use the query builder (`lt(products.syncedAt, ...)`) so both sides get
+the same conversion.
+
+### Still to do here
+
+- Hourly stock sync from `basic.xml` (parser is written, no job wired yet)
+- Images still point at erotizo URLs — hotlinking isn't allowed, so the R2
+  download/WebP pipeline is still owed. ~25,631 products have images.
+- `price_history` isn't written on price change (Omnibus requirement, 8.4)
+- GPSR: 72 responsible operators are imported and linked, but no product page
+  displays them yet — that display is the actual legal requirement.
+- Storefront still reads mock data; see below.
+
+---
+
 ## Search — built 2026-07-31
 
 `lib/catalog/search-products-db.ts` — accent-insensitive, typo-tolerant product
@@ -171,10 +230,10 @@ Known limit: heavier typos still miss. "velvt" finds "Velvet Touch" (0.67) but
 threshold trades false negatives for false positives — revisit against the real
 25,652-product catalogue, not against 8 mock rows.
 
-Also note the indexes can't yet be proven to be *used*: with 8 rows Postgres
-correctly prefers a sequential scan. The index expression matches the query
-expression exactly, which is the part that has to be right; confirm the plan
-flips once the catalogue lands.
+**Confirmed against the real 25,652-product catalogue:** the planner now uses
+Bitmap Index Scans on all three branches and the query runs in **4.5 ms**, down
+from 359 ms on a sequential scan. Remember to `ANALYZE products` after a bulk
+load — the planner works from statistics, and stale ones keep it on seq scans.
 
 ---
 

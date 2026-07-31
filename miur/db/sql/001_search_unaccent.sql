@@ -46,17 +46,18 @@ AS $$
 $$;
 --> statement-breakpoint
 
--- Trigram indexes over the UNACCENTED text.
+-- The trigram indexes over the unaccented text are NOT created here. They are
+-- declared in db/schema.ts instead.
 --
--- These are additions, not replacements. The existing name_search_idx and
--- desc_search_idx (declared in db/schema.ts) index the raw columns. Postgres
--- cannot use an index on `name` to answer a query about
--- `immutable_unaccent(name)` — as far as the planner is concerned those are
--- two different expressions. So a query that unaccents needs its own index or
--- it falls back to scanning every row.
-CREATE INDEX IF NOT EXISTS products_name_unaccent_trgm_idx
-  ON products USING gin (immutable_unaccent(name) gin_trgm_ops);
---> statement-breakpoint
-
-CREATE INDEX IF NOT EXISTS products_description_unaccent_trgm_idx
-  ON products USING gin (immutable_unaccent(description) gin_trgm_ops);
+-- Why: `drizzle-kit push` makes the database match db/schema.ts, and it drops
+-- anything it finds that the schema doesn't declare. Indexes created only in
+-- this file were silently dropped by the first push after they were made, and
+-- search quietly fell back to scanning all 25,652 rows. Functions and
+-- extensions survive (Drizzle doesn't manage those), which is why they stay
+-- here.
+--
+-- ORDERING MATTERS: run this file BEFORE `drizzle-kit push`. The indexes in
+-- schema.ts reference immutable_unaccent(), so the function has to exist first.
+--
+--   npx tsx --env-file=.env.local scripts/apply-sql.ts
+--   npx drizzle-kit push
